@@ -1,0 +1,61 @@
+/*reset*/
+
+*, *::before, *::after {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    tap-highlight-color:transparent;
+    -webkit-tap-highlight-color:transparent;
+}
+body {
+    font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,PingFang SC,Hiragino Sans GB,Microsoft YaHei,Helvetica Neue,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol;
+    color: #333;
+    background-color: #f5f5f5;
+}
+ul, ol {
+    list-style: none;
+}
+a {
+    text-decoration: none;
+    color: #333;
+}
+input, textarea {
+    outline: none;
+    resize: none;
+    -webkit-appearance:none;
+}
+img {
+    vertical-align: bottom;
+}
+
+/*common css*/
+
+.f_left {
+    float: left;
+}
+.f_right {
+    float: right;
+}
+.clearFix::after {
+    content: '';
+    display: block;
+    visibility: hidden;
+    line-height: 0;
+    height: 0;
+    clear: both;
+}
+.m_l10 {
+    margin-left: 10px;
+}
+.m_r10 {
+    margin-right: 10px;
+}
+.m_t10 {
+    margin-top: 10px;
+}
+.m_b10 {
+    margin-bottom: 10px;
+}
+

@@ -1,0 +1,36 @@
+// import './css/font-awesome.min.css';
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import router from '@/router/router';
+import app from './app.vue';
+import axios from 'axios'
+import store from '@/store';
+import './permission';
+import 'normalize.css';
+import './css/base.css';
+import { Button, Menu, Form, Input } from 'ant-design-vue';
+
+Vue.config.productionTip = false;
+axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
+axios.defaults.withCredentials = true;
+Vue.prototype.$axios= axios;
+
+//全局组件
+// Vue.component(Button.name, Button);
+Vue.use(Button);
+Vue.use(Menu);
+Vue.use(Form);
+Vue.use(Input);
+
+Vue.use(VueRouter);
+
+
+new Vue({
+    el: '#app',
+    data: {
+        message: '哈哈哈'
+    },
+    render: c => c(app),
+    router,
+    store
+});

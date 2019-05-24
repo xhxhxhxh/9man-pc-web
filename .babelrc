@@ -1,0 +1,13 @@
+{
+  "presets": ["env","stage-0"],
+  "plugins": ["transform-runtime",
+    ["import", { "libraryName": "ant-design-vue", "libraryDirectory": "es", "style": true }],
+    ["component", [
+      {
+        "libraryName": "mint-ui",
+        "style": true
+      }
+    ]],
+    "transform-remove-strict-mode"]
+
+}

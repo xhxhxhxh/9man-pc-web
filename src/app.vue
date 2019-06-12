@@ -1,19 +1,28 @@
 <template>
-    <div class="app-container" id="app">
-        <router-view></router-view>
-    </div>
+    <a-locale-provider :locale="locale">
+        <div class="app-container" id="app">
+            <TopBar></TopBar>
+            <router-view></router-view>
+        </div>
+    </a-locale-provider>
 </template>
 
 <script>
+    import TopBar from '@/components/TopBar/TopBar';
+    import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN';
     export default {
         name: "app",
         data(){
             return {
                 rootUrl: this.$store.state.rootUrl,
+                locale: zhCN,
             }
         },
         created() {
 
+        },
+        components: {
+            TopBar
         },
         methods: {
 
@@ -49,6 +58,8 @@
         height: 100%;
         width: 100%;
         min-height: 320px;
+        position: relative;
+        padding-top: 60px;
     }
 
 </style>

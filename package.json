@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server",
-    "dev2": "webpack-dev-server --open --port 4000 --contentBase src --hot --host 192.168.0.107"
+    "dev2": "webpack-dev-server --open --port 4000 --contentBase src --hot --host 192.168.0.107",
+    "build": "webpack --config webpack.prod.config.js"
   },
   "keywords": [],
   "author": "",

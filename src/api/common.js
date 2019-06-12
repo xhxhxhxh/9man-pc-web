@@ -1,9 +1,9 @@
 
-const Common = {};
+const common = {};
 /**
  * 存储LocalStorage
  */
-Common.setLocalStorage = (key, value) =>{
+common.setLocalStorage = (key, value) =>{
     const params = JSON.stringify(value);
     localStorage.setItem(key, params);
 };
@@ -11,9 +11,9 @@ Common.setLocalStorage = (key, value) =>{
 /**
  * 读取LocalStorage
  */
-Common.getLocalStorage = (key) =>{
+common.getLocalStorage = (key) =>{
     return JSON.parse(localStorage.getItem(key) || '[]');
 };
 
 
- export default Common
+ export default common

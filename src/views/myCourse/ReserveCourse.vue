@@ -13,7 +13,7 @@
                 </p>
                 <p class="remark">一个月内可预约补课</p>
             </div>
-            <a-button type="primary" class="entry">预约补课</a-button>
+            <a-button type="primary" class="entry" @click="$router.push('/reserveCourse')">预约补课</a-button>
         </div>
     </div></template>
 

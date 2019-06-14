@@ -39,7 +39,7 @@
         padding-top: 40px;
         background-color: #FAFAFA;
         main {
-            width: 1220px;
+            width: 1420px;
             margin: 0 auto;
             height: 480px;
         }

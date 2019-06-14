@@ -8,7 +8,7 @@ import store from '@/store';
 import './permission';
 import 'normalize.css';
 import './css/base.css';
-import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider, TimePicker  } from 'ant-design-vue';
+import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider, TimePicker, Popover } from 'ant-design-vue';
 
 Vue.config.productionTip = false;
 axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -29,6 +29,7 @@ Vue.use(Select);
 Vue.use(DatePicker);
 Vue.use(LocaleProvider);
 Vue.use(TimePicker);
+Vue.use(Popover);
 
 Vue.use(VueRouter);
 

@@ -100,11 +100,13 @@
                 timeOut: '',
             }
         },
+        created () {
+            this.$store.commit('setIdentity', '') // 清除identity
+        },
         methods: {
             //登录
             handleSubmit (e) {
                 e.preventDefault();
-                console.log(123)
                 if (this.login === 'account') {
                     this.form.validateFields(['telephone', 'password'], (err, values) => {
                         if (err) return;
@@ -180,6 +182,8 @@
                         if (data.code == 200) {
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
+                            this.$store.commit('setIdentity', data.info.identity);
+                            this.$router.addRoutes([this.$store.getters.roles]);
                             this.$router.go(-1);
                         } else {
                             this.$message.warning(data.msg,5);
@@ -204,6 +208,8 @@
                         if (data.code == 200) {
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
+                            this.$store.commit('setIdentity', data.info.identity);
+                            this.$router.addRoutes([this.$store.getters.roles]);
                             this.$router.go(-1);
                         } else {
                             this.$message.warning(data.msg,5);

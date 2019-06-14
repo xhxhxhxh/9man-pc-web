@@ -43,7 +43,7 @@
                     <span class="title">手机号：</span>
                     <span class="content">17785859878</span>
                 </p>
-                <a-button type="primary" class="modifyPassword">修改密码</a-button>
+                <a-button type="primary" class="modifyPassword" @click="$router.push('/resetPassword')">修改密码</a-button>
             </main>
         </div>
     </div>

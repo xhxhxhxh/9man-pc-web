@@ -726,7 +726,7 @@
         }
     }
     .homeModal {
-        nput::-webkit-outer-spin-button,
+        input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button{
             -webkit-appearance: none !important;
         }
@@ -770,6 +770,7 @@
                         border-bottom: 2px solid #F3F3F3;
                         font-size:24px;
                         color:rgba(51,51,51,1);
+                        border-radius: unset;
                         &:focus {
                             box-shadow: unset;
                         }

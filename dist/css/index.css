@@ -486,10 +486,10 @@
   -moz-appearance: textfield;
 }
 .login-container .banner {
-  height: 514px;
+  height: 541px;
   background: url(../images/3d8d84b6-banner.png) no-repeat center;
   background-size: cover;
-  padding: 82px 46px 0;
+  padding: 110px 39px 0 46px;
 }
 .login-container .banner .bannerInfo {
   height: 600px;
@@ -498,11 +498,11 @@
   position: relative;
 }
 .login-container .banner .bannerInfo .login {
-  width: 600px;
-  height: 577px;
+  width: 500px;
+  height: 460px;
   position: absolute;
   top: 100px;
-  right: 270px;
+  right: 381px;
 }
 .login-container .banner .bannerInfo .login .loginItem {
   position: absolute;
@@ -511,30 +511,29 @@
   width: 100%;
 }
 .login-container .banner .bannerInfo .login .loginItem header {
-  height: 85px;
+  height: 71px;
 }
 .login-container .banner .bannerInfo .login .loginItem header > div {
   width: 50%;
   height: 100%;
   padding: 0 30px;
-  font-size: 24px;
-  font-weight: 400;
-  color: #666666;
+  font-size: 18px;
+  color: #999;
   text-align: center;
-  line-height: 85px;
+  line-height: 71px;
   background: rgba(255, 255, 255, 0.5);
   float: left;
   cursor: pointer;
   position: relative;
 }
 .login-container .banner .bannerInfo .login .loginItem header > div.selectedItem {
-  height: 120px;
-  line-height: 110px;
+  height: 103px;
+  line-height: 103px;
   background: #fff;
-  font-size: 32px;
+  font-size: 24px;
   font-weight: 400;
   color: #ff9206;
-  transform: translate(0, -25px);
+  transform: translate(0, -22px);
   border-radius: 10px 10px 0 0;
 }
 .login-container .banner .bannerInfo .login .loginItem header > div.selectedItem span {
@@ -567,37 +566,43 @@
   background: radial-gradient(at 0px 0px, transparent 10px, #fff 10px);
 }
 .login-container .banner .bannerInfo .login .loginItem main {
-  height: 460px;
+  height: 365px;
   background-color: #fff;
   box-shadow: 0 23px 45px 0 rgba(252, 201, 58, 0.3);
   border-radius: 0 0 10px 10px;
-  padding: 86px 97px 0;
+  padding: 55px 80px 0;
+}
+.login-container .banner .bannerInfo .login .loginItem main form {
+  /*.ant-form-item-with-help {*/
+  /*    margin-bottom: 45px;*/
+  /*}*/
 }
 .login-container .banner .bannerInfo .login .loginItem main form label {
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 400;
   color: #666666;
 }
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-item-label {
-  margin-top: 6px;
+  margin-top: 2.5px;
 }
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-item {
-  margin-bottom: 54px;
+  margin-bottom: 45px;
   position: relative;
+  height: 45px;
 }
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-item button {
   width: 100%;
-  height: 60px;
-  line-height: 60px;
+  height: 50px;
+  line-height: 50px;
   text-align: center;
   background: linear-gradient(90deg, #ffde3b, #fcc93a);
   box-shadow: 0 20px 38px 0 rgba(255, 236, 23, 0.9);
   border-radius: 30px;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 400;
   color: #333333;
   border: 0;
-  margin-top: 38px;
+  margin-top: 20px;
 }
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-item:nth-child(3) .getVerificationCode {
   position: absolute;
@@ -612,17 +617,14 @@
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-item:nth-child(3) .getVerificationCode.alreadyGetCode {
   color: #333;
 }
-.login-container .banner .bannerInfo .login .loginItem main form .ant-form-item-with-help {
-  margin-bottom: 18px;
-}
 .login-container .banner .bannerInfo .login .loginItem main form .ant-form-explain {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 400;
   color: #ff6d88;
-  margin-top: 12px;
+  margin-top: 8px;
 }
 .login-container .banner .bannerInfo .login .loginItem main form input {
-  height: 54px;
+  height: 45px;
   border-radius: 8px;
   border: 2px solid #f3f3f3;
   font-size: 24px;
@@ -636,6 +638,579 @@
   box-shadow: 0 0 8px 0 rgba(255, 194, 7, 0.5);
 }
 
+.layout-container[data-v-88b8c74a] {
+  height: 100%;
+  padding-top: 40px;
+  background-color: #FAFAFA;
+}
+.layout-container main[data-v-88b8c74a] {
+  width: 1220px;
+  margin: 0 auto;
+  height: 480px;
+}
+.layout-container .sideBar[data-v-88b8c74a] {
+  float: left;
+  width: 180px;
+  height: 480px;
+  background: linear-gradient(0deg, #36314e, #4c4668);
+  box-shadow: 0 3px 8px 0 rgba(124, 158, 236, 0.3);
+  border-radius: 10px;
+  padding: 30px 0 30px 20px;
+  margin-right: 20px;
+}
+.layout-container .sideBar .sideBarItem[data-v-88b8c74a] {
+  width: 140px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 10px;
+  line-height: 50px;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 30px;
+  cursor: pointer;
+  letter-spacing: 2px;
+}
+.layout-container .sideBar .sideBarItem.chosen[data-v-88b8c74a] {
+  width: 100%;
+  border-radius: 10px 0 0 10px;
+  background-color: #fff;
+  position: relative;
+}
+.layout-container .sideBar .sideBarItem.chosen[data-v-88b8c74a]:before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: #fcc93a;
+  box-shadow: 0 0 6px 0 rgba(255, 151, 49, 0.9);
+  border-radius: 2px;
+  position: absolute;
+  top: 50%;
+  right: 18px;
+  transform: translate(0, -50%);
+}
+.layout-container .sideBar .sideBarItem span[data-v-88b8c74a] {
+  margin-left: 30px;
+}
+
+.myCourse-container[data-v-3c963d50] {
+  width: 1000px;
+  height: 480px;
+  background: #ffffff;
+  border-radius: 10px;
+  float: left;
+  padding: 28px 56px;
+}
+.myCourse-container .left[data-v-3c963d50] {
+  margin-top: 22px;
+}
+.myCourse-container .left img[data-v-3c963d50] {
+  width: 260px;
+  height: 326px;
+  border-radius: 10px;
+}
+.myCourse-container .right[data-v-3c963d50] {
+  margin-left: 100px;
+  width: 484px;
+}
+.myCourse-container .right h1[data-v-3c963d50] {
+  font-size: 36px;
+  color: #4c4c4c;
+  font-weight: bold;
+  text-align: center;
+}
+.myCourse-container .right .content[data-v-3c963d50] {
+  margin-top: 31px;
+}
+.myCourse-container .right .content h2[data-v-3c963d50] {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+.myCourse-container .right .content .totalCourseCount[data-v-3c963d50] {
+  margin-bottom: 6px;
+}
+.myCourse-container .right .content .totalCourseCount .title[data-v-3c963d50] {
+  font-size: 18px;
+  color: #666;
+}
+.myCourse-container .right .content .totalCourseCount .red[data-v-3c963d50] {
+  font-size: 22px;
+  color: #ff3737;
+  margin-left: 12px;
+}
+.myCourse-container .right .content .courseCount[data-v-3c963d50] {
+  margin-bottom: 18px;
+}
+.myCourse-container .right .content .courseCount .title[data-v-3c963d50],
+.myCourse-container .right .content .courseCount .remain[data-v-3c963d50] {
+  font-size: 18px;
+  color: #666;
+}
+.myCourse-container .right .content .courseCount .red[data-v-3c963d50] {
+  font-size: 22px;
+  color: #ff3737;
+  margin-left: 12px;
+  margin-right: 55px;
+}
+.myCourse-container .right .content .courseTime[data-v-3c963d50] {
+  margin-bottom: 35px;
+  font-size: 14px;
+  color: #666;
+}
+.myCourse-container .right .content .courseTime .date[data-v-3c963d50] {
+  margin-right: 37px;
+}
+.myCourse-container .right .entry[data-v-3c963d50] {
+  width: 240px;
+  height: 60px;
+  border-radius: 10px;
+  font-size: 24px;
+  float: right;
+  font-weight: bold;
+}
+
+.makeUpCourse-container[data-v-9cc757d6] {
+  width: 1000px;
+  height: 480px;
+  background: #ffffff;
+  border-radius: 10px;
+  float: left;
+  padding: 28px 56px;
+  position: relative;
+  overflow: hidden;
+}
+.makeUpCourse-container .makeUpCourse[data-v-9cc757d6] {
+  position: absolute;
+  height: 383px;
+  width: 383px;
+  top: -85px;
+  right: -61px;
+}
+.makeUpCourse-container .left[data-v-9cc757d6] {
+  margin-top: 22px;
+}
+.makeUpCourse-container .left img[data-v-9cc757d6] {
+  width: 260px;
+  height: 326px;
+  border-radius: 10px;
+}
+.makeUpCourse-container .right[data-v-9cc757d6] {
+  margin-left: 100px;
+  width: 484px;
+}
+.makeUpCourse-container .right h1[data-v-9cc757d6] {
+  font-size: 36px;
+  color: #4c4c4c;
+  font-weight: bold;
+  text-align: center;
+}
+.makeUpCourse-container .right .content[data-v-9cc757d6] {
+  margin-top: 31px;
+}
+.makeUpCourse-container .right .content h2[data-v-9cc757d6] {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+.makeUpCourse-container .right .content .totalCourseCount[data-v-9cc757d6] {
+  margin-bottom: 6px;
+}
+.makeUpCourse-container .right .content .totalCourseCount .title[data-v-9cc757d6] {
+  font-size: 18px;
+  color: #666;
+}
+.makeUpCourse-container .right .content .totalCourseCount .red[data-v-9cc757d6] {
+  font-size: 22px;
+  color: #ff3737;
+  margin-left: 12px;
+}
+.makeUpCourse-container .right .content .courseCount[data-v-9cc757d6] {
+  margin-bottom: 18px;
+}
+.makeUpCourse-container .right .content .courseCount .title[data-v-9cc757d6] {
+  font-size: 18px;
+  color: #666;
+}
+.makeUpCourse-container .right .content .courseCount .red[data-v-9cc757d6] {
+  font-size: 22px;
+  color: #ff3737;
+  margin-left: 12px;
+  margin-right: 55px;
+}
+.makeUpCourse-container .right .content .courseTime[data-v-9cc757d6] {
+  margin-bottom: 35px;
+  font-size: 14px;
+  color: #666;
+}
+.makeUpCourse-container .right .content .courseTime .date[data-v-9cc757d6] {
+  margin-right: 37px;
+}
+.makeUpCourse-container .right .entry[data-v-9cc757d6] {
+  width: 240px;
+  height: 60px;
+  border-radius: 10px;
+  font-size: 24px;
+  float: right;
+  font-weight: bold;
+}
+
+.reserveCourse-container[data-v-0b111956] {
+  width: 1000px;
+  height: 480px;
+  background: #ffffff;
+  border-radius: 10px;
+  float: left;
+  padding: 28px 56px;
+}
+.reserveCourse-container .left[data-v-0b111956] {
+  margin-top: 22px;
+}
+.reserveCourse-container .left img[data-v-0b111956] {
+  width: 260px;
+  height: 326px;
+  border-radius: 10px;
+}
+.reserveCourse-container .right[data-v-0b111956] {
+  margin-left: 100px;
+  width: 484px;
+}
+.reserveCourse-container .right h1[data-v-0b111956] {
+  font-size: 36px;
+  color: #4c4c4c;
+  font-weight: bold;
+  text-align: center;
+}
+.reserveCourse-container .right .content[data-v-0b111956] {
+  margin-top: 31px;
+}
+.reserveCourse-container .right .content h2[data-v-0b111956] {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+}
+.reserveCourse-container .right .content .totalCourseCount[data-v-0b111956] {
+  margin-bottom: 16px;
+}
+.reserveCourse-container .right .content .totalCourseCount .title[data-v-0b111956] {
+  font-size: 18px;
+  color: #666;
+}
+.reserveCourse-container .right .content .totalCourseCount .red[data-v-0b111956] {
+  font-size: 22px;
+  color: #ff3737;
+  margin-left: 12px;
+}
+.reserveCourse-container .right .content .courseTime[data-v-0b111956] {
+  margin-bottom: 44px;
+  font-size: 14px;
+  color: #666;
+}
+.reserveCourse-container .right .content .courseTime .date[data-v-0b111956] {
+  margin-right: 37px;
+}
+.reserveCourse-container .right .content .remark[data-v-0b111956] {
+  margin-bottom: 8px;
+  font-size: 16px;
+  color: #999999;
+}
+.reserveCourse-container .right .entry[data-v-0b111956] {
+  width: 240px;
+  height: 60px;
+  border-radius: 10px;
+  font-size: 24px;
+  float: right;
+  font-weight: bold;
+}
+
+.reservingCourse-container {
+  height: 100%;
+  background-color: #fafafa;
+  padding-top: 108px;
+}
+.reservingCourse-container .reserveCourse {
+  margin: 0 auto;
+  width: 1200px;
+  height: 580px;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.reservingCourse-container .reserveCourse header {
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  background: #fcc93a;
+  font-size: 20px;
+  font-weight: bold;
+  color: #4c4c4c;
+}
+.reservingCourse-container .reserveCourse main {
+  padding: 0 200px;
+  position: relative;
+}
+.reservingCourse-container .reserveCourse main .mode {
+  height: 165px;
+  padding-top: 58px;
+  text-align: center;
+  border-bottom: 4px solid #f3f3f3;
+}
+.reservingCourse-container .reserveCourse main .mode button {
+  width: 240px;
+  height: 48px;
+  box-shadow: 0 2px 7px 0 rgba(136, 153, 191, 0.1);
+  border-radius: 8px;
+  border: 0;
+  color: #666;
+  font-size: 18px;
+}
+.reservingCourse-container .reserveCourse main .mode button:first-of-type {
+  margin-right: 140px;
+}
+.reservingCourse-container .reserveCourse main .mode .chosenMode {
+  background: #fcc93a;
+  box-shadow: 0 6px 12px 0 rgba(255, 170, 78, 0.3);
+  color: #333;
+}
+.reservingCourse-container .reserveCourse .selectedClass {
+  padding: 67px 168px 0;
+}
+.reservingCourse-container .reserveCourse .selectedClass > span {
+  font-size: 18px;
+  color: #666666;
+  margin-right: 25px;
+}
+.reservingCourse-container .reserveCourse .selectedClass > p {
+  font-size: 14px;
+  color: #999999;
+  margin-top: 32px;
+}
+.reservingCourse-container .reserveCourse .selectedClass .ant-select-selection {
+  height: 46px;
+  /*border:2px solid rgba(243,243,243,1);*/
+  border-radius: 6px;
+}
+.reservingCourse-container .reserveCourse .selectedClass .ant-select-selection .ant-select-selection__rendered {
+  margin-left: 25px;
+  margin-right: 25px;
+  line-height: 46px;
+}
+.reservingCourse-container .reserveCourse .selectedClass .ant-select-selection .ant-select-selection__rendered .ant-select-selection-selected-value {
+  font-size: 20px;
+  color: #333333;
+}
+.reservingCourse-container .reserveCourse .selectedDate {
+  padding: 67px 260px 0;
+}
+.reservingCourse-container .reserveCourse .selectedDate .date span:first-child {
+  font-size: 16px;
+  color: #999;
+  margin-right: 8px;
+}
+.reservingCourse-container .reserveCourse .selectedDate .date .ant-calendar-picker-input {
+  height: 46px;
+  width: 220px;
+  font-size: 16px;
+  padding-left: 25px;
+}
+.reservingCourse-container .reserveCourse .selectedDate .time {
+  margin-top: 15px;
+}
+.reservingCourse-container .reserveCourse .selectedDate .time span:first-child {
+  font-size: 16px;
+  color: #999;
+  margin-right: 8px;
+}
+.reservingCourse-container .reserveCourse .selectedDate .time .ant-time-picker-input {
+  height: 46px;
+  width: 220px;
+  font-size: 16px;
+  padding-left: 25px;
+}
+.reservingCourse-container .reserveCourse .selectedDate .time .ant-time-picker {
+  width: 220px;
+}
+.reservingCourse-container .reserveCourse .selectedDate > p {
+  font-size: 14px;
+  color: #999999;
+  margin-top: 19px;
+}
+.reservingCourse-container .reserveCourse .submit {
+  text-align: center;
+  position: absolute;
+  left: 0;
+  top: 417px;
+  width: 100%;
+}
+.reservingCourse-container .reserveCourse .submit button {
+  width: 180px;
+  height: 48px;
+  border-radius: 8px;
+  font-size: 18px;
+  color: #333333;
+}
+.reservingCourse-container .reserveCourse .submit button:first-of-type {
+  margin-right: 140px;
+  border: 0;
+  background-color: #f3f3f3;
+}
+.chosenClass li {
+  height: 46px;
+  line-height: 36px;
+  font-size: 20px;
+  color: #333333;
+  padding-left: 25px;
+}
+
+.users-container[data-v-424e39e0] {
+  height: 100%;
+  background-color: #fafafa;
+}
+.users-container .avatar[data-v-424e39e0] {
+  height: 460px;
+  background-color: #fff;
+}
+.users-container .avatar main[data-v-424e39e0] {
+  width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+.users-container .avatar main .user-avatar[data-v-424e39e0] {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: absolute;
+  top: 129px;
+  left: 238px;
+}
+.users-container .avatar main .info[data-v-424e39e0] {
+  margin: 122px 0 0 628px;
+  color: #333;
+}
+.users-container .avatar main .info h1[data-v-424e39e0] {
+  font-size: 36px;
+  font-weight: 600;
+  margin-bottom: 53px;
+}
+.users-container .avatar main .info .star[data-v-424e39e0] {
+  float: left;
+  margin-right: 93px;
+}
+.users-container .avatar main .info .star img[data-v-424e39e0] {
+  width: 45px;
+  height: 42px;
+}
+.users-container .avatar main .info .star p[data-v-424e39e0] {
+  font-size: 36px;
+  text-align: center;
+  margin-top: 23px;
+}
+.users-container .avatar main .info .medal[data-v-424e39e0] {
+  float: left;
+}
+.users-container .avatar main .info .medal img[data-v-424e39e0] {
+  width: 35px;
+  height: 45px;
+}
+.users-container .avatar main .info .medal p[data-v-424e39e0] {
+  font-size: 36px;
+  text-align: center;
+  margin-top: 20px;
+}
+.users-container .userInfo[data-v-424e39e0] {
+  width: 1200px;
+  height: 360px;
+  background: #ffffff;
+  border-radius: 10px;
+  margin: 30px auto 0;
+}
+.users-container .userInfo header[data-v-424e39e0] {
+  height: 70px;
+  border-bottom: 4px solid #fafafa;
+}
+.users-container .userInfo header span[data-v-424e39e0] {
+  display: inline-block;
+  width: 80px;
+  height: 100%;
+  text-align: center;
+  line-height: 66px;
+  font-size: 16px;
+  color: #666;
+  margin-left: 100px;
+  cursor: pointer;
+}
+.users-container .userInfo header span.selected[data-v-424e39e0] {
+  color: #333;
+  position: relative;
+  font-weight: bold;
+}
+.users-container .userInfo header span.selected[data-v-424e39e0]::before {
+  content: '';
+  width: 80px;
+  height: 6px;
+  background: #fcc93a;
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+}
+.users-container .userInfo main[data-v-424e39e0] {
+  padding: 56px 0 0 103px;
+  position: relative;
+}
+.users-container .userInfo main p[data-v-424e39e0] {
+  margin-bottom: 31px;
+  height: 44px;
+  line-height: 44px;
+}
+.users-container .userInfo main p .title[data-v-424e39e0] {
+  font-size: 12px;
+  color: #666;
+}
+.users-container .userInfo main p .content[data-v-424e39e0] {
+  font-size: 16px;
+  color: #333333;
+  margin-left: 94px;
+}
+.users-container .userInfo main .name[data-v-424e39e0] {
+  display: flex;
+  align-items: center;
+}
+.users-container .userInfo main .name input[data-v-424e39e0] {
+  width: 202px;
+  height: 44px;
+  line-height: 48px;
+  border-radius: 5px;
+  margin-left: 72px;
+  font-size: 16px;
+  color: #333333;
+  padding-left: 21px;
+}
+.users-container .userInfo main .telephone .content[data-v-424e39e0] {
+  margin-left: 29px;
+}
+.users-container .userInfo main .modify[data-v-424e39e0] {
+  width: 120px;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 16px;
+  color: #333333;
+  position: absolute;
+  top: 58px;
+  right: 76px;
+}
+.users-container .userInfo main .modifyPassword[data-v-424e39e0] {
+  width: 120px;
+  height: 40px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #333333;
+  position: absolute;
+  top: 141px;
+  left: 104px;
+}
+
 html {
   height: 100%;
 }
@@ -647,6 +1222,8 @@ body {
   height: 100%;
   width: 100%;
   min-height: 320px;
+  position: relative;
+  padding-top: 60px;
 }
 
 @media screen and (max-width: 1200px) {
@@ -665,6 +1242,9 @@ body {
   display: flex;
   justify-content: space-between;
   padding: 0 79px;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .topBar-container > div[data-v-4c2f8448] {
   display: flex;

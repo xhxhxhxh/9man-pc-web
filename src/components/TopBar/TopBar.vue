@@ -16,23 +16,37 @@
                 <a-menu-item key="teachers">
                     老师入驻
                 </a-menu-item>
+                <a-menu-item key="adminManage" @click="$router.push('/adminManage')">
+                    后台管理
+                </a-menu-item>
                 <a-menu-item key="about">
                     关于我们
                 </a-menu-item>
             </a-menu>
         </div>
         <div class="login">
-            <a-button @click="$router.push('/login')">登 录</a-button>
+            <a-button @click="$router.push('/login')" v-if="$store.state.identity === ''">登 录</a-button>
+            <div class="avatar" v-else>
+                <a-popover placement="bottomRight" overlayClassName="userInfo">
+                    <template slot="content">
+                        <p @click="$router.push('/users')">你的名字</p>
+                        <p @click="logout">退出登录</p>
+                    </template>
+                    <img src="./images/avatar.png" alt="">
+                </a-popover>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
+
     export default {
         name: "TopBar",
         data () {
           return {
               hashAddress: this.$route.path.split('/')[1],
+              hasLogin: true
           }
         },
         watch:{
@@ -40,10 +54,24 @@
                 this.hashAddress = to.path.split('/')[1]
             }
         },
+        methods: {
+            // 退出登录
+            logout () {
+                localStorage.removeItem('id')
+                if (this.$route.path !== '/home') {
+                    this.$router.push('/login')
+                } else {
+                    this.$store.commit('setIdentity', '')
+                }
+
+                // this.$store.commit('setIdentity', '')
+
+            }
+        },
     }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
     @media screen and (max-width: 1200px) {
         .topBar-container {
             padding: 0 40px !important;
@@ -52,6 +80,28 @@
             }
         }
     }
+    .userInfo {
+        .ant-popover-inner-content {
+            width:160px;
+            box-shadow:0 5px 9px 0 rgba(136,153,191,0.1);
+            padding: 0;
+            p {
+                height: 56px;
+                line-height: 56px;
+                font-size:16px;
+                color: #333;
+                padding-left: 25px;
+                margin-bottom: 0;
+                cursor: pointer;
+                &:first-of-type {
+                    font-weight: bold;
+                    border-bottom: 2px solid #f3f3f3;
+                }
+            }
+
+        }
+    }
+
     .topBar-container {
         width: 100%;
         height: 60px;
@@ -97,19 +147,35 @@
             }
         }
         .login {
+            width: 60px;
             button {
-                border:2px solid rgba(255,227,0,1);
+                border:2px solid #F37934;
                 border-radius:8px;
-                color: rgba(255,227,0,1);
+                color: #F37934;
                 box-shadow: unset;
                 width: 62px;
                 height: 30px;
                 font-size: 12px;
                 font-weight:400;
+                &:hover {
+                    background-color: #F37934!important;
+                }
             }
             button:hover {
                 background-color: rgba(255,227,0,1);
                 color: #fff;
+            }
+            .avatar {
+                background-color: #000;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                margin-left: 15px;
+                img {
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                }
             }
         }
     }

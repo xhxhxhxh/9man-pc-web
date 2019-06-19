@@ -10,13 +10,13 @@
                 <a-menu-item key="home" @click="$router.push('/home')">
                   首页
                 </a-menu-item>
-                <a-menu-item key="course" @click="$router.push('/course')">
+                <a-menu-item key="course" @click="$router.push('/course')" v-if="$store.state.identity !== '1'">
                     我的课程
                 </a-menu-item>
-                <a-menu-item key="teachers">
+                <a-menu-item key="teachers" v-if="$store.state.identity !== '1'">
                     老师入驻
                 </a-menu-item>
-                <a-menu-item key="adminManage" @click="$router.push('/adminManage')">
+                <a-menu-item key="adminManage" @click="$router.push('/adminManage')" v-else>
                     后台管理
                 </a-menu-item>
                 <a-menu-item key="about">

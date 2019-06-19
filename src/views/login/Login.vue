@@ -98,6 +98,7 @@
                 verificationCodeText: '获取验证码',
                 alreadyGetCode: false,
                 timeOut: '',
+                rootUrl: this.$store.state.rootUrl,
             }
         },
         created () {
@@ -131,7 +132,7 @@
                         mobile: values.telephone,
                         type: 0
                     };
-                    this.$axios.get( '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                    this.$axios.get( this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
                         .then(res => {
                             let data = res.data;
                             this.$message.success('验证码发送成功',5);
@@ -175,7 +176,7 @@
                     mobile: values.telephone,
                     code: values.VerificationCode
                 };
-                this.$axios.get('/indexapp.php?c=CTUser&a=loginByMobile', {params})
+                this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=loginByMobile', {params})
                     .then(res => {
                         let data = res.data;
                         // console.log(data);
@@ -183,7 +184,7 @@
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
                             this.$store.commit('setIdentity', data.info.identity);
-                            this.$router.addRoutes([this.$store.getters.roles]);
+                            this.$router.addRoutes([this.$store.getters.roles,{path: '*', redirect: '/404'}]);
                             this.$router.go(-1);
                         } else {
                             this.$message.warning(data.msg,5);
@@ -201,7 +202,7 @@
                     mobile: values.telephone,
                     password: md5(values.password).toLowerCase()
                 };
-                this.$axios.get('/indexapp.php?c=CTUser&a=loginMobile', {params})
+                this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=loginMobile', {params})
                     .then(res => {
                         let data = res.data;
                         // console.log(data);
@@ -209,7 +210,7 @@
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
                             this.$store.commit('setIdentity', data.info.identity);
-                            this.$router.addRoutes([this.$store.getters.roles]);
+                            this.$router.addRoutes([this.$store.getters.roles, {path: '*', redirect: '/404'}]);
                             this.$router.go(-1);
                         } else {
                             this.$message.warning(data.msg,5);

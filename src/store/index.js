@@ -5,7 +5,7 @@ Vue.use(Vuex);
 import studentRouter from '@/router/studentRouter'
 export default new Vuex.Store({
     state: {
-        rootUrl: 'https://edu.9man.com',
+        rootUrl: 'https://edu.9man.com', //https://edu.9man.com
         identity: ''
     },
     mutations: {

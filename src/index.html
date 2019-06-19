@@ -6,8 +6,79 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
     <meta name="keywords" content="九漫少儿思维，一对一在线辅导,小学家教,一对一辅导哪家好,高中数学一对一辅 导,初中一对一辅导,高中一对一辅导,一对一补课价格,英语一对一辅导,初中一对一辅导价格,一对一 辅导班,高中一对一补习,网上辅导一对一,一对一英语辅导,初中课外辅导,初中补习班"/>
     <meta name="description" content="九漫少儿思维，全优在线1对1是针对高中初中小学家教以及语言培训，艺术教育等全方位的在初高中一对一辅导、高中数学一对一辅导、初中一对一辅导、高中一对一辅导、一对一英语辅导等。足不出户挑选全国各地名师，直播上课随选随学，一对一小班高效互动。"/>
+    <style>
+        #nprogress .bar {
+            background: #FCC93A !important; //自定义颜色
+        }
+        #nprogress .peg {
+            box-shadow: 0 0 10px #FCC93A, 0 0 5px #FCC93A !important;
+        }
+        #kill-ie {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            left: 0;
+            top: 0;
+            background-color: #696969;
+        }
+        #kill-ie .modal {
+            width: 500px;
+            height: 300px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -250px;
+            margin-top: -150px;
+            background-color: #fff;
+            padding: 25px;
+            box-sizing: border-box;
+        }
+        #kill-ie .modal .title {
+            text-align: center;
+            font-size: 28px;
+            color: #ff5d23;
+        }
+        #kill-ie .modal .text {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bolder;
+            margin-top: 20px;
+        }
+        #kill-ie .modal #close {
+            width: 20px;
+            height: 22px;
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            border: 0;
+        }
+        #kill-ie .modal .content {
+            width: 224px;
+            height: 72px;
+            background: url("images/chrome.png") no-repeat center;
+            margin-top: 35px;
+            margin-left: 110px;
+        }
+        #kill-ie .modal .content a {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
 <div id="app"></div>
+<div id="kill-ie">
+   <div class="modal">
+       <a href="#"><img src="/images/close.png" alt="" id="close"></a>
+       <div class="title">温馨提示</div>
+       <div class="text">您当前浏览器版本过低，存在安全风险，建议您升级浏览器</div>
+       <div class="content">
+           <a title=下载chrome href="https://www.google.cn/intl/zh-CN/chrome/browser/desktop/" target=_blank data-rel="chrome"></a>
+       </div>
+   </div>
+</div>
+<script src="/js/BrowseDetection.js"></script>
 </body>
 </html>

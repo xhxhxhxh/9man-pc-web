@@ -225,6 +225,7 @@
                 form: this.$form.createForm(this),
                 colon: false,  //label中的冒号
                 timeOut: '',
+                rootUrl: this.$store.state.rootUrl,
             }
         },
         methods: {
@@ -239,7 +240,7 @@
                         uname: values.username,
                         password: values.password
                     };
-                    this.$axios.get('/indexapp.php?c=CTUser&a=AddCTEnroll', {params})
+                    this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=AddCTEnroll', {params})
                         .then(res => {
                             let data = res.data;
                             if (data.code == 200) {
@@ -265,7 +266,7 @@
                         mobile: values.telephone,
                         type: 0
                     };
-                    this.$axios.get( '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                    this.$axios.get(this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
                         .then(res => {
                             let data = res.data;
                             if (data.code == 200) {

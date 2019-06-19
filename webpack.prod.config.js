@@ -15,7 +15,7 @@ module.exports = {
     output: {
         path: path.join(__dirname,'./dist'),
         filename: 'js/bundle.js',
-        // publicPath: './'
+        publicPath: '/'
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
@@ -36,14 +36,14 @@ module.exports = {
         extractLESS,
         extractLESSOfVue,
         //spa渲染
-        // new PrerenderSPAPlugin({
-        //     staticDir: path.join(__dirname, 'dist'),
-        //     routes: [ '/'],
-        //     renderer: new Renderer({
-        //         // renderAfterDocumentEvent: 'render-event',
-        //         // renderAfterTime: 5000
-        //     })
-        // })
+        new PrerenderSPAPlugin({
+            staticDir: path.join(__dirname, 'dist'),
+            routes: [ '/'],
+            renderer: new Renderer({
+                // renderAfterDocumentEvent: 'render-event',
+                // renderAfterTime: 5000
+            })
+        })
     ],
     module: {
         rules: [
@@ -95,7 +95,7 @@ module.exports = {
                             fallback: 'vue-style-loader',
                         }),
                         less: extractLESSOfVue.extract({
-                            use: ['css-loader','less-loader'],
+                            use: ['css-loader','less-loader','postcss-loader'],
                             fallback: 'vue-style-loader',
                             publicPath: '../'
                         })

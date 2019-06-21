@@ -1,7 +1,7 @@
 <template>
     <div class="home-container">
         <div class="banner">
-            <main>
+            <main class="clearfix">
                 <h1 class="title">
                     <p>在线少儿思维启蒙直播课</p>
                     <div class="subtitle">
@@ -19,7 +19,7 @@
                 <div class="signUp">
                     <h2>试听课领取</h2>
                     <h3>价值<span>188</span>元的精品试听课</h3>
-                    <img src="./images/messge.png" alt="">
+                    <img src="./images/message.png" alt="">
                     <a-button
                             type="primary"
                             size="large"
@@ -28,13 +28,13 @@
                         立即领取
                     </a-button>
                 </div>
-                <img src="./images/table.png" alt="" class="table">
+                <img src="./images/banner2.png" alt="" class="table">
             </main>
         </div>
         <div class="education">
             <main>
                 <h1>六级教学体系</h1>
-                <img src="./images/education.png" alt="">
+                <img :src="webp? '/assets/education-webp.webp': '/assets/education.jpg'" alt="">
             </main>
         </div>
         <div class="special">
@@ -42,14 +42,17 @@
                 <h1>教学特色</h1>
                 <div class="specialBox">
                     <div class="specialItem">
+                        <img src="./images/science.png" alt="">
                         <h3>科学知识</h3>
                         <p>简单易懂的基础科学原理，神奇有趣，带孩子体验不一样的世界。</p>
                     </div>
                     <div class="specialItem">
+                        <img src="./images/nous.png" alt="">
                         <h3>基本常识</h3>
                         <p>安全意识、环保意识、文明礼貌、独立 自主......点点滴滴，潜移默化成长路上常相伴。</p>
                     </div>
                     <div class="specialItem">
+                        <img src="./images/life.png" alt="">
                         <h3>生活百科</h3>
                         <p>生活是很好玩儿的，生活百科，给孩子发现美的眼睛，让孩子不泯童心。</p>
                     </div>
@@ -61,47 +64,79 @@
                 <h1>能力培养</h1>
                 <div class="mind">
                     <div class="image">
-                        <img src="./images/ability.png" alt="">
+                        <img :src="webp? '/assets/ability-webp.webp': '/assets/ability.jpg'" alt="">
                         <span class="create-circle" @mouseenter="showMessage = 'create'" @mouseleave="showMessage = ''"></span>
                         <span class="logic-circle" @mouseenter="showMessage = 'logic'" @mouseleave="showMessage = ''"></span>
                         <span class="practical-circle" @mouseenter="showMessage = 'practical'" @mouseleave="showMessage = ''"></span>
                         <span class="personal-circle" @mouseenter="showMessage = 'personal'" @mouseleave="showMessage = ''"></span>
                         <span class="personality-circle" @mouseenter="showMessage = 'personality'" @mouseleave="showMessage = ''"></span>
-                    </div>
-                    <div :class="{create: true, showMessage: showMessage === 'create'}">
-                        <p>创造思维是一种新颖而有价值的、非结论的，具有高度机动性和坚持性，且能清楚地勾划和 解决问题的思维活动。</p>
-                    </div>
-                    <div :class="{logic: true, showMessage: showMessage === 'logic'}">
-                        <p>逻辑思维是指将思维内容联结、组织在一起的方式或形式。是人的一种认知结构，又是人运用范畴、概念去把握客体的能力结构。</p>
-                    </div>
-                    <div :class="{practical: true, showMessage: showMessage === 'practical'}">
-                        <p>获取知识<br>分享和行动教授给别人<br>获得反馈或者卡顿儿，重新学习<br>和丰富讲课内容</p>
-                    </div>
-                    <div :class="{personal: true, showMessage: showMessage === 'personal'}">
-                        <p>在知识经济时代，个人能力是非常重要的，因为知识总是在更新，只有不断学习才能跟上时代的步伐。</p>
-                    </div>
-                    <div :class="{personality: true, showMessage: showMessage === 'personality'}">
-                        <p>人格和素质，是这个世界上最坚固的基石，最可靠的依,赖是不能够用任何物质来取代的。</p>
+                        <div :class="{create: true, showMessage: showMessage === 'create'}">
+                            <p>创造思维是一种新颖而有价值的、非结论的，具有高度机动性和坚持性，且能清楚地勾划和 解决问题的思维活动。</p>
+                        </div>
+                        <div :class="{logic: true, showMessage: showMessage === 'logic'}">
+                            <p>逻辑思维是指将思维内容联结、组织在一起的方式或形式。是人的一种认知结构，又是人运用范畴、概念去把握客体的能力结构。</p>
+                        </div>
+                        <div :class="{practical: true, showMessage: showMessage === 'practical'}">
+                            <p>获取知识分享和行动教授给别人获得反馈或者卡顿儿，重新学习和丰富讲课内容</p>
+                        </div>
+                        <div :class="{personal: true, showMessage: showMessage === 'personal'}">
+                            <p>在知识经济时代，个人能力是非常重要的，因为知识总是在更新，只有不断学习才能跟上时代的步伐。</p>
+                        </div>
+                        <div :class="{personality: true, showMessage: showMessage === 'personality'}">
+                            <p>人格和素质，是这个世界上最坚固的基石，最可靠的依,赖是不能够用任何物质来取代的。</p>
+                        </div>
                     </div>
                 </div>
             </main>
         </div>
+<!--        <div class="idea">-->
+<!--            <main>-->
+<!--                <h1>教学理念</h1>-->
+<!--                <div class="ideaBox">-->
+<!--                    <div class="centerCircle">-->
+<!--                       <transition name="myFade" tag="div" mode="out-in">-->
+<!--                           <p v-if="showIdea === 'knowledge'" key="1">一切行动的根源不过是“ 我想知道......”激发孩子的兴趣，让求知的过程不在枯燥乏味</p>-->
+<!--                           <p v-if="showIdea === 'inspire'" key="2">站在“巨人”的肩膀上看世界资深教师带领孩子玩转数学世界</p>-->
+<!--                           <p v-if="showIdea === 'explore'" key="3">百变的场景，生动的情节，奇妙的构思来吧，去探索，把一切未知变成已知</p>-->
+<!--                           <p v-if="showIdea === 'innovation'" key="4">多领域学科知识融合，尽显数学魅力带领孩子多角度观察，让他们每一个想法都闪闪发光,用心记录孩子成长足迹</p>-->
+<!--                       </transition>-->
+<!--                    </div>-->
+<!--                    <div @mouseenter="showIdea = 'knowledge'" :class="{knowledge: true, shadow: showIdea == 'knowledge'}"><p>求知</p></div>-->
+<!--                    <div @mouseenter="showIdea = 'inspire'" :class="{inspire: true, shadow: showIdea == 'inspire'}"><p>启发</p></div>-->
+<!--                    <div @mouseenter="showIdea = 'explore'" :class="{explore: true, shadow: showIdea == 'explore'}"><p>探索</p></div>-->
+<!--                    <div @mouseenter="showIdea = 'innovation'" :class="{innovation: true, shadow: showIdea == 'innovation'}"><p>创新</p></div>-->
+<!--                </div>-->
+<!--            </main>-->
+
+<!--        </div>-->
         <div class="idea">
             <main>
                 <h1>教学理念</h1>
                 <div class="ideaBox">
-                    <div class="centerCircle">
-                       <transition name="myFade" tag="div" mode="out-in">
-                           <p v-if="showIdea === 'knowledge'" key="1">一切行动的根源不过是“ 我想知道......”激发孩子的兴趣，让求知的过程不在枯燥乏味</p>
-                           <p v-if="showIdea === 'inspire'" key="2">站在“巨人”的肩膀上看世界资深教师带领孩子玩转数学世界</p>
-                           <p v-if="showIdea === 'explore'" key="3">百变的场景，生动的情节，奇妙的构思来吧，去探索，把一切未知变成已知</p>
-                           <p v-if="showIdea === 'innovation'" key="4">多领域学科知识融合，尽显数学魅力带领孩子多角度观察，让他们每一个想法都闪闪发光,用心记录孩子成长足迹</p>
-                       </transition>
+                    <div :class="{knowledge: true}">
+                        <p>
+                            <span class="title">求知</span>
+                            <span class="content">一切行动的根源不过是“ 我想知道......”激发孩子的兴趣，让求知的过程不在枯燥乏味</span>
+                        </p>
+                        <div class="img"></div>
+                        <div class="background"></div>
                     </div>
-                    <div @mouseenter="showIdea = 'knowledge'" :class="{knowledge: true, shadow: showIdea == 'knowledge'}"><p>求知</p></div>
-                    <div @mouseenter="showIdea = 'inspire'" :class="{inspire: true, shadow: showIdea == 'inspire'}"><p>启发</p></div>
-                    <div @mouseenter="showIdea = 'explore'" :class="{explore: true, shadow: showIdea == 'explore'}"><p>探索</p></div>
-                    <div @mouseenter="showIdea = 'innovation'" :class="{innovation: true, shadow: showIdea == 'innovation'}"><p>创新</p></div>
+                    <div :class="{inspire: true}">
+                        <p>
+                            <span class="title">启发</span>
+                            <span class="content">站在“巨人”的肩膀上看世界资深教师带领孩子玩转数学世界</span>
+                        </p>
+                        <div class="img"></div>
+                        <div class="background"></div>
+                    </div>
+                    <div :class="{explore: true}">
+                        <p>
+                            <span class="title">探索</span>
+                            <span class="content">百变的场景，生动的情节，奇妙的构思来吧，去探索，把一切未知变成已知</span>
+                        </p>
+                        <div class="img"></div>
+                        <div class="background"></div>
+                    </div>
                 </div>
             </main>
 
@@ -109,7 +144,7 @@
         <div class="ourSpecial">
             <main>
                 <h1>我们的特色</h1>
-                <img src="./images/idea.png" alt="">
+                <img :src="webp? '/assets/idea-webp.webp': '/assets/idea.jpg'" alt="">
             </main>
         </div>
         <div class="apply" @click="apply = true">
@@ -209,6 +244,7 @@
 </template>
 
 <script>
+    import webpSupport from '@/api/webpSupport';
     export default {
         name: "Home",
         data () {
@@ -226,7 +262,11 @@
                 colon: false,  //label中的冒号
                 timeOut: '',
                 rootUrl: this.$store.state.rootUrl,
+                webp: false
             }
+        },
+        created () {
+            this.webp = webpSupport();
         },
         methods: {
             //提交报名
@@ -318,8 +358,6 @@
         .apply {
             width:80px;
             height:220px;
-            background:rgba(252,201,58,1);
-            box-shadow:0 20px 60px 0 rgba(252,201,58,0.6);
             border-radius:40px;
             position: fixed;
             right: 80px;
@@ -327,6 +365,9 @@
             padding: 28px;
             line-height: 1.15;
             cursor: pointer;
+            background:linear-gradient(-3deg,rgba(35,201,255,1),rgba(55,135,255,1));
+            box-shadow:0 20px 50px 0 rgba(64,131,255,0.5), 0px -1px 2px 0px rgba(28,74,169,0.3), 1px 1px 2px 0px rgba(255,255,255,0.5);
+            z-index: 999;
             span {
                 font-size:24px;
                 color:rgba(254,254,254,1);
@@ -341,26 +382,26 @@
             }
         }
         .banner {
-            height: 570px;
-            background-color: #FFD57F;
+            height: 673px;
+            background: url("./images/banner.png") no-repeat center bottom;
+            background-size: cover;
 
             main {
                 width: 1080px;
                 height: 100%;
                 margin: 0 auto;
-                overflow: hidden;
                 position: relative;
 
                 .table {
                     position: absolute;
-                    width: 321px;
-                    height: 393px;
-                    bottom: 55px;
-                    right: 41px;
+                    width: 647px;
+                    height: 471px;
+                    bottom: 36px;
+                    right: -85px;
                 }
 
                 .title {
-                    margin-top: 51px;
+                    margin-top: 85px;
                     color: #fff;
 
                     p {
@@ -404,7 +445,7 @@
                     border-radius: 20px;
                     position: absolute;
                     left: 0;
-                    bottom: 64px;
+                    bottom: 133px;
                     padding: 14px 52px 0;
 
                     h2 {
@@ -445,7 +486,7 @@
         }
 
         .education {
-            height: 1121px;
+            height: 1106px;
 
             main {
                 width: 1080px;
@@ -458,7 +499,8 @@
                     font-weight: bold;
                     color: rgba(51, 51, 51, 1);
                     text-align: center;
-                    margin-top: 109px;
+                    margin-top: 94px;
+                    margin-bottom: 0;
                 }
 
                 img {
@@ -469,7 +511,7 @@
         }
 
         .special {
-            height: 760px;
+            height: 840px;
             background-color: #F7FAFC;
 
             main {
@@ -487,26 +529,34 @@
             }
 
             .specialBox {
-                height: 420px;
+                height: 500px;
                 margin-top: 84px;
                 .specialItem {
                     float: left;
                     width: 360px;
                     height: 100%;
                     background: rgba(255, 255, 255, .5);
-                    padding: 79px 54px;
+                    padding: 55px;
                     border-radius:20px;
                     transition: all .5s;
+                    cursor: pointer;
                     &:hover {
                         box-shadow:0 0 30px 0 rgba(64,78,112,0.2);
                         background-color: #fff;
                     }
+                    img {
+                        width: 235px;
+                        height: 224px;
+                        display: block;
+                        margin: 0 auto 65px;
+
+                    }
                     h3 {
-                        font-size: 30px;
+                        font-size: 32px;
                         font-weight: 500;
-                        color: rgba(252, 201, 58, 1);
+                        color: #FF5E28;
                         text-align: center;
-                        margin-bottom: 144px;
+                        margin-bottom: 16px;
                     }
                     p {
                         font-size:16px;
@@ -516,108 +566,108 @@
             }
         }
         .ability {
-            height: 1031px;
+            height: 993px;
             main {
-                width: 1080px;
                 height: 100%;
                 margin: 0 auto;
-                padding-top: 101px;
+                padding-top: 63px;
                 h1 {
                     font-size: 58px;
                     font-weight: bold;
                     color: rgba(51, 51, 51, 1);
                     text-align: center;
-                    margin-bottom: 50px;
+                    margin-bottom: 34px;
                 }
                 .mind {
-                    height: 692px;
+                    height: 666px;
+                    background-color: #EFEFEF;
                     position: relative;
                     .image {
-                        width: 534px;
-                        height: 539px;
-                        position: absolute;
-                        left: 50%;
-                        top: 50%;
-                        transform: translate(-50%, -50%);
+                        width: 1080px;
+                        height: 100%;
+                        margin: 0 auto;
+                        position: relative;
                         img {
                             width: 100%;
                             height: 100%;
                         }
                         span {
                             display: block;
-                            width: 100px;
-                            height: 100px;
+                            width: 102px;
+                            height: 102px;
                             position: absolute;
                             border-radius: 50%;
                             cursor: pointer;
                         }
                         .create-circle {
-                            top: 66px;
-                            left: 55px;
+                            top: 56px;
+                            left: 252px;
                         }
                         .logic-circle {
-                            top: 36px;
-                            right: 124px;
+                            top: 230px;
+                            left: 62px;
                         }
                         .practical-circle {
-                            bottom: 110px;
-                            left: 37px;
+                            top: 66px;
+                            right: 59px;
                         }
                         .personal-circle {
-                            bottom: 183px;
-                            right: 37px;
+                            bottom: 88px;
+                            left: 136px;
                         }
                         .personality-circle {
-                            bottom: 36px;
-                            right: 171px;
+                            bottom: 226px;
+                            right: 55px;
+                        }
+                        > div {
+                            padding: 24px 31px;
+                            box-shadow:0 0 20px 0 rgba(64,78,112,0.16);
+                            border-radius:10px;
+                            position: absolute;
+                            opacity: 0;
+                            transition: all .5s;
+                            background-color: #fff;
+                            &.showMessage {
+                                opacity: 1;
+                            }
+                            p {
+                                font-size:14px;
+                                color: #333333;
+                                margin-bottom: 0;
+                            }
+                        }
+                        .create {
+                            width: 350px;
+                            top: 59px;
+                            left: 385px;
+                        }
+                        .logic {
+                            width: 340px;
+                            top: 232px;
+                            left: 195px;
+                        }
+                        .practical {
+                            width: 396px;
+                            top: 72px;
+                            right: 190px;
+                        }
+                        .personal {
+                            width: 302px;
+                            bottom: 91px;
+                            left: 268px;
+                        }
+                        .personality {
+                            width: 361px;
+                            right: 201px;
+                            bottom: 229px;
                         }
                     }
-                    > div + div {
-                        padding: 35px;
-                        box-shadow:0 0 20px 0 rgba(64,78,112,0.16);
-                        border-radius:10px;
-                        position: absolute;
-                        opacity: 0;
-                        transition: all .5s;
-                        &.showMessage {
-                            opacity: 1;
-                        }
-                        p {
-                            font-size:14px;
-                            color: #333333;
-                            margin-bottom: 0;
-                        }
-                    }
-                    .create {
-                        width: 350px;
-                        top: 0;
-                        left: 0;
-                    }
-                    .logic {
-                        width: 340px;
-                        top: 0;
-                        right: 32px;
-                    }
-                    .practical {
-                        width: 272px;
-                        top: 391px;
-                        left: 0;
-                    }
-                    .personal {
-                        width: 302px;
-                        top: 429px;
-                        right: 0;
-                    }
-                    .personality {
-                        width: 361px;
-                        left: 285px;
-                        bottom: -20px;
-                    }
+
                 }
             }
         }
         .idea {
-            height: 1040px;
+            height: 920px;
             background-color: #F7FAFC;
             main {
                 width: 1080px;
@@ -632,86 +682,87 @@
                     text-align: center;
                 }
                 .ideaBox {
-                    width: 700px;
-                    height: 700px;
-                    margin: 96px auto 0;
-                    position: relative;
-                    > div + div {
-                        width:200px;
-                        height:200px;
-                        background:rgba(255,255,255,1);
-                        border-radius:50%;
-                        position: absolute;
+                    height: 520px;
+                    margin: 129px auto 0;
+                    > div {
+                        width:340px;
+                        height:100%;
+                        border-radius: 150px 0 150px 0;
                         cursor: pointer;
-                        transition: all .5s;
-                        &.shadow {
-                            box-shadow:0 0 30px 0 rgba(111,131,181,0.25);
+                        position: relative;
+                        float: left;
+                        overflow: hidden;
+                        &:hover {
+                            .img {
+                                opacity: 0;
+                            }
+                            .background {
+                                background-color: #FF8329;
+                                opacity: 1;
+                            }
+
+                            p {
+                                top: 63px;
+                            }
+                        }
+                        > div {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            height: 100%;
+                            width: 100%;
+                            background-position: center;
+                            background-size: cover;
+                            z-index: 2;
+                            transition: all .5s;
+                        }
+                        .background {
+                            background-color: rgba(0,0,0,.2);
                         }
                         p {
-                            font-size:38px;
-                            font-weight:500;
-                            text-align: center;
+                            width: 100%;
+                            padding: 0 35px;
                             position: absolute;
-                            top: 50%;
                             left: 50%;
-                            transform: translate(-50%, -50%);
+                            top: 343px;
+                            transform: translate(-50%, 0);
+                            transition: .5s ease;
+                            color: #fff;
+                            z-index: 3;
+                            .title {
+                                font-size:72px;
+                                font-weight:500;
+                                text-align: center;
+                                display: block;
+                                margin-bottom: 110px;
+                            }
+                            .content {
+                                font-size:30px;
+                            }
                         }
                     }
                     .knowledge {
-                        top: 0;
-                        left: 0;
-                        p {
-                            color:rgba(252,201,58,1);
+                        .img {
+                            background-image: url('./images/knowledge.jpg');
                         }
                     }
                     .inspire {
-                        top: 0;
-                        right: 0;
-                        p {
-                            color:rgba(252,181,58,1);
+                        margin: 0 30px;
+                        .img {
+                            background-image: url('./images/inspire.jpg');
                         }
                     }
                     .explore {
-                        bottom: 0;
-                        left: 0;
-                        p {
-                            color:rgba(252,157,58,1);
-                        }
-                    }
-                    .innovation {
-                        bottom: 0;
-                        right: 0;
-                        p {
-                            color:rgba(252,143,58,1);
-                        }
-                    }
-                    .centerCircle {
-                        width:411px;
-                        height:411px;
-                        background:rgba(252,201,58,1);
-                        border:12px solid rgba(255, 255, 255, 1);
-                        box-shadow:0 0 30px 0 rgba(111,131,181,0.25);
-                        border-radius:50%;
-                        position: absolute;
-                        left: 50%;
-                        top: 50%;
-                        transform: translate(-50%, -50%);
-                        p {
-                            width:266px;
-                            font-size:24px;
-                            color:rgba(255,255,255,1);
-                            position: absolute;
-                            left: 50%;
-                            top: 50%;
-                            transform: translate(-50%, -50%);
+                        .img {
+                            background-image: url('./images/explore.jpg');
                         }
                     }
                 }
             }
         }
         .ourSpecial {
-            height: 1103px;
-            padding-top: 104px;
+            height: 1163px;
+            padding-top: 76px;
             h1 {
                 font-size: 58px;
                 font-weight: bold;
@@ -719,10 +770,10 @@
                 text-align: center;
             }
             img {
-                width: 677px;
-                height: 686px;
+                width: 1015px;
+                height: 862px;
                 display: block;
-                margin: 75px auto 0;
+                margin: 53px auto 0;
             }
         }
     }

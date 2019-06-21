@@ -12,7 +12,7 @@ import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocalePr
 
 Vue.config.productionTip = false;
 axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
-axios.defaults.withCredentials = true;
+axios.defaults.withCredentials = false;
 Vue.prototype.$axios= axios;
 Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;

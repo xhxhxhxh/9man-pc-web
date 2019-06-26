@@ -29,10 +29,10 @@
             <div class="avatar" v-else>
                 <a-popover placement="bottomRight" overlayClassName="userInfo">
                     <template slot="content">
-                        <p @click="$router.push('/users')">你的名字</p>
+                        <p @click="$router.push('/users')">{{username | normalUrlEncode}}</p>
                         <p @click="logout">退出登录</p>
                     </template>
-                    <img src="./images/avatar.png" alt="">
+                    <img :src="$store.getters.userInfo.headimg" alt="">
                 </a-popover>
             </div>
         </div>
@@ -40,13 +40,15 @@
 </template>
 
 <script>
-
+    import common from '@/api/common';
     export default {
         name: "TopBar",
         data () {
+            const userInfo = common.getLocalStorage('userInfo');
           return {
               hashAddress: this.$route.path.split('/')[1],
-              hasLogin: true
+              hasLogin: true,
+              username: userInfo.uname
           }
         },
         watch:{
@@ -68,6 +70,12 @@
 
             }
         },
+        filters: {
+            // 一般url转码
+            normalUrlEncode (value) {
+                return decodeURIComponent(value);
+            },
+        }
     }
 </script>
 
@@ -166,7 +174,6 @@
                 color: #fff;
             }
             .avatar {
-                background-color: #000;
                 width: 30px;
                 height: 30px;
                 border-radius: 50%;

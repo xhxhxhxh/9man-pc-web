@@ -23,8 +23,43 @@
 </template>
 
 <script>
+    import common from '@/api/common';
     export default {
-        name: "MyCourse"
+        name: "MyCourse",
+        data () {
+            return {
+                id: common.getLocalStorage('id'),
+                rootUrl: this.$store.state.rootUrl,
+            }
+        },
+        created () {
+            this.queryCourse()
+        },
+        methods: {
+            // 获取课程信息
+            queryCourse () {
+                const params = {
+                    id: this.id,
+                };
+                if (this.$store.state.identity === '0') {
+                    Object.assign(params, {isstudent: 0})
+                } else {
+                    Object.assign(params, {isstudent: 1})
+                }
+                this.$axios.get( this.rootUrl + '/indexapp.php?c=CTLesson&a=QueryCTUserClass', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code == 200) {
+
+                        } else {
+                            this.$message.warning(data.msg,3);
+                        }
+                    })
+                    .catch(err => {
+
+                    })
+            }
+        }
     }
 </script>
 

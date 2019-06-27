@@ -184,6 +184,8 @@
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
                             this.$store.commit('setIdentity', data.info.identity);
+                            this.$store.commit('updateUserInfo');
+                            this.$store.commit('updateUsername');
                             this.$router.addRoutes([this.$store.getters.roles,{path: '*', redirect: '/404'}]);
                             this.$router.go(-1);
                         } else {
@@ -210,6 +212,8 @@
                             common.setLocalStorage('id', data.info.id);
                             common.setLocalStorage('userInfo', data.info);
                             this.$store.commit('setIdentity', data.info.identity);
+                            this.$store.commit('updateUserInfo');
+                            this.$store.commit('updateUsername');
                             this.$router.addRoutes([this.$store.getters.roles, {path: '*', redirect: '/404'}]);
                             this.$router.go(-1);
                         } else {

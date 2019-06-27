@@ -13,7 +13,7 @@
                         :colon="colon"
                 >
                     <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"
-                             autocomplete="off" :defaultValue="telephone" readonly style="border-bottom: 0"
+                             autocomplete="off" :defaultValue="telephone" read-only style="border-bottom: 0"
                     />
                 </a-form-item>
                 <a-form-item
@@ -40,7 +40,7 @@
                         :wrapper-col="{ span: 19, offset: 1 }"
                         :colon="colon"
                 >
-                    <a-input type="password" size="large"
+                    <a-input type="password" size="large" autocomplete="off"
                              v-decorator="[
                                              'password',
                                              {rules: [
@@ -52,26 +52,34 @@
                 </a-form-item>
             </a-form>
             <div class="submit">
-                <a-button>取消</a-button>
-                <a-button type="primary">确认</a-button>
+                <a-button @click="$router.go(-1)">取消</a-button>
+                <a-button type="primary" @click="modifyPassword">确认</a-button>
             </div>
         </main>
     </div>
 </template>
 
 <script>
+    import common from '@/api/common';
+    import md5 from 'blueimp-md5';
     export default {
         name: "ResetPassword",
         data () {
+            const userInfo = common.getLocalStorage('userInfo');
             return {
+                rootUrl: this.$store.state.rootUrl,
                 hideRequiredMark: true,
                 verificationCodeText: '获取验证码',
                 alreadyGetCode: false,
                 form: this.$form.createForm(this),
                 colon: false,  //label中的冒号
                 timeOut: '',
-                telephone: 13547875877
+                telephone: userInfo.phone,
+                defaultPassword: ''
             }
+        },
+        created () {
+
         },
         methods: {
             //发送验证码
@@ -116,6 +124,32 @@
 
 
             },
+
+            //修改密码
+            modifyPassword () {
+                this.form.validateFields( (errors, values) => {
+                    if (errors) return;
+                    const params = {
+                        mobile: this.telephone,
+                        code: values.VerificationCode,
+                        password: md5(values.password).toLowerCase()
+                    };
+                    this.$axios.get(this.rootUrl + '/indexapp.php?c=User&a=UpdateUserPassword', {params})
+                        .then(res => {
+                            let data = res.data;
+                            // console.log(data);
+                            if (data.code == 200) {
+                                this.$message.success('密码修改成功');
+                                this.$router.go(-1);
+                            } else {
+                                this.$message.warning(data.msg);
+                            }
+                        })
+                        .catch(err => {
+
+                        })
+                })
+            }
         }
     }
 </script>

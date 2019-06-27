@@ -2,9 +2,9 @@
     <div class="users-container">
         <div class="avatar">
             <main>
-                <img :src="$store.getters.userInfo.headimg" alt="" class="user-avatar" title="修改头像" @click="changingAvatar = true">
+                <img :src="$store.getters.userInfo | normalUrlEncode" alt="" class="user-avatar" title="修改头像" @click="changingAvatar = true">
                 <div class="info">
-                    <h1>夏目友人帐</h1>
+                    <h1>{{$store.getters.username | normalUrlEncode}}</h1>
                     <div class="star">
                         <img src="./images/star.png" alt="">
                         <p>6</p>
@@ -24,8 +24,8 @@
             <main v-show="mode === 0">
                 <p class="name">
                     <span class="title">名称：</span>
-                    <a-input defaultValue="夏目友人帐" v-if="isModifyingName" v-focus/>
-                    <span class="content" v-else>夏目友人帐</span>
+                    <a-input :defaultValue="$store.getters.username | normalUrlEncode" v-if="isModifyingName" v-focus ref="username"/>
+                    <span class="content" v-else>{{$store.getters.username | normalUrlEncode}}</span>
                 </p>
                 <p class="age">
                     <span class="title">年龄：</span>
@@ -36,12 +36,12 @@
                     <span class="content">本科</span>
                 </p>
                 <a-button type="primary" class="modify" @click="isModifyingName = true" v-if="!isModifyingName">修改</a-button>
-                <a-button type="primary" class="modify" @click="isModifyingName = false" v-else>保存</a-button>
+                <a-button type="primary" class="modify" @click="modifyUsername" v-else>保存</a-button>
             </main>
             <main v-show="mode === 1">
                 <p class="telephone">
                     <span class="title">手机号：</span>
-                    <span class="content">17785859878</span>
+                    <span class="content">{{telephone}}</span>
                 </p>
                 <a-button type="primary" class="modifyPassword" @click="$router.push('/resetPassword')">修改密码</a-button>
             </main>
@@ -101,11 +101,11 @@
             return {
                 id: common.getLocalStorage('id'),
                 rootUrl: this.$store.state.rootUrl,
+                telephone: userInfo.phone,
                 mode: 0, //0 基本信息 1 安全信息
                 isModifyingName: false,
                 changingAvatar: false, //修改头像
-                cacheAvatar: userInfo.headimg || avatarImg,
-                username: userInfo.uname,
+                cacheAvatar: '',
                 scale: 100, //图片缩放倍数
                 rotate: 0,  //旋转度数
                 baseSize: 310,
@@ -123,7 +123,8 @@
             }
         },
         created () {
-            this.getImgInfo()
+            this.cacheAvatarUrlEncode();
+            this.getImgInfo();
         },
         methods: {
             // 缩放头像
@@ -194,6 +195,7 @@
                     endY = event.clientY;
                     moveDistanceX = (startX - endX) / scale; // 左移为正
                     moveDistanceY = (startY - endY) / scale; // 上移为正
+
                     // 判断旋转
                     if (quotientRotate === 1 ) { // 旋转90度
                         [moveDistanceX, moveDistanceY] = [moveDistanceY, -moveDistanceX]
@@ -325,7 +327,9 @@
                         if (data.code == 200) {
                             this.$message.success('头像更新成功！');
                             this.$store.commit('updateUserInfo', this.avatarSrc);
+                            this.cacheAvatar = this.avatarSrc;
                             this.changingAvatar = false;
+                            this.getImgInfo();
                         } else {
                             this.$message.error('头像更新失败，请稍后再试！');
                         }
@@ -351,7 +355,7 @@
                 }
                 reader.readAsDataURL(file);
                 this.loadingAvatar = true;
-                reader.onload=function () {
+                reader.onload = function () {
                     _this.cacheAvatar = this.result;
                     _this.loadingAvatar = false;
                     _this.uploadedAvatar = true;
@@ -383,8 +387,47 @@
                 const blob = dataURLtoBlob(url);
                 return blobToFile(blob, 'avatar');
 
+            },
+
+            //修改名字
+            modifyUsername () {
+                const username = this.$refs.username.$el.value;
+                if (username.length === 0) {
+                    return this.$message.warning('请输入要修改的名称');
+                }
+                const params = {
+                    id: this.id,
+                    uname: username
+                };
+                this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=updateUserInfo', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code == 200) {
+                            this.$message.success('名称修改成功！');
+                            this.$store.commit('updateUsername', username);
+                            this.isModifyingName = false;
+                        } else {
+                            this.$message.error('名称修改失败，请稍后再试！');
+                        }
+                    })
+                    .catch(err => {
+
+                    })
+
+            },
+
+            // 转码cacheAvatar
+            cacheAvatarUrlEncode () {
+                const cacheAvatar = this.$store.getters.userInfo;
+                this.cacheAvatar = decodeURIComponent(cacheAvatar);
             }
 
+        },
+        filters: {
+            // 一般url转码
+            normalUrlEncode (value) {
+                return decodeURIComponent(value);
+            },
         }
     }
 </script>

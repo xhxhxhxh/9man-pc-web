@@ -9,7 +9,8 @@ export default new Vuex.Store({
     state: {
         rootUrl: '', //https://edu.9man.com
         identity: '',
-        updateInfo: 0
+        updateInfo: 0,
+        updateUsername: 0,
     },
     mutations: {
         // 设置roles
@@ -19,10 +20,22 @@ export default new Vuex.Store({
 
         // updateInfo
         updateUserInfo (state, url) {
-            const userInfo = common.getLocalStorage('userInfo');
-            userInfo.headimg = url;
-            common.setLocalStorage('userInfo', userInfo);
+            if (url) {
+                const userInfo = common.getLocalStorage('userInfo');
+                userInfo.headimg = url;
+                common.setLocalStorage('userInfo', userInfo);
+            }
             state.updateInfo ++;
+        },
+
+        // updateUsername
+        updateUsername (state, name) {
+            if (name) {
+                const userInfo = common.getLocalStorage('userInfo');
+                userInfo.uname = name;
+                common.setLocalStorage('userInfo', userInfo);
+            }
+            state.updateUsername ++;
         },
 
     },
@@ -44,8 +57,15 @@ export default new Vuex.Store({
             if (!userInfo.headimg) {
                 return avatarImg
             } else {
-                return userInfo
+                return userInfo.headimg
             }
-        }
+        },
+
+        //更新后的名字
+        username (state) {
+            const updateUsername = state.updateUsername;
+            const userInfo = common.getLocalStorage('userInfo');
+            return userInfo.uname
+        },
     }
 })

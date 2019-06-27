@@ -29,10 +29,10 @@
             <div class="avatar" v-else>
                 <a-popover placement="bottomRight" overlayClassName="userInfo">
                     <template slot="content">
-                        <p @click="$router.push('/users')">{{username | normalUrlEncode}}</p>
+                        <p @click="$router.push('/users')">{{$store.getters.username | normalUrlEncode}}</p>
                         <p @click="logout">退出登录</p>
                     </template>
-                    <img :src="$store.getters.userInfo.headimg" alt="">
+                    <img :src="$store.getters.userInfo | normalUrlEncode" alt="">
                 </a-popover>
             </div>
         </div>

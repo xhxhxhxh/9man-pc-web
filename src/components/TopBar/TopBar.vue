@@ -22,6 +22,9 @@
                 <a-menu-item key="about">
                     关于我们
                 </a-menu-item>
+                <a-menu-item key="liveBroadcast" @click="$router.push('/liveBroadcast')">
+                   直播
+                </a-menu-item>
             </a-menu>
         </div>
         <div class="login">

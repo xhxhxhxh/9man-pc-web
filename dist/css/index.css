@@ -799,22 +799,147 @@
   padding-left: 25px;
 }
 
-.users-container[data-v-424e39e0] {
+.changeAvatar {
+  width: 500px;
+  height: 578px;
+}
+.changeAvatar .ant-modal-content {
+  border-radius: 10px;
+}
+.changeAvatar .ant-modal-content .ant-modal-header {
+  border-radius: 10px 10px 0 0;
+  border-bottom: 1px solid rgba(153, 153, 153, 0.5);
+}
+.changeAvatar .ant-modal-content .ant-modal-header .ant-modal-title {
+  color: #333333;
+}
+.changeAvatar .ant-modal-content .ant-modal-body {
+  height: 400px;
+  padding: 30px;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .left-box {
+  height: 310px;
+  width: 310px;
+  position: relative;
+  overflow: hidden;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .avatar_big {
+  height: 310px;
+  width: 310px;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .selectedArea {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.changeAvatar .ant-modal-content .ant-modal-body .selectedArea .circle {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .selectedArea .circle > div {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  cursor: pointer;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate {
+  margin-top: 17px;
+  position: relative;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate .upload-avatar {
+  position: relative;
+  font-size: 16px;
+  color: #666;
+  float: left;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate .upload-avatar > input {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 64px;
+  height: 24px;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 0;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate > div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate > div img {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .operate > div img:nth-child(2) {
+  margin: 0 16px;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .right .avatar_small {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .right .avatar_small > div {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  cursor: pointer;
+}
+.changeAvatar .ant-modal-content .ant-modal-body .right p {
+  font-size: 16px;
+  color: #333;
+  text-align: center;
+  margin-top: 19px;
+}
+.changeAvatar .ant-modal-content .ant-modal-footer {
+  border-top: 1px solid rgba(153, 153, 153, 0.5);
+  padding-top: 36px;
+  padding-bottom: 42px;
+}
+.changeAvatar .ant-modal-content .ant-modal-footer div {
+  text-align: center;
+}
+.changeAvatar .ant-modal-content .ant-modal-footer div button {
+  width: 160px;
+  height: 46px;
+  border-radius: 8px;
+  font-size: 18px;
+  text-shadow: unset;
+}
+.changeAvatar .ant-modal-content .ant-modal-footer div button:first-of-type {
+  margin-right: 40px;
+}
+.users-container {
   height: 100%;
   background-color: #fafafa;
 }
-.users-container .avatar[data-v-424e39e0] {
+.users-container .avatar {
   height: 460px;
   background-color: #fff;
 }
-.users-container .avatar main[data-v-424e39e0] {
+.users-container .avatar main {
   width: 1200px;
   margin: 0 auto;
   height: 100%;
   position: relative;
   overflow: hidden;
 }
-.users-container .avatar main .user-avatar[data-v-424e39e0] {
+.users-container .avatar main .user-avatar {
   width: 160px;
   height: 160px;
   border-radius: 50%;
@@ -823,53 +948,54 @@
   position: absolute;
   top: 129px;
   left: 238px;
+  cursor: pointer;
 }
-.users-container .avatar main .info[data-v-424e39e0] {
+.users-container .avatar main .info {
   margin: 122px 0 0 628px;
   color: #333;
 }
-.users-container .avatar main .info h1[data-v-424e39e0] {
+.users-container .avatar main .info h1 {
   font-size: 36px;
   font-weight: 600;
   margin-bottom: 53px;
 }
-.users-container .avatar main .info .star[data-v-424e39e0] {
+.users-container .avatar main .info .star {
   float: left;
   margin-right: 93px;
 }
-.users-container .avatar main .info .star img[data-v-424e39e0] {
+.users-container .avatar main .info .star img {
   width: 45px;
   height: 42px;
 }
-.users-container .avatar main .info .star p[data-v-424e39e0] {
+.users-container .avatar main .info .star p {
   font-size: 36px;
   text-align: center;
   margin-top: 23px;
 }
-.users-container .avatar main .info .medal[data-v-424e39e0] {
+.users-container .avatar main .info .medal {
   float: left;
 }
-.users-container .avatar main .info .medal img[data-v-424e39e0] {
+.users-container .avatar main .info .medal img {
   width: 35px;
   height: 45px;
 }
-.users-container .avatar main .info .medal p[data-v-424e39e0] {
+.users-container .avatar main .info .medal p {
   font-size: 36px;
   text-align: center;
   margin-top: 20px;
 }
-.users-container .userInfo[data-v-424e39e0] {
+.users-container .userInfo {
   width: 1200px;
   height: 360px;
   background: #ffffff;
   border-radius: 10px;
   margin: 30px auto 0;
 }
-.users-container .userInfo header[data-v-424e39e0] {
+.users-container .userInfo header {
   height: 70px;
   border-bottom: 4px solid #fafafa;
 }
-.users-container .userInfo header span[data-v-424e39e0] {
+.users-container .userInfo header span {
   display: inline-block;
   width: 80px;
   height: 100%;
@@ -880,12 +1006,12 @@
   margin-left: 100px;
   cursor: pointer;
 }
-.users-container .userInfo header span.selected[data-v-424e39e0] {
+.users-container .userInfo header span.selected {
   color: #333;
   position: relative;
   font-weight: bold;
 }
-.users-container .userInfo header span.selected[data-v-424e39e0]::before {
+.users-container .userInfo header span.selected::before {
   content: '';
   width: 80px;
   height: 6px;
@@ -894,25 +1020,25 @@
   left: 0;
   bottom: -5px;
 }
-.users-container .userInfo main[data-v-424e39e0] {
+.users-container .userInfo main {
   padding: 56px 0 0 103px;
   position: relative;
 }
-.users-container .userInfo main p[data-v-424e39e0] {
+.users-container .userInfo main p {
   margin-bottom: 31px;
   height: 44px;
   line-height: 44px;
 }
-.users-container .userInfo main p .title[data-v-424e39e0] {
+.users-container .userInfo main p .title {
   font-size: 12px;
   color: #666;
 }
-.users-container .userInfo main p .content[data-v-424e39e0] {
+.users-container .userInfo main p .content {
   font-size: 16px;
   color: #333333;
   margin-left: 94px;
 }
-.users-container .userInfo main .name[data-v-424e39e0] {
+.users-container .userInfo main .name {
   display: -webkit-box;
   display: -webkit-flex;
   display: -moz-box;
@@ -924,7 +1050,7 @@
   -ms-flex-align: center;
   align-items: center;
 }
-.users-container .userInfo main .name input[data-v-424e39e0] {
+.users-container .userInfo main .name input {
   width: 202px;
   height: 44px;
   line-height: 48px;
@@ -934,10 +1060,10 @@
   color: #333333;
   padding-left: 21px;
 }
-.users-container .userInfo main .telephone .content[data-v-424e39e0] {
+.users-container .userInfo main .telephone .content {
   margin-left: 29px;
 }
-.users-container .userInfo main .modify[data-v-424e39e0] {
+.users-container .userInfo main .modify {
   width: 120px;
   height: 40px;
   border-radius: 6px;
@@ -947,7 +1073,7 @@
   top: 58px;
   right: 76px;
 }
-.users-container .userInfo main .modifyPassword[data-v-424e39e0] {
+.users-container .userInfo main .modifyPassword {
   width: 120px;
   height: 40px;
   border-radius: 10px;
@@ -1479,7 +1605,6 @@ body {
   color: #fff;
 }
 .topBar-container .login .avatar {
-  background-color: #000;
   width: 30px;
   height: 30px;
   border-radius: 50%;

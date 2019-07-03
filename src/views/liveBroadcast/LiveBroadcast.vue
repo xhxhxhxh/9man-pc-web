@@ -2,19 +2,24 @@
     <div class="LiveBroadcast-container">
         <div class="select-bar">
             <div class="draw-operate">
-                <div class="pencil" @mouseenter="showPencilItem = true" @mouseleave="showPencilItem = false">
+                <div :class="{pencil: true, selected: shape === 'LINE_DRAWING' || shape === 'FREE_DRAWING'}"
+                     @mouseenter="showPencilItem = true" @mouseleave="showPencilItem = false">
                     <div class="pencil-item" v-show="showPencilItem">
-                        <span @click="drawByShape(shape = 'LINE_DRAWING')">—</span>
-                        <span @click="drawByShape(shape = 'FREE_DRAWING')">~</span>
+                        <span @click="() => {shape === 'LINE_DRAWING'? stopDrawing(): shape = 'LINE_DRAWING'; drawByShape()}">—</span>
+                        <span @click="() => {shape === 'FREE_DRAWING'? stopDrawing(): shape = 'FREE_DRAWING'; drawByShape()}">~</span>
                     </div>
                 </div>
-                <div class="shape" @mouseenter="showShapeItem = true" @mouseleave="showShapeItem = false">
+                <div :class="{shape: true, selected: shape === 'SHAPE'}" @mouseenter="showShapeItem = true" @mouseleave="showShapeItem = false">
                     <div class="shape-item" v-show="showShapeItem">
-                        <span :class="{rect: true, selected: drawingShape === 'rect' && !fill}" @click="drawByShape(shape = 'SHAPE',drawingShape = 'rect', fill = false)"></span>
-                        <span :class="{circle: true, selected: drawingShape === 'circle' && !fill}" @click="drawByShape(shape = 'SHAPE',drawingShape = 'circle', fill = false)"></span>
+                        <span :class="{rect: true, selected: drawingShape === 'rect' && !fill && shape === 'SHAPE'}"
+                              @click="() => {shape === 'SHAPE' && drawingShape === 'rect' && !fill? stopDrawing(): shape = 'SHAPE'; drawingShape = 'rect'; fill = false; drawByShape()}"></span>
+                        <span :class="{circle: true, selected: drawingShape === 'circle' && !fill && shape === 'SHAPE'}"
+                              @click="() => {shape === 'SHAPE' && drawingShape === 'circle' && !fill? stopDrawing(): shape = 'SHAPE'; drawingShape = 'circle'; fill = false; drawByShape()}"></span>
                         <span class="line"></span>
-                        <span :class="{fillRect: true, selected: drawingShape === 'rect' && fill}" @click="drawByShape(shape = 'SHAPE',drawingShape = 'rect', fill = true)"></span>
-                        <span :class="{fillCircle: true, selected: drawingShape === 'circle' && fill}" @click="drawByShape(shape = 'SHAPE',drawingShape = 'circle', fill = true)"></span>
+                        <span :class="{fillRect: true, selected: drawingShape === 'rect' && fill && shape === 'SHAPE'}"
+                              @click="() => {shape === 'SHAPE' && drawingShape === 'rect' && fill? stopDrawing(): shape = 'SHAPE'; drawingShape = 'rect'; fill = true; drawByShape()}"></span>
+                        <span :class="{fillCircle: true, selected: drawingShape === 'circle' && fill && shape === 'SHAPE'}"
+                              @click="() => {shape === 'SHAPE' && drawingShape === 'circle' && fill? stopDrawing(): shape = 'SHAPE'; drawingShape = 'circle'; fill = true; drawByShape()}"></span>
                     </div>
                 </div>
                 <div class="wide" @mouseenter="showStrokeWide = true" @mouseleave="showStrokeWide = false">
@@ -22,12 +27,22 @@
                         <a-slider id="test" :defaultValue="2" :max="wideMax" v-model="strokeWidth" />
                     </div>
                 </div>
-                <div class="color"></div>
-                <div class="text"></div>
+                <div class="color" @mouseenter="showColorItem = true" @mouseleave="showColorItem = false">
+                    <div class="color-item" v-show="showColorItem">
+                        <span v-for="(item, index) in colorList" :key="index" :style="{backgroundColor: item, borderColor: item}"
+                        @mousedown="() => {strokeColor = item}" :class="{selected: strokeColor === item}"></span>
+                    </div>
+                </div>
+                <div :class="{text: true, selected: shape === 'TEXT'}" @click="() => {shape === 'TEXT'? stopDrawing(): shape = 'TEXT'; drawByShape()}"
+                     @mouseenter="showTextItem = true" @mouseleave="showTextItem = false">
+                    <div class="text-item" v-show="showTextItem">
+                        <a-slider id="test2" :max="80" :min="10" v-model="textSize" />
+                    </div>
+                </div>
                 <div class="line"></div>
-                <div class="eraser"></div>
-                <div class="delete"></div>
-                <div class="back"></div>
+                <div class="eraser" @click="eraser"></div>
+                <div class="delete" @click="clearAll"></div>
+                <div class="back" @click="undo"></div>
             </div>
             <div class="action">
                 <div class="action-item"><span><a-icon type="plus" style="margin-right: 10px"/>添加课件</span></div>
@@ -40,7 +55,53 @@
                 </div>
             </div>
         </div>
-        <div id="tui-image-editor"></div>
+        <div class="liveBroadcast-area clearfix">
+            <div id="tui-image-editor"></div>
+            <div class="coursewareOperate clearfix">
+                <div class="selectBar">
+                    <button>课件</button>
+                    <button>小黑板</button>
+                    <button>图片</button>
+                    <button>动画</button>
+                </div>
+                <div class="goBack">
+                    <button></button>
+                    <button></button>
+                </div>
+                <div class="scale">
+                    <div class="line"></div>
+                    <button></button>
+                    <button></button>
+                </div>
+            </div>
+            <div class="video">
+                <div class="teacher"></div>
+                <div class="student"></div>
+                <div class="avatar"></div>
+            </div>
+            <div class="chat">
+                <div class="content">
+                    <p class="host">877777777777867676876764646546546465465464654645646546546546546546464897</p>
+                    <p class="guest">877777777777867676876764646546546465465464654645646546546546546546464897</p>
+                    <p class="host" v-for="(item, index) in chatList" :key="index">{{item}}</p>
+                </div>
+                <div class="operate">
+                    <a-input placeholder="请输入文字内容" size="large" @pressEnter="addChat" :value="chatValue" @change="chatValueChange"/>
+                    <div class="upload">
+                        <a-upload name="images" :multiple="true" accept="image/*">
+                            <a-button>
+                            </a-button>
+                        </a-upload>
+                        <a-upload name="file" :multiple="true" class="uploadFile">
+                            <a-button>
+                            </a-button>
+                        </a-upload>
+                    </div>
+                    <a-button class="send" @click="addChat">发送</a-button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
@@ -70,11 +131,17 @@
                 showPencilItem: false, //显示直线类型选项
                 showShapeItem: false, //显示形状类型选项
                 showStrokeWide: false, //显示线宽选项
+                showColorItem: false, //显示颜色选项
+                showTextItem: false, //显示文字选项
                 drawingShape: '', // 绘制的图形样式
                 fill: false, //填充图形
-                strokeWidth: 2,  //线宽
-                strokeColor: 'red', //线的颜色
+                strokeWidth: 8,  //线宽
+                strokeColor: '#000000', //线的颜色
                 wideMax: 30, // 最大线宽
+                textSize: 20, // 字体大小
+                colorList: ['#E74C3C', '#E67E22', '#F1C40F', '#2ECC71', '#29b6f6', '#3498DB', '#9B59B6', '#2E3E50'],
+                chatList: [], //聊天内容
+                chatValue: '', // 聊天框的值
             }
         },
         mounted () {
@@ -93,8 +160,8 @@
                         initMenu: 'filter',
                         menuBarPosition: 'bottom'
                     },
-                    cssMaxWidth: 1020,
-                    cssMaxHeight: 762,
+                    cssMaxWidth: 1042,
+                    cssMaxHeight: 783,
                     selectionStyle: {
                         cornerSize: 20,
                         rotatingPointOffset: 70
@@ -120,6 +187,8 @@
                      this.drawCurve()
                 }else if (shape === 'SHAPE') {
                      this.drawShape()
+                }else if (shape === 'TEXT') {
+                     this.addText()
                 }
             },
 
@@ -150,12 +219,67 @@
                     strokeWidth: this.strokeWidth,
                 });
                 imageEditor.startDrawingMode('SHAPE');
+            },
+
+            //添加文字
+            addText () {
+                const imageEditor = this.imageEditor;
+                imageEditor.ui.text.fontSize = this.textSize;
+                imageEditor.ui.text._els.textColorpicker.color = this.strokeColor;
+                console.log(imageEditor)
+                imageEditor.startDrawingMode('TEXT');
+
+            },
+
+            //橡皮擦功能
+            eraser () {
+                const imageEditor = this.imageEditor;
+                if (this.shape !== 'NORMAL') {
+                    this.stopDrawing();
+                }
+                imageEditor.removeActiveObject();
+            },
+
+            //停止绘画
+            stopDrawing () {
+                const imageEditor = this.imageEditor;
+                imageEditor.stopDrawingMode();
+                this.shape = 'NORMAL';
+                imageEditor.changeCursor('default');
+            },
+
+            //清除所有
+            clearAll () {
+                const imageEditor = this.imageEditor;
+                imageEditor.clearObjects();
+            },
+
+            //返回上一步
+            undo () {
+                const imageEditor = this.imageEditor;
+                imageEditor.undo().catch(() => {});
+
+            },
+
+            //聊天
+            addChat () {
+                const value = this.chatValue;
+                if (value.trim()) {
+                    this.chatList.push(value);
+                    this.chatValue = ''
+                }
+            },
+
+            //聊天框值改变
+            chatValueChange (e) {
+                const { value } = e.target;
+                this.chatValue = value
             }
         }
     }
 </script>
 
-<style lang="less" scoped>
+<style lang="less">
     @media screen and (max-width: 1700px) {
         .LiveBroadcast-container {
            .select-bar {
@@ -208,7 +332,7 @@
     }
     .LiveBroadcast-container {
         width: 100%;
-        height: 100%;
+        min-width: 1903px;
         background: url("./images/background.png") no-repeat center;
         background-size: cover;
         padding: 30px;
@@ -249,12 +373,16 @@
                             display: inline-block;
                             width: 22px;
                             height: 22px;
+                            transition: border-color .2s cubic-bezier(.645,.045,.355,1);
                         }
                     }
                 }
                 .pencil {
                     background-image: url("./images/pencil.png");
                     &:hover {
+                        background-image: url("./images/pencil-selected.png");
+                    }
+                    &.selected {
                         background-image: url("./images/pencil-selected.png");
                     }
                     .pencil-item {
@@ -268,6 +396,9 @@
                 .shape {
                     background-image: url("./images/shape.png");
                     &:hover {
+                        background-image: url("./images/shape-selected.png");
+                    }
+                    &.selected {
                         background-image: url("./images/shape-selected.png");
                     }
                     .shape-item {
@@ -316,12 +447,43 @@
                     &:hover {
                         background-image: url("./images/color-selected.png");
                     }
+                    .color-item {
+                        width: 146px;
+                        height: 78px;
+                        bottom: -78px;
+                        flex-wrap: wrap;
+                        span {
+                            width: 24px;
+                            height: 24px;
+                            margin-right: 10px;
+                            border-radius: 4px;
+                            &:nth-of-type(4n) {
+                                margin-right: 0;
+                            }
+                            &:hover {
+                                border: 2px solid #FF6A04 !important;
+                            }
+                            &.selected {
+                                border: 2px solid #FF6A04 !important;
+                            }
+                        }
+                    }
                 }
                 .text {
                     background-image: url("./images/text.png");
                     margin-right: 0;
                     &:hover {
                         background-image: url("./images/text-selected.png");
+                    }
+                    &.selected {
+                        background-image: url("./images/text-selected.png");
+                    }
+                    .text-item {
+                        width: 161px;
+                        .ant-slider {
+                            width: 100%;
+                            margin: 5px 0;
+                        }
                     }
                 }
                 .eraser {
@@ -391,8 +553,215 @@
 
         }
         #tui-image-editor {
-            width: 1020px !important;
-            height: 761px !important;
+            width: 1080px !important;
+            height: 901px !important;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: rgba(255,203,167,1);
+            border-radius:10px;
+            float: left;
+            .tui-image-editor-main-container {
+                width: 1042px;
+                height: 783px;
+                top: 20px;
+                background-color: unset !important;
+                .tui-image-editor-header {
+                    display: none;
+                }
+                .tui-image-editor-main {
+                    top: 0;
+                    .tui-image-editor-submenu {
+                        display: none;
+                    }
+                    .tui-image-editor-wrap {
+                        overflow: unset;
+                        .tui-image-editor {
+                            top: 0 !important;
+                        }
+                    }
+
+                }
+            }
+            .tui-image-editor-controls {
+                display: none;
+            }
+        }
+        .liveBroadcast-area {
+            position: relative;
+            height: 921px;
+            .coursewareOperate {
+                position: absolute;
+                left: 86px;
+                bottom: 32px;
+                height: 48px;
+                button {
+                    border: 0;
+                    cursor: pointer;
+                    outline: none;
+                }
+                .selectBar {
+                    font-size: 0;
+                    float: left;
+                    button {
+                        width:150px;
+                        height:48px;
+                        background-color:#fff;
+                        background-image: none;
+                        border-radius:10px;
+                        font-size: 18px;
+                        color: #FF6700;
+                        & + button {
+                            margin-left: 10px;
+                        }
+                        &:hover {
+                            background-image:linear-gradient(0deg,rgba(255,138,58,1),rgba(255,103,0,1));
+                            color: #fff;
+                        }
+                    }
+                }
+                .goBack {
+                    float: left;
+                    margin-left: 40px;
+                    margin-right: 25px;
+                    height: 48px;
+                    padding-top: 3px;
+                    button {
+                        width: 42px;
+                        height: 42px;
+                        border-radius: 50%;
+                        background-size: cover;
+                        &:first-child {
+                            background-image: url("./images/previous.png");
+                            margin-right: 25px;
+                        }
+                        &:last-child {
+                            background-image: url("./images/next.png");
+                        }
+                    }
+                }
+                .scale {
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    .line {
+                        width:2px;
+                        height:18px;
+                        background:rgba(255,255,255,.4);
+                    }
+                    button {
+                        width: 32px;
+                        height: 32px;
+                        border-radius: 50%;
+                        background-size: cover;
+                        &:first-of-type {
+                            background-image: url("./images/plus.png");
+                            margin: 0 25px;
+                        }
+                        &:last-child {
+                            background-image: url("./images/minus.png");
+                        }
+                    }
+                }
+            }
+            .video {
+                float: left;
+                width: 402px;
+                padding: 20px;
+                height: 100%;
+                > div {
+                    height: 240px;
+                    margin-bottom: 20px;
+                    background:rgba(255,203,167,.8);
+                    border-radius:10px;
+                }
+            }
+            .chat {
+                float: left;
+                margin-top: 20px;
+                padding: 20px;
+                width:360px;
+                height:901px;
+                border-radius:10px;
+                background: rgba(255,203,167,.8) url("./images/chat.png") no-repeat center;
+                .content {
+                    height: 741px;
+                    padding: 0 11px;
+                    overflow: auto;
+                    p {
+                        word-wrap:break-word;
+                        border-radius: 10px;
+                        font-size: 16px;
+                        padding: 6px 15px;
+                        margin-bottom: 10px;
+                        position: relative;
+                    }
+                    .host {
+                        background-color: #fff;
+                        &::before {
+                            content: "";
+                            width: 13px;
+                            height: 15px;
+                            background: url("./images/arrow.png") no-repeat center;
+                            position: absolute;
+                            top: 50%;
+                            left: -10px;
+                            transform: translate(0, -50%);
+                        }
+                    }
+                    .guest {
+                        background-color: #45CE7C;
+                        color: #fff;
+                        &::before {
+                            content: "";
+                            width: 13px;
+                            height: 15px;
+                            background: url("./images/arrow.png") no-repeat center;
+                            position: absolute;
+                            top: 50%;
+                            right: -10px;
+                            transform: translate(0, -50%) rotate(180deg);
+                        }
+                    }
+                }
+                .operate {
+                    position: relative;
+                    margin-top: 5px;
+                    input {
+                        height:50px;
+                        border-radius:10px;
+                        padding-left: 20px;
+                        border: 0;
+                    }
+                    .upload {
+                        display: flex;
+                        justify-content: space-between;
+                        width: 86px;
+                        margin-top: 25px;
+                        .ant-upload {
+                            button {
+                                width: 34px;
+                                height: 30px;
+                                border: 0;
+                                background: url("./images/uploadImage.png") no-repeat center;
+                            }
+                        }
+                        .uploadFile button {
+                            background: url("./images/uploadFile.png") no-repeat center;
+                        }
+                    }
+                    .send {
+                        width:120px;
+                        height:40px;
+                        background:linear-gradient(0deg,rgba(255,138,58,1),rgba(255,103,0,1));
+                        border-radius:10px;
+                        border: 0;
+                        color: #fff;
+                        position: absolute;
+                        top: 70px;
+                        right: 0;
+                    }
+                }
+            }
         }
     }
 </style>

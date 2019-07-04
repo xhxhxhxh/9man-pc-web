@@ -129,6 +129,7 @@
         methods: {
             // 缩放头像
             scaleAvatar (direction = true) {
+                this.uploadedAvatar = true;
                 if (direction) {
                     // direction为true时放大
                     this.scale >= 200? this.scale = 200: this.scale += 10
@@ -140,6 +141,7 @@
 
             // 旋转头像
             rotateAvatar () {
+                this.uploadedAvatar = true;
                 this.rotate += 90;
                 if (this.rotate === 360) {
                     this.rotate = 0
@@ -249,10 +251,14 @@
             cutAvatar () {
                 return new Promise((resolve,reject) => {
                     if (this.loadingAvatar) {
-                        return this.$message.warning('头像加载失败，请稍后再试！',3);
+                        this.$message.warning('头像加载失败，请稍后再试！',3);
+                        reject();
+                        return;
                     }
                     if (!this.uploadedAvatar) {
-                        return this.changingAvatar = false; // 处理没有上传头像时点击确定的情况
+                        this.changingAvatar = false; // 处理没有上传头像时点击确定的情况
+                        reject();
+                        return;
                     }
                     const _this = this;
                     const rotate = this.rotate;
@@ -270,7 +276,7 @@
                     let canvasHeight = ctx.canvas.height;
                     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
                     const image = new Image();
-
+                    image.setAttribute("crossOrigin",'Anonymous'); //开启图片跨域
                     image.onload = function () {
                         // ctx.translate(canvasWidth / 2, canvasHeight / 2);
                         ctx.rotate(Math.PI * rotate / 180);
@@ -284,7 +290,7 @@
                             ctx.drawImage(image, startPositionX + offset, startPositionY + offset, rectSizeScale, rectSizeScale, -canvasWidth, 0, rectSizeScale, rectSizeScale);
                         }
 
-                        _this.newImage = avatarCanvas.toDataURL();
+                        // _this.newImage = avatarCanvas.toDataURL();
                         resolve(avatarCanvas.toDataURL())
                     };
                     image.src = this.cacheAvatar;
@@ -312,7 +318,9 @@
                         .catch(err => {
 
                         })
-                })
+                }).catch(function(err) {
+
+                });
             },
 
             // 更新头像
@@ -328,6 +336,7 @@
                             this.$message.success('头像更新成功！');
                             this.$store.commit('updateUserInfo', this.avatarSrc);
                             this.cacheAvatar = this.avatarSrc;
+                            this.uploadedAvatar = false;
                             this.changingAvatar = false;
                             this.getImgInfo();
                         } else {
@@ -346,6 +355,7 @@
                 const reader = new FileReader();
                 const file = avatar.files[0];
                 //校验图片格式
+                if (!file) return
                 const fileType = file.type;
                 if (fileType != 'image/png' && fileType != 'image/jpg' && fileType != 'image/jpeg') {
                     return this.$message.error('图片类型错误')

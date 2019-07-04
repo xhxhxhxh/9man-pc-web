@@ -80,7 +80,7 @@
                 <div class="avatar"></div>
             </div>
             <div class="chat">
-                <div class="content">
+                <div class="content" ref="chatContent">
                     <p class="host">877777777777867676876764646546546465465464654645646546546546546546464897</p>
                     <p class="guest">877777777777867676876764646546546465465464654645646546546546546546464897</p>
                     <p class="host" v-for="(item, index) in chatList" :key="index">{{item}}</p>
@@ -142,10 +142,32 @@
                 colorList: ['#E74C3C', '#E67E22', '#F1C40F', '#2ECC71', '#29b6f6', '#3498DB', '#9B59B6', '#2E3E50'],
                 chatList: [], //聊天内容
                 chatValue: '', // 聊天框的值
+                addedChat: false, //添加聊天内容后的状态
+
             }
         },
         mounted () {
             this.paint()
+        },
+        updated () {
+            if (this.addedChat) {
+                const chatContent = this.$refs.chatContent;
+                const height = chatContent.offsetHeight;
+                const scrollHeight = chatContent.scrollHeight;
+                if (scrollHeight > height) {
+                    chatContent.scrollTop = scrollHeight - height
+                }
+                this.addedChat = false
+            }
+
+        },
+        watch: {
+            chatList: function (val) {
+                // const chatContent = this.$refs.chatContent;
+                // // const height = chatContent.$el.offsetHeight;
+                // console.log(chatContent.scrollHeight);
+
+            }
         },
         methods: {
             // 画图
@@ -226,7 +248,6 @@
                 const imageEditor = this.imageEditor;
                 imageEditor.ui.text.fontSize = this.textSize;
                 imageEditor.ui.text._els.textColorpicker.color = this.strokeColor;
-                console.log(imageEditor)
                 imageEditor.startDrawingMode('TEXT');
 
             },
@@ -266,7 +287,8 @@
                 const value = this.chatValue;
                 if (value.trim()) {
                     this.chatList.push(value);
-                    this.chatValue = ''
+                    this.chatValue = '';
+                    this.addedChat = true;
                 }
             },
 
@@ -687,6 +709,30 @@
                     height: 741px;
                     padding: 0 11px;
                     overflow: auto;
+                    &::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    &::-webkit-scrollbar-track {
+                        background-color: rgba(0,0,0,0);
+                    } /* 滚动条的滑轨背景颜色 */
+
+                    &::-webkit-scrollbar-thumb {
+                        border-radius: 3px;
+                        background-color: unset;
+                    } /* 滑块颜色 */
+
+                    &::-webkit-scrollbar-button {
+                        height: 0;
+                    } /* 滑轨两头的监听按钮颜色 */
+
+                    &::-webkit-scrollbar-corner {
+                        height: 0;
+                    }
+                    &:hover {
+                        &::-webkit-scrollbar-thumb {
+                            background-color: rgba(255, 255, 255, 0.6);
+                        }
+                    }
                     p {
                         word-wrap:break-word;
                         border-radius: 10px;

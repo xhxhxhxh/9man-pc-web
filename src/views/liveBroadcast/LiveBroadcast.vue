@@ -5,8 +5,10 @@
                 <div :class="{pencil: true, selected: shape === 'LINE_DRAWING' || shape === 'FREE_DRAWING'}"
                      @mouseenter="showPencilItem = true" @mouseleave="showPencilItem = false">
                     <div class="pencil-item" v-show="showPencilItem">
-                        <span @click="() => {shape === 'LINE_DRAWING'? stopDrawing(): shape = 'LINE_DRAWING'; drawByShape()}">—</span>
-                        <span @click="() => {shape === 'FREE_DRAWING'? stopDrawing(): shape = 'FREE_DRAWING'; drawByShape()}">~</span>
+                        <span @click="() => {shape === 'LINE_DRAWING'? stopDrawing(): shape = 'LINE_DRAWING'; drawByShape()}"
+                              :class="{selected: shape === 'LINE_DRAWING'}"></span>
+                        <span @click="() => {shape === 'FREE_DRAWING'? stopDrawing(): shape = 'FREE_DRAWING'; drawByShape()}"
+                              :class="{selected: shape === 'FREE_DRAWING'}"></span>
                     </div>
                 </div>
                 <div :class="{shape: true, selected: shape === 'SHAPE'}" @mouseenter="showShapeItem = true" @mouseleave="showShapeItem = false">
@@ -410,8 +412,24 @@
                     .pencil-item {
                         width:90px;
                         span {
-                            text-align: center;
-                            line-height: 22px;
+                            &:first-of-type {
+                                background: url("./images/line.png") no-repeat center;
+                                &:hover {
+                                    border: 2px solid #FF6A04;
+                                }
+                                &.selected {
+                                    border: 2px solid #FF6A04;
+                                }
+                            }
+                            &:last-of-type {
+                                background: url("./images/curve.png") no-repeat center;
+                                &:hover {
+                                    border: 2px solid #FF6A04;
+                                }
+                                &.selected {
+                                    border: 2px solid #FF6A04;
+                                }
+                            }
                         }
                     }
                 }
@@ -761,7 +779,7 @@
                             content: "";
                             width: 13px;
                             height: 15px;
-                            background: url("./images/arrow.png") no-repeat center;
+                            background: url("./images/arrow-right.png") no-repeat center;
                             position: absolute;
                             top: 50%;
                             right: -10px;

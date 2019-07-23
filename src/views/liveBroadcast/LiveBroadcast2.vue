@@ -1,3 +1,4 @@
+<script src="../../js/tui-image-editor-copy.js"></script>
 <template>
     <div class="LiveBroadcast-container">
         <div class="select-bar">
@@ -108,7 +109,8 @@
 </template>
 
 <script>
-    var ImageEditor = require('tui-image-editor');
+    const ImageEditor = require('tui-image-editor');
+    const ImageEditorCopy = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min');
     import 'tui-image-editor/dist/tui-image-editor.min.css'
     import icona from 'tui-image-editor/dist/svg/icon-a.svg'
     import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
@@ -125,13 +127,13 @@
         'submenu.activeIcon.path': iconb
     };
     import exampleImg from './images/example.png'
-
     export default {
         name: "LiveBroadcast",
         data () {
             return {
                 shape: 'NORMAL',
                 imageEditor: null,
+                imageEditorCopy: null, //自改造tui-image
                 showPencilItem: false, //显示直线类型选项
                 showShapeItem: false, //显示形状类型选项
                 showStrokeWide: false, //显示线宽选项
@@ -147,17 +149,15 @@
                 chatList: [], //聊天内容
                 chatValue: '', // 聊天框的值
                 addedChat: false, //添加聊天内容后的状态
-                socket: null,
-                sendDataStatus: 'end', //发送数据的状态
-                objectActivatedId: '', // 选中对象的id
+
             }
         },
         created () {
-            const socket = io('http://localhost:3000'); // 建立websocket连接
-            this.socket = socket
+
         },
         mounted () {
-            this.paint()
+            this.paint();
+            this.getDrawData();
         },
         updated () {
             if (this.addedChat) {
@@ -172,22 +172,32 @@
 
         },
         watch: {
-            objectActivatedId: function (val, oldVal) {
-               if (!val) {
-                   if (oldVal) { // 禁用图形缩放功能
-                       this.imageEditor.setObjectProperties(oldVal, {
-                                   lockScalingX: true,
-                                   lockScalingY: true,
-                                   lockRotation: true
-                               });
-                   }
-               }
-            }
+
         },
         methods: {
             // 画图
             paint () {
-                var instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
+                // var instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
+                //     includeUI: {
+                //         loadImage: {
+                //             path: exampleImg,
+                //             name: 'SampleImage'
+                //         },
+                //         theme: blackTheme,
+                //         initMenu: 'filter',
+                //         menuBarPosition: 'bottom'
+                //     },
+                //     cssMaxWidth: 1042,
+                //     cssMaxHeight: 783,
+                //     selectionStyle: {
+                //         cornerSize: 20,
+                //         rotatingPointOffset: 70
+                //     }
+                // });
+                // this.imageEditor = instance;
+
+                //tui-image-copy
+                var instanceCopy = new ImageEditorCopy(document.querySelector('#tui-image-editor'), {
                     includeUI: {
                         loadImage: {
                             path: exampleImg,
@@ -204,189 +214,20 @@
                         rotatingPointOffset: 70
                     }
                 });
-                this.imageEditor = instance;
+                this.imageEditorCopy = instanceCopy;
+                this.imageEditor = instanceCopy;
                 const _this = this;
-                const canvas = document.querySelector('#tui-image-editor');
-                let lastProperties = {}; // 初始选中对象参数
+                instanceCopy.on('mousedown', function(event, originPointer) {
 
-                instance.on('addObjectAfter', function(prop){
-                    instance.setObjectProperties(prop.id, {
-                        lockScalingX: true,
-                        lockScalingY: true,
-                        lockRotation: true
-                    });
+                    document.onmousemove = function () {
+
+                    }
+                    _this.drawByShape()
                 });
-                //图形被移动事件
-                instance.on('objectMoved', function(props) {
-                    const params = {};
-                    const id = props.id;
-                    const lastPropertiesById = lastProperties[id];
-
-                    if (lastPropertiesById) {
-                        lastPropertiesById.left = props.left;
-                        lastPropertiesById.top = props.top;
-                        params.properties = lastPropertiesById;
-                    } else {
-                        params.properties = props;
-                    }
-                    params.event = 'objectMoved';
-                    _this.sendDrawData(params);
-                });
-
-                let currentMousePositionX = '';
-                let currentMousePositionY = '';
-
-                //图形被选中时存储id
-                instance.on('objectActivated', function(props) {
-                    _this.objectActivatedId = props.id;
-                    document.onmousemove = function (e) {
-                        const objectId = instance.activeObjectId;
-                        currentMousePositionX = e.layerX;
-                        currentMousePositionY = e.layerY;
-                        if (!objectId) {
-                            document.onmousemove = null
-                        }
-                    }
-                });
-
-                //图形被缩放事件
-                instance.on('objectScaled', function(props) {
-                    if (props.type !== 'line') return;
-                    const id = props.id;
-                    const type = props.type;
-                    const params = {};
-                    if (!lastProperties[id]) {
-                        lastProperties[id] = {...props};
-                    }
-                    // console.log(lastProperties[id]);
-                    const lastPropertiesById = lastProperties[id];
-                    const left = props.left;
-                    const top = props.top;
-                    const lastLeft = lastPropertiesById.left;
-                    const lastTop = lastPropertiesById.top;
-                    const strokeWidth = lastPropertiesById.strokeWidth;
-                    let lastwidth = lastPropertiesById.width;
-                    let lastheight = lastPropertiesById.height;
-                    let scaleX = currentMousePositionX >= lastLeft ? (lastwidth / 2 + left - lastLeft) / (lastwidth / 2): (lastwidth / 2 - left + lastLeft) / (lastwidth / 2);
-                    let scaleY = currentMousePositionY >= lastTop ? (lastheight / 2 + top - lastTop) / (lastheight / 2): (lastheight / 2 - top + lastTop) / (lastheight / 2);
-                    if (lastwidth <= 0) {
-                        lastwidth = 1;
-                        scaleX = 1
-                    }else if (lastheight <= 0) {
-                        lastheight = 1;
-                        scaleY = 1
-                    }
-                    props.width = lastwidth * scaleX;
-                    props.height = lastheight * scaleY;
-                    // props.strokeWidth = strokeWidth * scaleX * scaleY;
-                    lastProperties[id] = props;
-                    // console.log(instance.getObjectPosition(props.id, 'left', 'top'));
-
-
-                    params.properties = props;
-                    params.event = 'objectScaled';
-                    // console.log(lastProperties, scaleX, scaleY);
-                    _this.sendDrawData(params)
-                });
-
-                // 添加文字事件
-                instance.on('addText', function(pos) {
-                    const objectId = instance.activeObjectId;
-                    canvas.onmousedown = function () {
-                        if (!instance.activeObjectId) {
-                            const text = instance._graphics._objects[objectId].text;
-                            const position = instance.getObjectPosition(objectId, 'left', 'top');
-                            const styles = {
-                                fill: _this.strokeColor,
-                                fontSize: _this.textSize
-                            };
-                            const params = {
-                                mode: _this.shape,
-                                position,
-                                styles,
-                                text
-                            };
-                            _this.sendDrawData(params);
-                            canvas.onmousedown = null;
-                        }
-                    }
-                });
-
-                //鼠标点击事件
-                instance.on('mousedown', function(event, originPointer) {
-                    const shape = _this.shape;
-                    const objectId = instance.activeObjectId;
-                    if (!objectId) {
-                        _this.objectActivatedId = ''; // 无选中目标时，设置objectActivatedId为空
-                    }
-                    if (shape === 'NORMAL' || shape === 'TEXT') return;
-                    _this.sendDataStatus = 'start'; //开始发送数据
-                    const start = {
-                        mode: _this.shape,
-                        event: 'start',
-                    };
-                    const params = {
-                        mode: _this.shape,
-                        event: 'mousedown',
-                        position: originPointer,
-                    };
-                    let setting = null;
-                    if (shape === 'LINE_DRAWING' || shape === 'FREE_DRAWING') {
-                        setting = {
-                            width: _this.strokeWidth,
-                            color: _this.strokeColor
-                        };
-                    }else if (shape === 'SHAPE') {
-                        setting = {
-                            fill: _this.fill? _this.strokeColor: 'transparent',
-                            stroke: _this.strokeColor,
-                            strokeWidth: _this.strokeWidth,
-                        };
-                        const type = _this.drawingShape;
-                        const e = {};
-                        for (let i in event) {
-                            if (typeof event[i] === "object") {
-                                continue
-                            }
-                            e[i] = event[i]
-                        }
-                        Object.assign(start, {type: type});
-                        Object.assign(params, {e: e});
-                    }
-
-                    Object.assign(start, {setting: setting});
-                    Object.assign(params, {setting: setting});
-
-                    _this.sendDrawData(start);
-                    _this.sendDrawData(params);
-
-                    _this.drawByShape();
-
-                    //鼠标移动事件
-                    canvas.onmousemove = function (e) {
-                        params.position = {x: e.layerX, y: e.layerY};
-                        params.event = 'mousemove';
-                        _this.sendDrawData(params)
-                    };
-                });
-
-                //鼠标抬起事件
                 document.onmouseup = function () {
-                    if ( _this.sendDataStatus === 'start') {
-                        _this.sendDataStatus = 'end';
-                        const params = {
-                            mode: _this.shape,
-                            event: 'mouseup',
-                            setting: {
-                                width: _this.strokeWidth,
-                                color: _this.strokeColor
-                            },
-                        };
-                        _this.sendDrawData(params)
-                    };
-                    instance.stopDrawingMode(); //即时更换线条颜色
-                    _this.drawByShape();
-                    canvas.onmousemove = null;
+                    instanceCopy.stopDrawingMode();
+                    _this.drawByShape()
+                    document.onmousemove = null
                 }
             },
 
@@ -445,19 +286,10 @@
             //橡皮擦功能
             eraser () {
                 const imageEditor = this.imageEditor;
-                const objectId = imageEditor.activeObjectId;
                 if (this.shape !== 'NORMAL') {
                     this.stopDrawing();
                 }
                 imageEditor.removeActiveObject();
-
-                // 发送删除图形请求
-                if (!objectId) return;
-                const params = {
-                    mode: 'ERASER',
-                    id: this.objectActivatedId
-                };
-                this.sendDrawData(params);
             },
 
             //停止绘画
@@ -472,12 +304,6 @@
             clearAll () {
                 const imageEditor = this.imageEditor;
                 imageEditor.clearObjects();
-
-                // 发送清除图形请求
-                const params = {
-                    mode: 'CLEARALL'
-                };
-                this.sendDrawData(params);
             },
 
             //返回上一步
@@ -485,11 +311,6 @@
                 const imageEditor = this.imageEditor;
                 imageEditor.undo().catch(() => {});
 
-                // 发送撤销请求
-                const params = {
-                    mode: 'UNDO'
-                };
-                this.sendDrawData(params);
             },
 
             //聊天
@@ -508,27 +329,47 @@
                 this.chatValue = value
             },
 
-            //发送画图数据
-            sendDrawData (params) {
-                // let cache = [];
-                // let str = JSON.stringify(this.imageEditor._graphics._objects, function(key, value) {
-                //     if (typeof value === 'object' && value !== null) {
-                //         if (cache.indexOf(value) !== -1) {
-                //             // 移除
-                //             return;
-                //         }
-                //         // 收集所有的值
-                //         cache.push(value);
-                //     }
-                //     return value;
-                // });
-                // cache = null; // 清空变量，便于垃圾回收机制回收
-                // console.log(this.imageEditor)
-                // console.log(str)
-                // this.socket.emit('chat message', str);
-                this.socket.emit('chat message', params)
-            },
+            //接收画图数据，建立连接
+            getDrawData () {
+                const socket = io('http://localhost:3000'); // 建立websocket连接
+                socket.on('chat message', (data) => {
+                    // console.log(data)
+                    if (data.event === 'objectMoved' || data.event === 'objectScaled') {
+                        const props = data.properties;
+                        const left = props.left;
+                        const top = props.top;
+                        const width = props.width;
+                        const height = props.height;
+                        const strokeWidth = props.strokeWidth;
 
+                        this.imageEditorCopy.setObjectProperties(props.id, {
+                            left,
+                            top,
+                            width,
+                            height,
+                        });
+                    } else if (data.mode === 'TEXT') {
+                        const text = data.text;
+                        if (!text) return;
+                        this.imageEditorCopy.addText(text, {
+                            styles: data.styles,
+                            position: data.position
+                        });
+                        this.imageEditorCopy.startDrawingMode(data.mode, data.setting, data)
+                    }else if (data.mode === 'ERASER') {
+                        const id = data.id;
+                        if (!id) return;
+                        this.imageEditorCopy.removeObject(id);
+                    }else if (data.mode === 'CLEARALL') {
+                        this.imageEditorCopy.clearObjects();
+                    }else if (data.mode === 'UNDO') {
+                        this.imageEditorCopy.undo().catch(() => {});
+                    } else {
+                        this.imageEditorCopy.startDrawingMode(data.mode, data.setting, data)
+                    }
+
+                });
+            }
         }
     }
 </script>

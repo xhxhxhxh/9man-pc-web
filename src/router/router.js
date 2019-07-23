@@ -6,6 +6,7 @@ import Users from '@/views/users/Users';
 import ResetPassword from '@/views/users/ResetPassword';
 import page404 from '@/views/404/404';
 import LiveBroadcast from '@/views/liveBroadcast/LiveBroadcast';
+import LiveBroadcast2 from '@/views/liveBroadcast/LiveBroadcast2';
 
 const constantRouterMap = [
     { path: '/', redirect: '/home' },
@@ -15,6 +16,7 @@ const constantRouterMap = [
     { path: '/users', component: Users },
     { path: '/resetPassword', component: ResetPassword },
     { path: '/liveBroadcast', component: LiveBroadcast },
+    { path: '/liveBroadcast2', component: LiveBroadcast2 },
     { path: '/404', component: page404 }
     // {path: '*', redirect: '/404', hidden: true}
 ];

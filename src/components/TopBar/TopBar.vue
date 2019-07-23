@@ -25,6 +25,9 @@
                 <a-menu-item key="liveBroadcast" @click="$router.push('/liveBroadcast')">
                    直播
                 </a-menu-item>
+                <a-menu-item key="liveBroadcast2" @click="$router.push('/liveBroadcast2')">
+                    学生直播
+                </a-menu-item>
             </a-menu>
         </div>
         <div class="login">

@@ -5,6 +5,7 @@ const htmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     mode: 'development',
+    devtool: 'module-source-map',
     entry: path.join(__dirname,'./src/index.js'),
     output: {
         path: path.join(__dirname,'./dist'),
@@ -53,8 +54,8 @@ module.exports = {
             },
             {test: /\.(jpg|png|gif|bmp|jpeg)$/, use: ['url-loader?limit=102400&name=[hash:8]-[name].[ext]']},
             {test: /\.(ttf|eot|svg|woff|woff2)$/, use: ['url-loader']},
-            {test: /\.js$/, use: 'babel-loader', exclude: /node_modules/},
-            {test: /\.vue$/, use: 'vue-loader'}
+            {test: /\.js$/, exclude: /node_modules/, use: [{loader: 'babel-loader'}]},
+            {test: /\.vue$/, use: [{loader: 'vue-loader'}]}
         ],
     },
     resolve: {

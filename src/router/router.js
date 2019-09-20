@@ -5,8 +5,10 @@ import ReservingCourse from '@/views/reservingCourse/ReservingCourse';
 import Users from '@/views/users/Users';
 import ResetPassword from '@/views/users/ResetPassword';
 import page404 from '@/views/404/404';
-import LiveBroadcast from '@/views/liveBroadcast/LiveBroadcast';
-import LiveBroadcast2 from '@/views/liveBroadcast/LiveBroadcast2';
+import LiveBroadcastForTeacher from '@/views/liveBroadcast/LiveBroadcastForTeacher-v2';
+import LiveBroadcastForStudent from '@/views/liveBroadcast/liveBroadcastForStudent-v2';
+// import LiveBroadcastForTeacher from '@/views/liveBroadcast/LiveBroadcast';
+// import LiveBroadcastForStudent from '@/views/liveBroadcast/liveBroadcast2';
 
 const constantRouterMap = [
     { path: '/', redirect: '/home' },
@@ -15,8 +17,8 @@ const constantRouterMap = [
     { path: '/reserveCourse', component: ReservingCourse },
     { path: '/users', component: Users },
     { path: '/resetPassword', component: ResetPassword },
-    { path: '/liveBroadcast', component: LiveBroadcast },
-    { path: '/liveBroadcast2', component: LiveBroadcast2 },
+    { path: '/liveBroadcastForTeacher', component: LiveBroadcastForTeacher },
+    { path: '/liveBroadcastForStudent', component: LiveBroadcastForStudent },
     { path: '/404', component: page404 }
     // {path: '*', redirect: '/404', hidden: true}
 ];

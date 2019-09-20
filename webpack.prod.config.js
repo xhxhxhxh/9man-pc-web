@@ -9,6 +9,7 @@ const extractLESSOfVue = new ExtractTextWebpackPlugin({filename: 'css/index.css'
 const PrerenderSPAPlugin = require('prerender-spa-plugin');//spa工具
 const Renderer = PrerenderSPAPlugin.PuppeteerRenderer;
 
+
 module.exports = {
     mode: 'production',
     entry: ["babel-polyfill", path.join(__dirname,'./src/index.js')],
@@ -83,6 +84,7 @@ module.exports = {
                     }
                 }]},
             {test: /\.(ttf|eot|svg|woff|woff2)$/, use: ['url-loader']},
+            {test: /\.(mp4)$/, use: ['file-loader?limit=1']},
             {test: /\.js$/, use: 'babel-loader', exclude: /node_modules/},
             {
                 test: /\.vue$/,

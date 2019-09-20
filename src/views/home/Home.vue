@@ -349,6 +349,7 @@
 
 <style lang="less">
     .home-container {
+        padding-top: 60px;
         .myFade-enter-active, .myFade-leave-active {
             transition: all .5s;
         }

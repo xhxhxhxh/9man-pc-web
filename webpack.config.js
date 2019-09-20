@@ -21,6 +21,11 @@ module.exports = {
                 target: 'https://edu.9man.com',
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
+            },
+            "/syncshuxe": {
+                target: 'https://www2.9man.com',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true
             }
         },
     },
@@ -54,6 +59,7 @@ module.exports = {
             },
             {test: /\.(jpg|png|gif|bmp|jpeg)$/, use: ['url-loader?limit=102400&name=[hash:8]-[name].[ext]']},
             {test: /\.(ttf|eot|svg|woff|woff2)$/, use: ['url-loader']},
+            {test: /\.(mp4)$/, use: ['file-loader?limit=1']},
             {test: /\.js$/, exclude: /node_modules/, use: [{loader: 'babel-loader'}]},
             {test: /\.vue$/, use: [{loader: 'vue-loader'}]}
         ],

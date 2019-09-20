@@ -1,5 +1,5 @@
 <template>
-    <div class="topBar-container">
+    <div class="topBar-container" v-if="hashAddress !== 'liveBroadcastForTeacher' && hashAddress !== 'liveBroadcastForStudent'">
         <div class="logo">少儿思维</div>
         <div class="nav">
             <a-menu
@@ -22,10 +22,10 @@
                 <a-menu-item key="about">
                     关于我们
                 </a-menu-item>
-                <a-menu-item key="liveBroadcast" @click="$router.push('/liveBroadcast')">
+                <a-menu-item key="liveBroadcast" @click="$router.push('/liveBroadcastForTeacher')">
                    直播
                 </a-menu-item>
-                <a-menu-item key="liveBroadcast2" @click="$router.push('/liveBroadcast2')">
+                <a-menu-item key="liveBroadcast2" @click="$router.push('/liveBroadcastForStudent')">
                     学生直播
                 </a-menu-item>
             </a-menu>
@@ -124,7 +124,8 @@
         display: flex;
         justify-content: space-between;
         padding: 0 79px;
-        position: absolute;
+        position: fixed;
+        z-index: 999;
         top: 0;
         left: 0;
 

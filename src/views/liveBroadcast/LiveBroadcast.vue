@@ -319,6 +319,7 @@
                     if (!objectId) {
                         _this.objectActivatedId = ''; // 无选中目标时，设置objectActivatedId为空
                     }
+                    console.log(originPointer);
                     if (shape === 'NORMAL' || shape === 'TEXT') return;
                     _this.sendDataStatus = 'start'; //开始发送数据
                     const start = {
@@ -510,22 +511,6 @@
 
             //发送画图数据
             sendDrawData (params) {
-                // let cache = [];
-                // let str = JSON.stringify(this.imageEditor._graphics._objects, function(key, value) {
-                //     if (typeof value === 'object' && value !== null) {
-                //         if (cache.indexOf(value) !== -1) {
-                //             // 移除
-                //             return;
-                //         }
-                //         // 收集所有的值
-                //         cache.push(value);
-                //     }
-                //     return value;
-                // });
-                // cache = null; // 清空变量，便于垃圾回收机制回收
-                // console.log(this.imageEditor)
-                // console.log(str)
-                // this.socket.emit('chat message', str);
                 this.socket.emit('chat message', params)
             },
 

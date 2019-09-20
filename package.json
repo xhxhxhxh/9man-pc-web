@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "webpack-dev-server",
     "dev2": "webpack-dev-server --open --port 4000 --contentBase src --hot --host 192.168.0.107",
-    "build": "webpack --config webpack.prod.config.js"
+    "build": "webpack --config webpack.prod.config.js",
+    "postInstall": "npm install --no-save --no-optional fabric@^1.6.7"
   },
   "keywords": [],
   "author": "",
@@ -17,13 +18,16 @@
     "axios": "^0.18.1",
     "babel-plugin-transform-remove-strict-mode": "0.0.2",
     "blueimp-md5": "^2.10.0",
+    "debug": "^4.1.1",
     "normalize.css": "^8.0.1",
     "npm": "^6.9.0",
     "nprogress": "^0.2.0",
     "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0",
     "tui-image-editor": "^3.5.2",
     "vue": "^2.6.6",
-    "vuex": "^2.5.0"
+    "vuex": "^2.5.0",
+    "webrtc-adapter": "^7.3.0"
   },
   "devDependencies": {
     "autoprefixer": "^9.6.0",

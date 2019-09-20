@@ -59,7 +59,6 @@
         width: 100%;
         min-height: 320px;
         position: relative;
-        padding-top: 60px;
     }
 
 </style>

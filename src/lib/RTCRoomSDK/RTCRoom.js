@@ -205,12 +205,12 @@ export default class extends EventEmitter
         case 'new_peer' :
         {
           let peerId = data.peerId;
+          let properties = {};
+          properties[peerId] = data.property;
 
           let obj = {
             peerId: peerId,
-            properties: {
-              peerId: data.property
-            }
+            properties: properties
           };
 
           this.emit('rtc-user-joined',obj);
@@ -432,7 +432,7 @@ export default class extends EventEmitter
   }
 
   _getChannel(peerId) {
-    return channels[peerId];
+    return channels.get(peerId);
   }
 
   async _createOffer(pc, peerId) {
@@ -488,7 +488,7 @@ export default class extends EventEmitter
     let data = JSON.stringify(message);
     if (peerId) {
       let channel = this._getChannel(peerId);
-      if (channel === 'undefined') {
+      if (channel === undefined) {
         let obj = {
           code: 405,
           msg: RTC_ERROR_MSG.Undefined_Error

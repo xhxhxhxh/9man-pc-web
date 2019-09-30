@@ -1,23 +1,17 @@
 <template>
     <div class="teacherVideo-container">
-        <div class="video-area" :style="{width: 308 * teacherVideoScale + 'px', height: 202 * teacherVideoScale + 'px'}">
-            <video autoplay :src="src" width="308" height="202" loop type="video/mp4" ref="video"></video>
-            <span class="name">李老师</span>
-            <div class="status-bar" v-if="hiddenOperate">
-                <div class="netStatus">
-                    <NetStatus></NetStatus>
-                    <span>网络状态</span>
-                </div>
-                <div class="mikeStatus">
-                    <img src="./images/mike.png" alt="">
-                    <MikeStatus :openMike="mikeStatus" :identity="identity" :rtcRoom="rtcRoom"></MikeStatus>
-                </div>
-            </div>
+        <div class="video-area">
+            <video autoplay width="308" height="202" loop type="video/mp4" ref="video"></video>
+            <span class="name">{{teacherName}}</span>
         </div>
-        <div class="operate-area" v-if="!hiddenOperate">
+        <div class="operate-area">
             <button @click="() => {$emit('pictureCovered')}"><img src="./images/cover.png" alt="">视频铺满</button>
-            <button><img src="./images/mute.png" alt="">全部禁音</button>
-            <button><img src="./images/control.png" alt="">全部操作</button>
+            <button :class="{muteAll: !$store.getters.updateAudioStatus, mute: true}" @click="$store.commit('updateAudioStatusAll')">
+                <img :src="muteSrc" alt="">{{muteText}}
+            </button>
+            <button :class="{controlAll: $store.getters.controlAllStatus, control: true}" @click="$store.commit('updateControlStatusAll')" >
+                <img :src="controlSrc" alt="">{{controlText}}
+            </button>
         </div>
     </div>
 </template>
@@ -27,41 +21,77 @@
     // const io = require('socket.io-client/dist/socket.io.js')
 
     // import mp4 from './mp4/chrome.mp4'
-    import NetStatus from '@/components/liveBroadcast/NetStatus'
-    import MikeStatus from '@/components/liveBroadcast/MikeStatus'
+    import muteImg from './images/mute.png'
+    import cancelMuteImg from './images/cancel_mute.png'
+    import controlImg from './images/control.png'
+    import cancelControlImg from './images/control-cancel.png'
+
     export default {
         name: "TeacherVideo",
         data () {
             return {
-                src: '',
-                mikeStatus: true, // 开启麦克风
-                socket: null,
-                identity: 'self'
+
             }
         },
-        props: ['teacherVideoScale', 'hiddenOperate', 'mode', 'rtcRoom'],
-        components: {
-            NetStatus,
-            MikeStatus,
-        },
+        props: ['rtcRoom', 'teacherName'],
         created () {
-            if (this.mode === 'student') {
-                this.identity = 'others'
-            }
-        },
-        mounted () {
-            if (this.mode === 'student') {
-                this.getTeacherVideo()
-            }else {
-                this.video()
-            }
 
         },
+        mounted () {
+            this.video()
+        },
+        computed: {
+            muteSrc () {
+                if (this.$store.getters.updateAudioStatus) {
+                    return muteImg
+                }else {
+                    return cancelMuteImg
+                }
+            },
+            muteText () {
+                if (this.$store.getters.updateAudioStatus) {
+                    return '全部静音'
+                }else {
+                    return '取消静音'
+                }
+            },
+            controlSrc () {
+                if (!this.$store.getters.controlAllStatus) {
+                    return controlImg
+                }else {
+                    return cancelControlImg
+                }
+            },
+            controlText () {
+                if (!this.$store.getters.controlAllStatus) {
+                    return '全部操作'
+                }else {
+                    return '取消操作'
+                }
+            }
+        },
         methods: {
-            // 初始化
-            init () {
-                const socket = io('http://localhost:3000'); // 建立websocket连接
-                this.socket = socket
+            // 检测设备
+            checkDevice() {
+                let videoNum = 0,
+                    microphoneNum = 0,
+                    deviceList = [];
+                navigator.mediaDevices.enumerateDevices().then(devices => {
+                    devices.forEach(device => {
+                        //console.log(device);
+                        deviceList.push(device.kind);
+                        if (device.kind === "videoinput") videoNum++;
+                        if (device.kind === "audioinput") microphoneNum++;
+                    });
+                    if (videoNum === 0) {
+                        this.$message.error('未发现摄像头')
+                    }
+                    if (microphoneNum === 0) {
+                        this.$message.error('未发现麦克风')
+                    }
+
+                }).catch(function (err) {
+                });
             },
 
             // 获取摄像头数据
@@ -75,6 +105,7 @@
                 if (!navigator.getUserMedia) {
                     return this.$message.error('摄像头异常,建议使用高版本的谷歌浏览器');
                 }
+                this.checkDevice()
                 navigator.getUserMedia({
                     video: {width: 308, height: 202},
                     audio: false
@@ -119,21 +150,8 @@
             // 获取视频失败
             onError(err) {
                 console.log(err);
+                this.$message.error('摄像头未授权， 请设置浏览器')
             },
-
-            // 获取老师摄像头数据
-            getTeacherVideo () {
-                const video = this.$refs.video
-                this.rtcRoom.on('media-receive',(peerId,stream) => {
-                    if (peerId === '1') {
-                        try {
-                            video.srcObject = stream;
-                        } catch (error) {
-                            video.src = window.URL.createObjectURL(stream);
-                        }
-                    }
-                })
-            }
 
         }
     }
@@ -151,35 +169,6 @@
             video {
                 width: 100%;
                 height: 100%;
-            }
-            .status-bar {
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                height: 22px;
-                background-color: #fff;
-                width: 50%;
-                font-size: 13px;
-                color: #FF6A04;
-                padding: 0 15px;
-                transform: scale(2);
-                transform-origin: left bottom;
-                > div {
-                    float: left;
-                    height: 100%;
-                    display: flex;
-                    align-items: center;
-                    > div {
-                        margin-right: 4px;
-                    }
-                }
-                .mikeStatus {
-                    margin-left: 20px;
-                    img {
-                        height: 17px;
-                        margin-right: 4px;
-                    }
-                }
             }
             .name {
                 display: inline-block;
@@ -213,6 +202,18 @@
                 border: 0;
                 cursor: pointer;
                 outline: unset;
+                &.mute {
+                    &.muteAll {
+                        background: #fff;
+                        color: #FF6A04;
+                    }
+                }
+                &.control {
+                    &.controlAll {
+                        background: #fff;
+                        color: #FF6A04;
+                    }
+                }
                 img {
                     width: 21px;
                     height: 21px;

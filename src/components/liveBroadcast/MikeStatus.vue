@@ -74,6 +74,7 @@
             // 获取声音失败
             onError(err) {
                 console.log(err);
+                this.$message.error('麦克风未授权， 请设置浏览器')
             },
 
             // 主动触发麦克风
@@ -84,11 +85,10 @@
             // 获取其他人麦克风音量
             getVolumeFromOthers () {
                 this.rtcRoom.on('audio-volume-change', (peerId, volume) => {
-                    console.log('studentAudioId' + peerId);
+                    console.log('peerId:' + peerId, 'volume:' + volume);
                     if (peerId === this.id) {
                         this.volume = volume * 100
                     }
-
                 })
             }
         }

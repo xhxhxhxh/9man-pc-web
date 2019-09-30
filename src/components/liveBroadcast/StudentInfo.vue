@@ -13,7 +13,12 @@
                 </div>
             </div>
         </div>
-        <div class="avatar"></div>
+        <div class="avatar">
+            <div class="onStage">
+                <p>上台中</p>
+                <p>...</p>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -91,6 +96,22 @@
             border-radius: 50%;
             border: 3px solid #FF8A3A;
             background-color: #FF8A3A;
+            .onStage {
+                height: 100%;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                p {
+                    font-size:18px;
+                    color: #fff;
+                    margin-bottom: 0;
+                    &:last-of-type {
+                        margin-top: -18px;
+                    }
+                }
+            }
         }
     }
 </style>

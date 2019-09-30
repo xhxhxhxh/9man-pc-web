@@ -1,5 +1,5 @@
 <template>
-    <div class="liveBroadcast-student-container">
+    <div class="LiveBroadcast-container" @drop="removeDragStudentVideo" @dragover.prevent="() => {}">
         <div class="statusBar">
             <div class="deviceInfo">
                 <div class="netStatus">
@@ -24,37 +24,56 @@
             </div>
         </div>
         <main class="clearfix" ref="main">
-            <div class="videoArea">
-                <div class="video-teacher">
-                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId"></TeacherVideo>
+            <div class="videoArea" :style="{width: videoAreaWidth}">
+                <div class="video-teacher" v-show="showPicture">
+                    <TeacherVideo @pictureCovered="pictureCovered" teacherVideoScale="1"></TeacherVideo>
                 </div>
                 <div class="video-students">
-                    <StudentVideo :id="studentId" :studentVideoScale="studentVideoScale" :studentName="studentName" mode="self" :showPicture="showPicture"
-                                  :showStudentStatus="true" :draggdisable="draggdisable"></StudentVideo>
-                </div>:
+                    <p class="title" v-show="showPicture">班级成员：</p>
+                    <StudentVideo :id="id" :dragVideoId="dragVideoId" @startDragVideo="startDragVideo" mode="teacher" :rtcRoom="rtcRoom"
+                                  @endDragVideo="endDragVideo" :studentVideoScale="studentVideoScale" :showStudentStatus="showStudentStatus"
+                    v-for="id in peerIdList" :key="id"></StudentVideo>
+                    <p class="operateStudentsVideo" v-show="!showPicture">
+                        <button @click="cancelPictureCovered"><img src="./images/cover.png" alt="">取消铺满</button>
+                        <button><img src="./images/mute.png" alt="">全部禁音</button>
+                        <button><img src="./images/control.png" alt="">全部操作</button>
+                    </p>
+                </div>
             </div>
-            <div class="playArea" ref="playArea">
+            <div class="playArea" v-show="showPicture" @drop.stop="videoDropIn" @dragover.prevent="() => {}" ref="playArea">
+                <div class="load-image" v-if="showLoadImage && mode !== 'animate'">
+                    <a-upload
+                            name="image"
+                            listType="picture-card"
+                            class="avatar-uploader"
+                            :showUploadList="false"
+                            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                            :beforeUpload="beforeUploadImage"
+                    >
+                        <div>
+                            <a-icon :type="loading ? 'loading' : 'plus'" />
+                            <div class="ant-upload-text">点击本地上传</div>
+                        </div>
+                    </a-upload>
+                </div>
+                <div class="video-area" v-show="mode === 'video'" ref="video-area">
+                    <video src="" ref="video-play" poster="./images/loading.gif" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
+                </div>
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
-                <div class="wrapper" v-show="!controlStudentOperate"></div>
+                <div class="wrapper" v-show="showWrapper && mode === 'animate'"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
 <!--                    <iframe :src="iframeSrc" ref="iframe"></iframe>-->
                 </div>
-                <transition name="fade-picture">
-                    <div class="picture-covered-container" v-show="showPicture">
-                        <div class="picture-covered" :style="{width: pictureCoveredWidth + 'px'}">
-                            <div class="picture-covered-box">
-                                <StudentVideo :id="studentId" mode="self" :rtcRoom="rtcRoom" :studentName="studentName"
-                                              :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
-                            </div>
-                            <div class="picture-covered-box" v-for="id in peerIdList" :key="id">
-                                <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]"
-                                              :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
-                            </div>
-                        </div>
-                    </div>
-                </transition>
                 <div class="operate">
-                    <div class="mode-picture">
+                    <div class="mode-animate" v-show="mode !== 'picture'">
+                        <span class="play" @click="videoPlay" ref="play" :class="{disable: mode === 'animate'}"></span>
+                        <a-slider id="test" :defaultValue="0" :disabled="disabled"
+                                  v-model="progressBar" @change="changeVideoProgress"/>
+                        <span class="back"></span>
+                        <span class="fast-forward"></span>
+                        <span class="skip"></span>
+                    </div>
+                    <div class="mode-picture" v-show="mode === 'picture' && mode !== 'video'">
                         <div class="draw-operate">
                             <div :class="{pencil: true, selected: shape === 'LINE_DRAWING' || shape === 'FREE_DRAWING'}"
                                  @mouseenter="showPencilItem = true" @mouseleave="showPencilItem = false"
@@ -75,7 +94,7 @@
                                  @click="() => {shape === 'SHAPE'? stopDrawing(): shape = 'SHAPE'; drawingShape = 'rect'; fill = false; drawByShape(); trigger(shape)}">
                                 <div class="shape-item" v-show="showShapeItem">
                                     <span :class="{rect: true, selected: drawingShape === 'rect' && !fill && shape === 'SHAPE'}"
-                                          @click.stop="() => {shape === 'SHAPE' && drawingShape === 'rect' && !fill? stopDrawing():
+                                    @click.stop="() => {shape === 'SHAPE' && drawingShape === 'rect' && !fill? stopDrawing():
                                           shape = 'SHAPE'; drawingShape = 'rect'; fill = false; drawByShape(); trigger(shape)}"></span>
                                     <span :class="{circle: true, selected: drawingShape === 'circle' && !fill && shape === 'SHAPE'}"
                                           @click.stop="() => {shape === 'SHAPE' && drawingShape === 'circle' && !fill? stopDrawing():
@@ -95,25 +114,32 @@
                             <div class="delete" @click="clearAll"></div>
                             <div class="back" @click="undo"></div>
                         </div>
+                        <span class="back"></span>
+                        <span class="fast-forward"></span>
+                        <span class="skip"></span>
                     </div>
-                    <div class="student-list">
-                        <StudentInfo v-for="id in peerIdList" :studentName="studentNameObj[id]" :id="id" :key="id"></StudentInfo>
+                    <div class="mode">
+                        <button @click="changeModeToAnimate" :class="{active: mode === 'animate'}">动画</button>
+                        <button @click="changeModeToPicture" :class="{active: mode === 'picture'}">图片</button>
                     </div>
                 </div>
+                <DragStudentVideo :dragVideoId="dragVideoId" @startDragStudentVideo="startDragStudentVideo" @endDragStudentVideo="endDragVideo"
+                                  v-show="showDragVideo" :class="{dragStudentVideo: showDragVideo, dragStudentVideoCenter: showDragVideoCenter}"
+                                  :style="{top: dragVideoPosition.y, left: dragVideoPosition.x}" :rtcRoom="rtcRoom"
+                                  :dragStudentVideoScale="dragVideoPosition.dragStudentVideoScale"></DragStudentVideo>
             </div>
         </main>
     </div>
 </template>
 
 <script>
-    const ImageEditor = require('tui-image-editor');
-    import 'tui-image-editor/dist/tui-image-editor.min.css'
+    var ImageEditor = require('tui-image-editor');
+    import 'tui-image-editor/dist/tui-image-editor.css'
     import icona from 'tui-image-editor/dist/svg/icon-a.svg'
     import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
     import iconc from 'tui-image-editor/dist/svg/icon-c.svg'
     import icond from 'tui-image-editor/dist/svg/icon-d.svg'
-
-    const blackTheme = { // or white
+    var blackTheme = { // or white
                        // main icons
         'menu.normalIcon.path': icond,
         'menu.activeIcon.path': iconb,
@@ -132,15 +158,14 @@
     import NetStatus from '@/components/liveBroadcast/NetStatus'
     import MikeStatus from '@/components/liveBroadcast/MikeStatus'
     import Speaker from '@/components/liveBroadcast/Speaker'
-    import TeacherVideo from '@/components/liveBroadcast/TeacherVideoForStudent'
-    import StudentVideo from '@/components/liveBroadcast/StudentVideoForStudent'
-    import StudentInfo from '@/components/liveBroadcast/StudentInfo'
+    import TeacherVideo from '@/components/liveBroadcast/TeacherVideo'
+    import StudentVideo from '@/components/liveBroadcast/StudentVideo'
+    import DragStudentVideo from '@/components/liveBroadcast/DragStudentVideo'
 
     export default {
         name: "LiveBroadcast",
         data () {
             return {
-                // -----------画板数据---------------
                 shape: 'NORMAL',
                 imageEditor: null,
                 showPencilItem: false, //显示直线类型选项
@@ -155,25 +180,28 @@
                 wideMax: 30, // 最大线宽
                 textSize: 20, // 字体大小
                 colorList: ['#E74C3C', '#E67E22', '#F1C40F', '#2ECC71', '#29b6f6', '#2E3E50'],
-                // -----------rtcRoom数据---------------
-                studentId: '', // 学生id
-                studentName: '',
-                teacherId: '1',
-                teacherName: '',
-                peerIdList: [], // 所有学生的ID
+                socket: null,
                 rtcRoom: null,
-                studentNameObj: {}, // 每个学生的姓名
-                // -----------playarea基础数据---------------
                 iframeSrc: '',
-                showPicture: false, // 控制视频平铺
-                controlStudentOperate: false, // 控制学生操作
-                // -----------基础数据---------------
+                disabled: true, // 控制播放器滑块
                 mode: 'animate', // 直播模式
+                videoMode: false, // video模式是否被开启
+                dragVideoId: '', // 被拖拽的视频id
+                dragVideoIdCache: '', // 被拖拽的视频id暂存
+                dragVideoPosition: {x: '22px', y: '22px', offsetX: 0, offsetY: 0, dragStudentVideoScale: 1}, // 拖拽视频位置
+                fullScreenVideoPosition: {offsetX: '1084px', offsetY: '710px'},
+                showDragVideo: false, // 控制被拖拽的视频显示
+                showDragVideoCenter: false, // 使视频居中
+                showWrapper: false, // 显示遮挡层
+                showLoadImage: true, // 显示载入图片区域
+                progressBar: 0, // 视频进度条
+                loading: false, // 上传图片中
                 mikeStatus: true, // 开启麦克风
+                showPicture: true, // 控制视频平铺
+                videoAreaWidth: '637px', // 播放区域宽度
                 showStudentStatus: true, // student video中的状态栏显示
-                hideStudentStatus: false, // 隐藏状态栏
-                studentVideoScale: 2.06, // 学生区域缩放倍数
-                draggdisable: true, // 禁止学生视频被拖拽
+                studentVideoScale: 1, // 学生区域缩放倍数
+                peerIdList: [], // 学生的id
             }
         },
         components: {
@@ -182,12 +210,18 @@
             Speaker,
             TeacherVideo,
             StudentVideo,
-            StudentInfo
+            DragStudentVideo
+        },
+        created () {
+            // const socket = io('http://localhost:3000'); // 建立websocket连接
+            // this.socket = socket
+            this.init()
+        },
+        mounted () {
+            this.paint()
         },
         watch: {
             strokeWidth: function (val) {
-                this.imageEditor.stopDrawingMode(); //即时更换线条颜色
-                this.drawByShape();
                 const params = {
                     type: 'setStrokeWidth',
                     strokeWidth: val
@@ -195,8 +229,6 @@
                 this.sendDrawData(params)
             },
             strokeColor: function (val) {
-                this.imageEditor.stopDrawingMode(); //即时更换线条颜色
-                this.drawByShape();
                 const params = {
                     type: 'setStrokeColor',
                     strokeColor: val
@@ -204,35 +236,20 @@
                 this.sendDrawData(params)
             },
             fill: function (val) {
-                this.imageEditor.stopDrawingMode(); //即时更换线条颜色
-                this.drawByShape();
                 const params = {
                     type: 'setFill',
                     fill: val
                 }
                 this.sendDrawData(params)
             },
-        },
-        computed: {
-            // 视频铺满区域的动态宽度
-            pictureCoveredWidth () {
-                const width = 377
-                const length = this.peerIdList.length
-                if (length === 0) {
-                    return width
-                }else if (length === 1) {
-                    return width * 2
-                }else {
-                    return width * 3
+            mode: function (val) {
+                if (val !== 'video') {
+                    const video = this.$refs['video-play']
+                    const play = this.$refs['play']
+                    play.classList.remove('pause')
+                    video.pause();
                 }
             }
-        },
-        created () {
-            this.init()
-        },
-        mounted () {
-            this.paint()
-            this.getDrawData();
         },
         methods: {
             // 初始化
@@ -241,48 +258,28 @@
                 const host = 'www2.9man.com'
                 const port = 3210
                 const roomId = '8888'
-                const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
-                const userParams = {name: '小王' + peerId}
-                this.studentId = peerId
-                const teacherId = this.teacherId
-                this.studentName = userParams.name
+                const peerId = '1'
+                const userParams = {name: '小明'}
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
-                this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
-                this.rtcRoom = rtcRoom
-
-                // 用户加入时更新peerIdList
+                this.peerIdList = rtcRoom.getAllRoomUser();
+                // this.peerIdList = [1]
+                // console.log(peerIdList, peerIdList.indexOf(peerId));
+                // peerIdList.splice(peerIdList.indexOf(peerId), 1) // 删除老师id
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
-                    if (id === peerId) {
-                        rtcRoom.getAllRoomUser().forEach(item => {
-                            const peerId = item._peerId
-                            console.log(peerId, peerId !== teacherId && peerId !== this.studentId);
-                            if (peerId !== teacherId && peerId !== this.studentId) {
-                                this.studentNameObj[peerId] = item.name
-                                this.peerIdList.push(peerId)
-                            }
-                            if (peerId === teacherId) {
-                                this.teacherName = item.name
-                            }
-                        })
-                    }
-                    // console.log(this.peerIdList.includes(id));
-                    if (!this.peerIdList.includes(id) && id !== teacherId && id !== this.studentId) {
-                        const info = rtcRoom.getRoomUser(id);
-                        this.studentNameObj[id] = info.name
+                    if (!this.peerIdList.includes(id) && id !== peerId) {
                         this.peerIdList.push(id)
                     }
                 })
-
-                // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
-                    delete this.studentNameObj[id]
                     const index = this.peerIdList.indexOf(id)
                     if (index !== -1) {
                         this.peerIdList.splice(index, 1)
                     }
                 });
+                this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}&manager=1`
+                this.rtcRoom = rtcRoom
 
                 window.onbeforeunload = function() {
                     // 用户离开触发
@@ -339,17 +336,14 @@
                 //鼠标点击事件
                 instance.on('mousedown', function(event, originPointer) {
                     const shape = _this.shape;
-                    const canvasSize = instance.getCanvasSize()
                     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                     const e = {
                         screenX: event.screenX,
                         screenY: event.screenY,
-                        clientX: event.layerX,
-                        clientY: event.layerY,
-                        canvasWidth: canvasSize.width
+                        clientX: event.clientX + scrollLeft,
+                        clientY: event.clientY + scrollTop,
                     }
-
                     const params = {
                         type: 'mousedown',
                         e
@@ -362,8 +356,8 @@
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
-                            clientX: event.layerX,
-                            clientY: event.layerY,
+                            clientX: event.clientX + scrollLeft,
+                            clientY: event.clientY + scrollTop,
                         }
                         const params = {
                             type: 'mousemove',
@@ -371,29 +365,27 @@
                         }
                         _this.sendDrawData(params)
                     };
-
-                    //鼠标抬起事件
-                    document.onmouseup = function (event) {
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-                        const e = {
-                            screenX: event.screenX,
-                            screenY: event.screenY,
-                            clientX: event.layerX,
-                            clientY: event.layerY,
-                        }
-                        const params = {
-                            type: 'mouseup',
-                            e
-                        }
-                        _this.sendDrawData(params)
-
-                        canvas.onmousemove = null;
-                        document.onmouseup = null
-                    }
                 });
 
-
+                //鼠标抬起事件
+                document.onmouseup = function (event) {
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                    const e = {
+                        screenX: event.screenX,
+                        screenY: event.screenY,
+                        clientX: event.clientX + scrollLeft,
+                        clientY: event.clientY + scrollTop,
+                    }
+                    const params = {
+                        type: 'mouseup',
+                        e
+                    }
+                    _this.sendDrawData(params)
+                    instance.stopDrawingMode(); //即时更换线条颜色
+                    _this.drawByShape();
+                    canvas.onmousemove = null;
+                }
             },
 
             //根据shape绘制图形
@@ -514,101 +506,306 @@
 
             //发送画图数据
             sendDrawData (params) {
-                Object.assign(params, {id: this.studentId})
-                this.rtcRoom.sendMessage(params, '1')
+                // this.socket.emit('chat message', params)
+                this.rtcRoom.sendMessage(params)
             },
 
-            //接收画图数据，建立连接
-            getDrawData () {
-                const upperCanvas = document.querySelector('.upper-canvas')
-                const canvas = document.querySelector('#tui-image-editor');
+            // 开始视频拖拽
+            startDragVideo(params) {
+                this.showWrapper = true
+                this.dragVideoIdCache = params.id
+                this.dragVideoPosition.offsetX = params.x
+                this.dragVideoPosition.offsetY = params.y
+            },
 
-                const event = document.createEvent("MouseEvents");
-                this.rtcRoom.on('message-receive', (data) => {
-                    if (data.id === this.studentId) return
-                    const type = data.type
-                    const e = data.e
-                    let scrollLeft = ''
-                    let scrollTop = ''
-                    if (e) {
-                        scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                        scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+            // 画图区域的学生视频开始拖拽
+            startDragStudentVideo(params) {
+                this.showWrapper = true
+                this.dragVideoIdCache = params.id
+                this.fullScreenVideoPosition.offsetX = params.x
+                this.fullScreenVideoPosition.offsetY = params.y
+            },
+
+            // 拖拽结束
+            endDragVideo() {
+                this.showWrapper = false
+            },
+
+            // 视频被拖拽进入
+            videoDropIn(e) {
+                if(this.showDragVideo) {
+                    this.showDragVideo = false
+                    return this.$nextTick(function () {
+                        this.videoDropIn(e)
+                    })
+                }else {
+                    this.showDragVideo = true
+                }
+                let editArea = null
+                if (this.mode === 'picture') {
+                    editArea = this.$refs.editArea
+                }else if (this.mode === 'animate') {
+                    editArea = this.$refs.animateArea
+                }else if (this.mode === 'video') {
+                    editArea = this.$refs['video-area']
+                }
+                const editAreaWidth = editArea.offsetWidth
+                const editAreaHeight = editArea.offsetHeight
+                const playArea = this.$refs.playArea
+                const scrollLeft = window.pageXOffset||document.documentElement.scrollLeft||document.body.scrollLeft||0
+                const scrollTop = window.pageYOffset||document.documentElement.scrollTop||document.body.scrollTop||0
+                const [playAreaOffsetLeft, playAreaOffsetTop] = [playArea.offsetLeft - scrollLeft, playArea.offsetTop - scrollTop]
+                this.dragVideoId = this.dragVideoIdCache
+                const offsetX = e.clientX - playAreaOffsetLeft
+                const offsetY = e.clientY - playAreaOffsetTop
+                // console.log(e,this.dragVideoPosition.offsetX,this.dragVideoPosition.offsetY,offsetX,offsetY);
+
+                if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) { // studentVideo全屏
+                    const scale = editAreaHeight / 271
+                    if (this.dragVideoPosition.dragStudentVideoScale === 1) {
+                        this.dragVideoPosition.x = offsetX - this.fullScreenVideoPosition.offsetX * scale + 'px'
+                        this.dragVideoPosition.y = offsetY - this.fullScreenVideoPosition.offsetY * scale + 'px'
+                    }else {
+                        this.dragVideoPosition.x = offsetX - this.fullScreenVideoPosition.offsetX + 'px'
+                        this.dragVideoPosition.y = offsetY - this.fullScreenVideoPosition.offsetY + 'px'
                     }
-                    if (type === 'setStrokeWidth') {
-                        this.strokeWidth = data.strokeWidth
-                    }else if (type === 'setStrokeColor') {
-                        this.strokeColor = data.strokeColor
-                    }else if (type === 'setFill') {
-                        this.fill = data.fill
-                    }else if (type === 'FREE_DRAWING') {
-                        this.shape = 'FREE_DRAWING'
-                        this.drawByShape()
-                    }else if (type === 'SHAPE') {
-                        this.shape = 'SHAPE'
-                        this.drawingShape = data.drawingShape
-                        this.drawByShape()
-                    }else if (type === 'TEXT') {
-                        this.shape = 'TEXT'
-                        this.drawByShape()
-                    }else if (type === 'editingText') {
-                        const text = data.text;
-                        if (!text) return;
-                        this.imageEditor.changeText(data.id, text);
-                    }else if (type === 'ERASER') {
-                       this.eraser()
-                    }else if (type === 'CLEARALL') {
-                        this.clearAll()
-                    }else if (type === 'UNDO') {
-                        this.undo()
-                    }else if (type === 'NORMAL') {
-                        this.shape = 'NORMAL'
-                    }else if (type === 'stopDrawing') {
-                        this.stopDrawing()
-                    } else if (type === 'mousedown') {
-                        event.initMouseEvent("mousedown", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
-                            false, false, false, false, 0, null);
-                        upperCanvas.dispatchEvent(event);
-                        this.drawByShape()
-                    }else if (type === 'mousemove') {
-                        event.initMouseEvent("mousemove", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
-                            false, false, false, false, 0, null);
-                        upperCanvas.dispatchEvent(event);
+                    this.dragVideoPosition.dragStudentVideoScale = scale
+                    this.showDragVideoCenter = true
 
-                    }else if (type === 'mouseup') {
-                        event.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
-                            false, false, false, false, 0, null);
-                        upperCanvas.dispatchEvent(event);
-                        this.imageEditor.stopDrawingMode(); //即时更换线条颜色
-                        this.drawByShape();
-                        canvas.onmousemove = null;
-                    }else if (type === 'pictureCovered') { // 视频铺满
-                        this.showPicture = true
-                    }else if (type === 'cancelPictureCovered') { // 取消视频铺满
-                        this.showPicture = false
-                    }else if (type === 'controlStudentOperate') { // 控制学生操作
-                        const status = data.status
 
-                        if (status === 1) {
-                            this.controlStudentOperate = true
-                        } else {
-                            this.controlStudentOperate = false
-                        }
-                    }else if (type === 'changeMode') { // 切换模式
-                        this.mode = data.mode
+                }else {
+                    this.showDragVideoCenter = false
+                    this.dragVideoPosition.dragStudentVideoScale = 1
+                    this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX * 1.34 + 'px' // 1.34为当前视频与原视频尺寸的放大倍数
+                    this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY * 1.34 + 'px'
+                }
+            },
+
+            // 移除拖拽的视频
+            removeDragStudentVideo() {
+                if (this.dragVideoIdCache === this.dragVideoId) {
+                    this.showDragVideo = false
+                    this.dragVideoId = ''
+                    this.dragVideoPosition.dragStudentVideoScale = 1
+                }
+            },
+
+            // 初始化iframe
+            initIframe() {
+                // const iframe = this.$refs.iframe
+                // console.log(iframe);
+                // const _this = this
+                // iframe.onload = function () {
+                //     const body = this.contentWindow.document.body
+                    // body.ondragover = function (e) {
+                    //     // e.preventDefault()
+                    // }
+                    // body.ondrop = function (e) {
+                    //     _this.$refs.playArea.drop()
+                    // }
+                // }
+            },
+
+            // 画面铺满
+            pictureCovered() {
+                this.showPicture = false
+                this.showStudentStatus = false
+                const main = this.$refs.main
+                const mainWidth = main.offsetWidth
+                this.videoAreaWidth = '100%'
+                this.studentVideoScale = (mainWidth - 120) / 3 / 308
+                const params = {
+                    type: 'pictureCovered'
+                };
+                this.sendDrawData(params);
+            },
+
+            // 取消画面铺满
+            cancelPictureCovered() {
+                this.showPicture = true
+                this.showStudentStatus = true
+                this.videoAreaWidth = '637px'
+                this.studentVideoScale = 1
+                const params = {
+                    type: 'cancelPictureCovered'
+                };
+                this.sendDrawData(params);
+            },
+
+            // 处理上传图片请求
+            beforeUploadImage (file) {
+                const type = file.type
+                const size = file.size
+
+                if (type.substr(0, 5) === 'video') {
+                    const reader = new FileReader();
+                    this.mode = 'video'
+                    this.videoMode = true
+                    this.$nextTick(function () {
+                        const video = this.$refs['video-play']
+                        reader.onload = () => {
+                            this.showLoadImage = false
+                            const blob = new Blob([reader.result]);
+                            video.src = window.URL.createObjectURL(blob);
+                        };
+                        reader.readAsArrayBuffer(file);
+                    })
+
+                }else if (type.substr(0, 5) === 'image') {
+                    if (size / 1024 / 1024 > 2) {
+                        this.$message.error('图片大小不能超过2MB!')
+                        return false
                     }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        this.imageEditor.loadImageFromFile(file).then(() => {
+                            this.showLoadImage = false
+                        });
+                    };
+                    reader.readAsDataURL(file);
 
-                });
-            }
+
+                }else {
+                    this.$message.error('文件格式不正确!')
+                }
+                return false
+            },
+
+            // 视频播放功能
+            videoPlay () {
+                if (this.mode !== 'video') return
+                const video = this.$refs['video-play']
+                const play = this.$refs['play']
+                play.classList.toggle('pause')
+                if (video.paused) {
+                    video.play();
+                }else {
+                    video.pause();
+                }
+            },
+
+            // 显示视频播放进度
+            videoTimeupdate (e) {
+                const video = e.target
+
+                const currentTime = video.currentTime
+                //计算进度条百分比
+                this.progressBar = parseInt(currentTime / video.duration * 100)
+            },
+
+            // 改变视频播放进度
+            changeVideoProgress (value) {
+                const video = this.$refs['video-play']
+                video.currentTime = value / 100 * video.duration
+            },
+
+            // 视频播放结束
+            videoEnded (e) {
+                const video = e.target
+                const play = this.$refs['play']
+                play.classList.remove('pause')
+                video.currentTime = 0
+            },
+
+            // 变为动画模式
+            changeModeToAnimate () {
+                this.mode = 'animate'
+                this.disabled = true
+                const params = {
+                    type: 'changeMode',
+                    mode: 'animate'
+                };
+                this.sendDrawData(params);
+            },
+
+            // 变为图片模式
+            changeModeToPicture () {
+                if (this.videoMode) {
+                    this.mode = 'video'
+                }else {
+                    this.mode = 'picture'
+                    const params = {
+                        type: 'changeMode',
+                        mode: 'picture'
+                    };
+                    this.sendDrawData(params);
+                }
+
+                this.disabled = false
+            },
 
         }
     }
 </script>
 
 <style lang="less">
-    .liveBroadcast-student-container {
+    @media screen and (max-width: 1700px) {
+        .LiveBroadcast-container {
+           .select-bar {
+               .action {
+                   .action-item {
+                       padding: 0 20px !important;
+                   }
+                   .start-class {
+                       margin-left: 20px !important;
+                   }
+               }
+           }
+        }
+    }
+    @media screen and (max-width: 1600px) {
+        .LiveBroadcast-container {
+            .select-bar {
+                .draw-operate {
+                    > div {
+                        margin-right: 10px !important;
+                    }
+                    .line {
+                        margin: 15px 10px !important;
+                    }
+                }
+            }
+        }
+    }
+    @media screen and (max-width: 1450px) {
+        .LiveBroadcast-container {
+            .select-bar {
+                .draw-operate {
+                    > div {
+                        margin-right: 5px !important;
+                    }
+                    .line {
+                        margin: 15px 5px !important;
+                    }
+                }
+                .action {
+                    .action-item {
+                        padding: 0 10px !important;
+                    }
+                    .start-class {
+                        margin-left: 10px !important;
+                    }
+                }
+            }
+        }
+    }
+    @keyframes drag-animate {
+        to {
+            top: 22px;
+            left: 22px;
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    @keyframes drag-animate-center {
+        to {
+            top: 22px;
+            left: 50%;
+            opacity: 1;
+            transform: scale(1) translate(-50%, 0);
+        }
+    }
+    .LiveBroadcast-container {
         width: 100%;
         min-width: 1920px;
         background:linear-gradient(0deg,rgba(242,153,74,1),rgba(242,201,76,1));
@@ -671,41 +868,59 @@
                 .wrapper {
                     position: absolute;
                     width: 1152px;
-                    height: 800px;
+                    height: 710px;
                     left: 22px;
                     top: 22px;
                     opacity: 0;
                     z-index: 99;
                 }
-                .fade-picture-enter {
-                    opacity: 0;
-                    bottom: 0;
-                    transform: scale(0);
-                }
-                .fade-picture-leave-to {
-                    opacity: 0;
-                    bottom: 0;
-                    transform: scale(0);
-                }
-                .fade-picture-enter-active,.fade-picture-leave-active {
-                    transition: all .5s ease;
-                }
-                .picture-covered-container {
-                    height: 710px;
-                    width: 1150px;
+                .load-image {
+                    position: absolute;
                     left: 22px;
                     top: 22px;
-                    position: absolute;
-                    .picture-covered {
+                    width: 1152px;
+                    height: 710px;
+                    background-color: #fff;
+                    border-radius:20px;
+                    z-index: 9;
+                    .avatar-uploader {
                         position: absolute;
-                        max-height: 504px;
-                        left: 50%;
                         top: 50%;
+                        left: 50%;
                         transform: translate(-50%, -50%);
-                        .picture-covered-box {
-                            padding: 8px;
-                            float: left;
+                        .ant-upload-select-picture-card {
+                            border: 2px dashed #d9d9d9;
+                            width: 250px;
+                            height: 250px;
+                            &:hover {
+                                border-color: #FF6A04;
+                                i {
+                                    color: #FF6A04;
+                                }
+                            }
+                            i {
+                                font-size: 130px;
+                                color: #999;
+                                transition: color 0.3s ease;
+                            }
+                            .ant-upload-text {
+                                color: #666;
+                                font-size: 30px;
+                                position: absolute;
+                                top: 270px;
+                                width: 236px;
+                            }
                         }
+                    }
+                }
+                > .video-area {
+                    width: 100%;
+                    height: 710px;
+                    border-radius:20px;
+                    background-color: #000;
+                    video {
+                        width: 100%;
+                        height: 100%;
                     }
                 }
                 .dragStudentVideo-container {
@@ -767,6 +982,59 @@
                 .operate {
                     height: 55px;
                     margin-top: 28px;
+                    .mode-animate {
+                        display: flex;
+                        justify-content: space-between;
+                        .ant-slider {
+                            width: 782px;
+                            &:hover .ant-slider-rail {
+                                background-color: #fff;
+                            }
+                            .ant-slider-rail {
+                                height: 20px;
+                                border-radius: 20px;
+                                background-color: #fff;
+                            }
+                            .ant-slider-track {
+                                height: 20px;
+                                border-radius: 10px 0 0 10px;
+                                background-color: #FF6A04;
+                            }
+                            .ant-slider-handle {
+                                height: 36px;
+                                width: 36px;
+                                border: 4px solid #FF6A04;
+                                box-shadow: unset;
+                            }
+                        }
+                        > span {
+                            height: 55px;
+                            width: 55px;
+                            display: inline-block;
+                            cursor: pointer;
+                        }
+                        .play {
+                            background-image: url("images/play.png");
+                            background-position: center;
+                            &.pause {
+                                background-image: url("images/pause.png");
+                                background-position: -1px 0;
+                            }
+                            &.disable {
+                                background-image: url("images/play_disable.png");
+
+                            }
+                        }
+                        .back {
+                            background-image: url("images/goback.png");
+                        }
+                        .fast-forward {
+                            background-image: url("images/fast-forward.png");
+                        }
+                        .skip {
+                            background-image: url("images/skip.png");
+                        }
+                    }
                     .mode-picture {
                         display: flex;
                         justify-content: space-between;
@@ -776,15 +1044,24 @@
                             display: inline-block;
                             cursor: pointer;
                         }
+                        .back {
+                            background-image: url("images/goback.png");
+                        }
+                        .fast-forward {
+                            background-image: url("images/fast-forward.png");
+                        }
+                        .skip {
+                            background-image: url("images/skip.png");
+                        }
                         .draw-operate {
                             display: flex;
                             justify-content: space-between;
                             align-items: center;
                             background-color: #fff;
-                            width:100%;
+                            width:876px;
                             height:64px;
                             border-radius:20px;
-                            padding: 0 183px;
+                            padding: 0 44px;
                             margin-top: -5px;
                             > div {
                                 display: inline-block;
@@ -965,11 +1242,6 @@
                             }
                         }
                     }
-                    .student-list {
-                        margin-top: 16px;
-                        display: flex;
-                        justify-content: space-between;
-                    }
                     .mode {
                         margin-top: 26px;
                         text-align: center;
@@ -1001,11 +1273,46 @@
                 margin-right: 10px;
                 .video-teacher {
                     width: 100%;
-                    height: 416px;
-                    margin-bottom: 84px;
+                    height: 202px;
+                    margin-bottom: 28px;
                 }
                 .video-students {
                     width: 100%;
+                    display: flex;
+                    flex-wrap: wrap;
+                    justify-content: space-between;
+                    .title {
+                        font-size:21px;
+                        width: 100%;
+                        color: #fff;
+                    }
+                    > div {
+                        margin-bottom: 22px;
+                    }
+                    .operateStudentsVideo {
+                        width: 100%;
+                        text-align: center;
+                        margin-top: 16px;
+                        button {
+                            width:150px;
+                            height:48px;
+                            background-image:url("images/button-bgc.png");
+                            border-radius:10px;
+                            font-size: 21px;
+                            color: #fff;
+                            border: 0;
+                            cursor: pointer;
+                            outline: unset;
+                            img {
+                                width: 21px;
+                                height: 21px;
+                                margin-right: 10px;
+                            }
+                            &:nth-of-type(2) {
+                                margin: 0 100px;
+                            }
+                        }
+                    }
                 }
             }
         }

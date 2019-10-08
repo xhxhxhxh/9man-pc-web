@@ -120,6 +120,15 @@ export default class extends EventEmitter {
     this._rtcRoom.sendMessage(message,peerId);
   }
 
+  notifyMessage(data,receiver)
+  {
+    let obj = {
+      receiver: receiver,
+      data: data
+    };
+    this.sendNotificationMessage('user_message_notify',obj);
+  }
+
   changeUserProperty(peerId,receiver,data)
   {
     let obj = {
@@ -331,7 +340,14 @@ export default class extends EventEmitter {
 
   handleNotificationMessageEvent(method,data)
   {
-    if (method === 'user_kick_out') {
+    if (method === 'user_message_notify') {
+
+      let peerId = data.peerId;
+      let message = data.data;
+
+      this.emit('message-notify-receive',peerId,message);
+
+    }else if (method === 'user_kick_out') {
       let data = {
         code: 403,
         msg: RTC_ERROR_MSG.Kick_Out
@@ -569,5 +585,8 @@ export default class extends EventEmitter {
   {
     this._rtcRoom.log();
   }
+
+
+  //todo 添加音频判断 添加没有视频时发起offer的sdp修改 课堂开始结束设计
 
 }

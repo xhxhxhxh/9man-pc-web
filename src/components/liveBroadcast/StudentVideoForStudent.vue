@@ -1,7 +1,7 @@
 <template>
     <div class="studentVideo-container"
          :style="{width: 308 * studentVideoScale + 'px', height: 202 * studentVideoScale + 'px'}">
-        <div class="video-area">
+        <div class="video-area" :id="'video' + id">
             <span class="name">{{studentName}}</span>
             <video autoplay loop type="video/*" ref="video" v-show="!showPicture"></video>
         </div>
@@ -162,6 +162,7 @@
         border-radius: 20px;
         overflow: hidden;
         background-image: url("images/background.png");
+        background-size: cover;
 
         .video-area {
             float: left;
@@ -174,6 +175,24 @@
             video {
                 width: 100%;
                 height: 100%;
+            }
+
+            &.onStage {
+                position: absolute;
+                left: 30px;
+                top: 94px;
+                width: 635px;
+                height: 416px;
+                overflow: hidden;
+            }
+
+            &.onStage-big {
+                position: absolute;
+                top: 116px;
+                left: 752px;
+                width: 1084px;
+                height: 710px;
+                overflow: hidden;
             }
 
             .name {

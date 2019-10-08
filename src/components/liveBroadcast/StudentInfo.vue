@@ -1,7 +1,7 @@
 <template>
     <div class="studentInfo-container">
         <div class="student-info">
-            <p class="name">姓名</p>
+            <p class="name">{{studentName}}</p>
             <div class="status-bar">
                 <div class="mikeStatus">
                     <img src="./images/mike.png" alt="">
@@ -14,7 +14,7 @@
             </div>
         </div>
         <div class="avatar">
-            <div class="onStage">
+            <div class="onStage" v-show="id === studentOnStageId">
                 <p>上台中</p>
                 <p>...</p>
             </div>
@@ -31,6 +31,7 @@
                 mikeStatus: false
             }
         },
+        props: ['studentName', 'studentOnStageId', 'id'],
         components: {
             MikeStatus,
         },

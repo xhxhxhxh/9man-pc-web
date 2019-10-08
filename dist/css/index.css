@@ -1592,6 +1592,11 @@
   font-size: 19px;
   margin-right: 20px;
 }
+.LiveBroadcast-container .statusBar .startClass img {
+  margin-left: 30px;
+  cursor: pointer;
+  margin-bottom: 17px;
+}
 .LiveBroadcast-container main {
   padding: 30px;
 }
@@ -2360,6 +2365,10 @@
   background: #fff;
   color: #FF6A04;
 }
+.teacherVideo-container .operate-area button.disable[data-v-e8ce6cee] {
+  background: #CDCDCD !important;
+  cursor: unset;
+}
 .teacherVideo-container .operate-area button img[data-v-e8ce6cee] {
   width: 21px;
   height: 21px;
@@ -2683,6 +2692,15 @@ to {
 .sketchpadForShow-container {
   -webkit-transform-origin: left top;
   transform-origin: left top;
+  position: relative;
+}
+.sketchpadForShow-container .wrapper {
+  position: absolute;
+  width: 1152px;
+  height: 710px;
+  left: 0;
+  top: 0;
+  z-index: 999;
 }
 .sketchpadForShow-container .sketchpad {
   width: 1152px !important;
@@ -2792,6 +2810,11 @@ to {
   font-size: 19px;
   margin-right: 20px;
 }
+.liveBroadcast-student-container .statusBar .startClass img {
+  margin-left: 30px;
+  cursor: pointer;
+  margin-bottom: 17px;
+}
 .liveBroadcast-student-container main {
   padding: 30px;
 }
@@ -2839,26 +2862,7 @@ to {
 }
 .liveBroadcast-student-container main .playArea .picture-covered-container .picture-covered {
   position: absolute;
-  max-width: 1128px;
   max-height: 504px;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -moz-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-pack: justify;
-  -webkit-justify-content: space-between;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
-  -webkit-flex-wrap: wrap;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
-  -webkit-box-align: unset;
-  -webkit-align-items: unset;
-  -moz-box-align: unset;
-  -ms-flex-align: unset;
-  align-items: unset;
   left: 50%;
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
@@ -2866,6 +2870,7 @@ to {
 }
 .liveBroadcast-student-container main .playArea .picture-covered-container .picture-covered .picture-covered-box {
   padding: 8px;
+  float: left;
 }
 .liveBroadcast-student-container main .playArea .dragStudentVideo-container {
   position: absolute;
@@ -3179,11 +3184,14 @@ to {
   display: -moz-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-  -webkit-justify-content: space-between;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+  -moz-box-pack: start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+}
+.liveBroadcast-student-container main .playArea .operate .student-list > div {
+  margin-right: 45px;
 }
 .liveBroadcast-student-container main .playArea .operate .mode {
   margin-top: 26px;
@@ -3217,6 +3225,10 @@ to {
   width: 100%;
   height: 416px;
   margin-bottom: 84px;
+  overflow: hidden;
+}
+.liveBroadcast-student-container main .videoArea .video-teacher .student-on-stage-box {
+  height: 100%;
 }
 .liveBroadcast-student-container main .videoArea .video-students {
   width: 100%;
@@ -3295,6 +3307,7 @@ to {
   border-radius: 20px;
   overflow: hidden;
   background-image: url(../images/7419e5d8-background.png);
+  background-size: cover;
 }
 .studentVideo-container .video-area[data-v-195fbc69] {
   float: left;
@@ -3307,6 +3320,22 @@ to {
 .studentVideo-container .video-area video[data-v-195fbc69] {
   width: 100%;
   height: 100%;
+}
+.studentVideo-container .video-area.onStage[data-v-195fbc69] {
+  position: absolute;
+  left: 30px;
+  top: 94px;
+  width: 635px;
+  height: 416px;
+  overflow: hidden;
+}
+.studentVideo-container .video-area.onStage-big[data-v-195fbc69] {
+  position: absolute;
+  top: 116px;
+  left: 752px;
+  width: 1084px;
+  height: 710px;
+  overflow: hidden;
 }
 .studentVideo-container .video-area .name[data-v-195fbc69] {
   display: inline-block;
@@ -3439,6 +3468,40 @@ to {
   border-radius: 50%;
   border: 3px solid #FF8A3A;
   background-color: #FF8A3A;
+}
+.studentInfo-container .avatar .onStage[data-v-432752fc] {
+  height: 100%;
+  width: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -moz-box-orient: vertical;
+  -moz-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.studentInfo-container .avatar .onStage p[data-v-432752fc] {
+  font-size: 18px;
+  color: #fff;
+  margin-bottom: 0;
+}
+.studentInfo-container .avatar .onStage p[data-v-432752fc]:last-of-type {
+  margin-top: -18px;
 }
 
 html {

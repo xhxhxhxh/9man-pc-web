@@ -21,23 +21,28 @@
             <div class="startClass">
                 <span class="time">01:50:30</span>
                 <a-button>开始上课</a-button>
+                <img src="./images/exit.png" alt="" @click="leaveRoom">
             </div>
         </div>
         <main class="clearfix" ref="main">
             <div class="videoArea">
                 <div class="video-teacher">
-                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId"></TeacherVideo>
+                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId" v-show="!studentOnStage"></TeacherVideo>
+                    <div class="student-on-stage-box" v-show="otherStudentOnStage">
+                        <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" v-show="id === studentOnStageId"
+                                      :studentVideoScale="studentVideoScale" v-for="id in peerIdList" :key="id"></StudentVideo>
+                    </div>
                 </div>
                 <div class="video-students">
                     <StudentVideo :id="studentId" :studentVideoScale="studentVideoScale" :studentName="studentName" mode="self" :showPicture="showPicture"
-                                  :showStudentStatus="true" :draggdisable="draggdisable"></StudentVideo>
-                </div>:
+                                  :showStudentStatus="true"></StudentVideo>
+                </div>
             </div>
             <div class="playArea" ref="playArea">
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
                 <div class="wrapper" v-show="!controlStudentOperate"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
-<!--                    <iframe :src="iframeSrc" ref="iframe"></iframe>-->
+                    <iframe :src="iframeSrc" ref="iframe"></iframe>
                 </div>
                 <transition name="fade-picture">
                     <div class="picture-covered-container" v-show="showPicture">
@@ -97,7 +102,8 @@
                         </div>
                     </div>
                     <div class="student-list">
-                        <StudentInfo v-for="id in peerIdList" :studentName="studentNameObj[id]" :id="id" :key="id"></StudentInfo>
+                        <StudentInfo v-for="id in peerIdList" :studentName="studentNameObj[id]" :id="id" :key="id"
+                                     :studentOnStageId="studentOnStageId"></StudentInfo>
                     </div>
                 </div>
             </div>
@@ -163,6 +169,9 @@
                 peerIdList: [], // 所有学生的ID
                 rtcRoom: null,
                 studentNameObj: {}, // 每个学生的姓名
+                studentOnStageId: '', // 上台学生id
+                studentOnStageName: '', // 上台学生姓名
+                otherStudentOnStage: false, // 其他学生上台
                 // -----------playarea基础数据---------------
                 iframeSrc: '',
                 showPicture: false, // 控制视频平铺
@@ -173,7 +182,7 @@
                 showStudentStatus: true, // student video中的状态栏显示
                 hideStudentStatus: false, // 隐藏状态栏
                 studentVideoScale: 2.06, // 学生区域缩放倍数
-                draggdisable: true, // 禁止学生视频被拖拽
+                studentOnStage: false, // 学生上台状态
             }
         },
         components: {
@@ -232,7 +241,7 @@
         },
         mounted () {
             this.paint()
-            this.getDrawData();
+            this.getDrawData()
         },
         methods: {
             // 初始化
@@ -246,9 +255,29 @@
                 this.studentId = peerId
                 const teacherId = this.teacherId
                 this.studentName = userParams.name
+
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
-                this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
+                this.iframeSrc = ` https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
                 this.rtcRoom = rtcRoom
+
+                // 同步状态
+                rtcRoom.on('message-notify-receive', (peerId, data) => {
+                    if (data.type === 'synchronize') { // 状态同步
+                        const result = data.values
+                        for (let key in result) {
+                            this[key] = result[key]
+                        }
+                        this.drawByShape();
+                    }else if (data.type === 'controlStudentOperate') { // 控制学生操作
+                        const status = data.status
+
+                        if (status === 1) {
+                            this.controlStudentOperate = true
+                        } else {
+                            this.controlStudentOperate = false
+                        }
+                    }
+                })
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -256,7 +285,6 @@
                     if (id === peerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
-                            console.log(peerId, peerId !== teacherId && peerId !== this.studentId);
                             if (peerId !== teacherId && peerId !== this.studentId) {
                                 this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
@@ -264,6 +292,10 @@
                             if (peerId === teacherId) {
                                 this.teacherName = item.name
                             }
+                        })
+                        // 用户连接成功成功发送请求同步数据
+                        this.$nextTick(function () {
+                            this.pageMounted()
                         })
                     }
                     // console.log(this.peerIdList.includes(id));
@@ -283,11 +315,28 @@
                         this.peerIdList.splice(index, 1)
                     }
                 });
+            },
 
-                window.onbeforeunload = function() {
-                    // 用户离开触发
-                    rtcRoom.leaveRoom();
+            // 离开房间
+            leaveRoom () {
+                const rtcRoom = this.rtcRoom
+                this.$confirm({
+                    title: '确定要退出房间吗?',
+                    content: '',
+                    centered: true,
+                    onOk() {
+                        rtcRoom.leaveRoom();
+                    },
+                    onCancel() {},
+                });
+            },
+
+            // 页面加载完成后发送消息给老师，用于同步数据
+            pageMounted () {
+                const params = {
+                    type: 'pageDone',
                 }
+                this.rtcRoom.notifyMessage(params, this.teacherId)
             },
 
             // 画图
@@ -515,7 +564,7 @@
             //发送画图数据
             sendDrawData (params) {
                 Object.assign(params, {id: this.studentId})
-                this.rtcRoom.sendMessage(params, '1')
+                this.rtcRoom.sendMessage(params, this.teacherId)
             },
 
             //接收画图数据，建立连接
@@ -525,7 +574,7 @@
 
                 const event = document.createEvent("MouseEvents");
                 this.rtcRoom.on('message-receive', (data) => {
-                    if (data.id === this.studentId) return
+                    // if (data.id === this.studentId) return
                     const type = data.type
                     const e = data.e
                     let scrollLeft = ''
@@ -588,7 +637,7 @@
                         this.showPicture = true
                     }else if (type === 'cancelPictureCovered') { // 取消视频铺满
                         this.showPicture = false
-                    }else if (type === 'controlStudentOperate') { // 控制学生操作
+                    }else if (data.type === 'controlStudentOperate') { // 控制学生操作
                         const status = data.status
 
                         if (status === 1) {
@@ -598,10 +647,64 @@
                         }
                     }else if (type === 'changeMode') { // 切换模式
                         this.mode = data.mode
+                    }else if (type === 'onStage-small') {// 学生上台 小屏
+                        const id = data.id
+                        const name = data.name
+                        this.studentOutStage(id)
+                        this.studentOnStage = true
+                        if (id === this.studentId) { // 上台学生是自己时
+                            const targetDom = document.getElementById('video' + id)
+                            targetDom.classList.add('onStage')
+                        } else {
+                            this.otherStudentOnStage = true
+                            this.studentOnStageId = id
+                            this.studentOnStageName = name
+                        }
+                    }else if (type === 'onStage-big') { // 学生上台 大屏
+                        const id = data.id
+                        const name = data.name
+                        this.studentOutStage(id)
+                        this.studentOnStage = false
+                        const targetDom = document.getElementById('video' + id)
+                        targetDom.classList.add('onStage-big')
+                        if (id !== this.studentId) {
+                            this.otherStudentOnStage = true
+                            this.studentOnStageId = id
+                            this.studentOnStageName = name
+                        }
+                    }else if (type === 'outStage') { // 学生下台
+                        const id = data.id
+                        this.studentOutStage(id)
+                    }else if (type === 'init') { // 全部操作时，通知学生发送初始化数据到画板
+                        this.synchronize(this.studentId)
                     }
-
                 });
-            }
+            },
+
+            // 学生下台
+            studentOutStage(id) {
+                this.studentOnStage = false
+                const targetDom = document.getElementById('video' + id)
+                targetDom.classList.remove('onStage', 'onStage-big')
+                this.otherStudentOnStage = false
+                this.studentOnStageId = ''
+                this.studentOnStageName = ''
+            },
+
+            // 当学生连接时同步状态
+            synchronize(id) {
+                const params = {
+                    type: 'synchronize',
+                    id,
+                    values: {
+                        strokeWidth: this.strokeWidth,
+                        strokeColor: this.strokeColor,
+                        fill: this.fill,
+                        shape: this.shape
+                    }
+                }
+                this.rtcRoom.sendMessage(params, this.teacherId)
+            },
 
         }
     }
@@ -655,6 +758,11 @@
                 .time {
                     font-size: 19px;
                     margin-right: 20px;
+                }
+                img {
+                    margin-left: 30px;
+                    cursor: pointer;
+                    margin-bottom: 17px;
                 }
             }
         }
@@ -968,7 +1076,10 @@
                     .student-list {
                         margin-top: 16px;
                         display: flex;
-                        justify-content: space-between;
+                        justify-content: flex-start;
+                        > div {
+                            margin-right: 45px;
+                        }
                     }
                     .mode {
                         margin-top: 26px;
@@ -1003,6 +1114,10 @@
                     width: 100%;
                     height: 416px;
                     margin-bottom: 84px;
+                    overflow: hidden;
+                    .student-on-stage-box {
+                        height: 100%;
+                    }
                 }
                 .video-students {
                     width: 100%;

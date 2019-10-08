@@ -21,12 +21,13 @@
             <div class="startClass">
                 <span class="time">01:50:30</span>
                 <a-button>开始上课</a-button>
+                <img src="./images/exit.png" alt="" @click="leaveRoom">
             </div>
         </div>
         <main class="clearfix" ref="main">
             <div class="videoArea" :style="{width: videoAreaWidth}" v-show="!$store.getters.controlAllStatus || peerIdList.length <= 1">
                 <div class="video-teacher" v-show="showPicture">
-                    <TeacherVideo @pictureCovered="pictureCovered" :rtcRoom="rtcRoom" :teacherName="teacherName"></TeacherVideo>
+                    <TeacherVideo @pictureCovered="pictureCovered" :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList"></TeacherVideo>
                 </div>
                 <div class="video-students">
                     <p class="title" v-show="showPicture">班级成员：</p>
@@ -66,7 +67,7 @@
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
                 <div class="wrapper" v-show="showWrapper && mode === 'animate'"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
-<!--                    <iframe :src="iframeSrc" ref="iframe"></iframe>-->
+                    <iframe :src="iframeSrc" ref="iframe"></iframe>
                 </div>
                 <div class="operate">
                     <div class="mode-animate" v-show="mode !== 'picture'">
@@ -202,8 +203,6 @@
                 fill: false, //填充图形
                 strokeWidth: 11,  //线宽
                 strokeColor: '#2E3E50', //线的颜色
-                wideMax: 30, // 最大线宽
-                textSize: 20, // 字体大小
                 colorList: ['#E74C3C', '#E67E22', '#F1C40F', '#2ECC71', '#29b6f6', '#2E3E50'],
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
@@ -222,6 +221,7 @@
                 imageList: [exampleImg], // 图片列表
                 indexOfImageList: 0, // 显示图片的索引
                 showSkipPictureArea: false, // 显示跳转图片区域
+                studentOnStageType: '', // 学生是出于大屏模式还是小屏
                 // -----------视频拖拽数据---------------
                 dragVideoId: '', // 被拖拽的视频id
                 dragVideoIdCache: '', // 被拖拽的视频id暂存
@@ -277,6 +277,9 @@
             },
             updateControlStatus () {
                 return this.$store.getters.updateControlStatus
+            },
+            controlAllStatus () {
+                return this.$store.getters.controlAllStatus
             }
         },
         mounted () {
@@ -319,21 +322,44 @@
                 }
             },
             updateControlStatus: function (val) {
-                console.log(val)
                 if (val.length === 1) { // 当只有一个学生授权操作，总学生数大于1时，该学生上台
                     const studentId = val[0]
-                    console.log(123)
+                    this.cancelPictureCovered()
+                    if (this.dragVideoId && this.dragVideoId !== val[0]) { // 学生数为2时，全部操作后，取消一个学生操作
+                        this.dragVideoIdCache = this.dragVideoId
+                        this.removeDragStudentVideo()
+                    }
+                    if (this.dragVideoId && this.dragVideoId === val[0]) { // 学生数为2时，全部操作后，取消一个学生操作，还原学生界面状态
+                        const studentOnStageType = this.studentOnStageType
+                        const id = this.dragVideoId
+                        if (studentOnStageType === 'small') {
+                            this.sendStageStatus('onStage-small', id)
+                        }else if (studentOnStageType === 'big') {
+                            this.sendStageStatus('onStage-big', id)
+                        }
+                    }
+                    if (this.dragVideoId) return // 防止与拖拽操作重复
                     this.$nextTick(function () {
                         this.onStage(studentId)
                     })
                 }
-                if (val.length === 0) { // 取消上台
-                    console.log(312)
-                    this.$nextTick(function () {
-                        this.removeDragStudentVideo()
-                    })
+                if (!val) { // 取消上台
+                    this.removeDragStudentVideo()
                 }
-
+            },
+            controlAllStatus: function (val) { // 全部操作时，取消铺满
+                if (val && this.peerIdList.length > 0) {
+                    this.cancelPictureCovered()
+                    if (this.dragVideoId && this.peerIdList.length > 1) {
+                        this.sendOutStageStatus(this.dragVideoId) // 全部操作时，通知学生下台
+                    }
+                }
+                if (val && this.peerIdList.length > 1) { // 全部操作时，通知学生发送初始化数据到画板
+                    const params = {
+                        type: 'init'
+                    }
+                    this.rtcRoom.sendMessage(params)
+                }
             }
         },
         methods: {
@@ -358,24 +384,22 @@
                 this.teacherId = teacherPeerId
                 this.teacherName = userParams.name
                 // 设置iframeSrc
-                this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
+                this.iframeSrc = ` https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
                 // this.peerIdList = ['1', '2']
-                console.log(this.peerIdList);
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
-                    if (id === '1') {
+                    if (id === teacherPeerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
-                            if (peerId !== '1') {
+                            if (peerId !== teacherPeerId) {
                                 this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
                             }
                         })
                     }
-                    console.log(this.peerIdList.includes(id));
                     if (!this.peerIdList.includes(id) && id !== teacherPeerId) {
                         const info = rtcRoom.getRoomUser(id);
                         this.studentNameObj[id] = info.name
@@ -387,16 +411,14 @@
                 //用户连接成功成功时设置用户状态
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
-                    if (id === '1') return
-                    console.log(id)
+                    if (id === teacherPeerId) return
 
                     // 处理静音状态
                     const userAudioStatus = this.$store.state.liveBroadcast.liveBroadcastData.audioStatus[id]
                     if (userAudioStatus) {
-                        const status = userAudioStatus.status  // 1为开启，2为关闭
-                        if (status === 1) {
+                        if (userAudioStatus === 1) {
                             rtcRoom.openAudio(id);
-                        } else if (status === 2) {
+                        } else if (userAudioStatus === 2) {
                             rtcRoom.closeAudio(id)
                         }
                     } else {
@@ -410,20 +432,25 @@
                         type: 'controlStudentOperate',
                     }
                     if (userControlStatus) {
-                        const status = userControlStatus.status  // 1为开启，2为关闭
-                        Object.assign(params, {status: status})
-                        if (status === 1) {
-                            rtcRoom.sendMessage(params, id)
-                        } else if (status === 2) {
-                            rtcRoom.sendMessage(params, id)
+                        Object.assign(params, {status: userControlStatus})
+                        if (userControlStatus === 1) {
+                            rtcRoom.notifyMessage(params, id)
+                        } else if (userControlStatus === 2) {
+                            rtcRoom.notifyMessage(params, id)
                         }
                     } else {
                         Object.assign(params, {status: 2})
-                        rtcRoom.sendMessage(params, id)
+                        rtcRoom.notifyMessage(params, id)
                         this.$store.commit('setControlStatus', {id: id, status: 2})
                     }
-
                 });
+
+                // 学生页面加载完成后，发送同步数据
+                rtcRoom.on('message-notify-receive', (peerId, data) => {
+                    if (data.type === 'pageDone') {
+                        this.synchronize(peerId) // 同步状态
+                    }
+                })
 
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
@@ -438,10 +465,43 @@
                 });
                 this.rtcRoom = rtcRoom
                 this.$store.commit('setRtcRoom', rtcRoom)
+            },
 
-                window.onbeforeunload = function() {
-                    // 用户离开触发
-                    rtcRoom.leaveRoom();
+            // 离开房间
+            leaveRoom () {
+                const rtcRoom = this.rtcRoom
+                this.$confirm({
+                    title: '确定要退出房间吗?',
+                    content: '',
+                    centered: true,
+                    onOk() {
+                        rtcRoom.leaveRoom();
+                    },
+                    onCancel() {},
+                });
+            },
+
+            // 当学生连接时同步状态
+            synchronize(userId) {
+                const params = {
+                    type: 'synchronize',
+                    values: {
+                        strokeWidth: this.strokeWidth,
+                        strokeColor: this.strokeColor,
+                        fill: this.fill,
+                        mode: this.mode,
+                        showPicture: !this.showPicture,
+                        shape: this.shape,
+                        drawingShape: this.drawingShape
+                    }
+                }
+                this.rtcRoom.notifyMessage(params, userId)
+                const studentOnStageType = this.studentOnStageType
+                const id = this.dragVideoId
+                if (studentOnStageType === 'small') {
+                    this.sendStageStatus('onStage-small', id)
+                }else if (studentOnStageType === 'big') {
+                    this.sendStageStatus('onStage-big', id)
                 }
             },
 
@@ -709,6 +769,7 @@
                 const offsetY = e.clientY - playAreaOffsetTop
 
                 if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
+                    this.studentOnStageType = 'big'
                     if (targetHeight !== 710) {
                         this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX * 2.62 + playArea.offsetLeft + 22 + 'px' // 2.62为放大倍数
                         this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY * 2.62 + playArea.offsetTop + 22 + 'px'
@@ -717,6 +778,7 @@
                         this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY + playArea.offsetTop + 22 + 'px'
                     }
                 }else {
+                    this.studentOnStageType = 'small'
                     if (targetHeight === 710) {
                         this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX / 2.62 + playArea.offsetLeft + 22 + 'px' // 2.62为放大倍数
                         this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY / 2.62 + playArea.offsetTop + 22 + 'px'
@@ -726,6 +788,16 @@
                     }
                 }
 
+                // 开启操作权限
+                const params = {
+                    type: 'controlStudentOperate',
+                    status: 1
+                }
+                this.$store.commit('setControlStatus', {id: this.dragVideoIdCache, status: 1})
+                this.rtcRoom.sendMessage(params, this.dragVideoIdCache)
+
+                const id = this.dragVideoId
+
                 if (target.classList.contains('small-video') || target.classList.contains('big-video')) {
                     target.classList.remove('small-video', 'big-video')
                     setTimeout(() => {
@@ -734,9 +806,11 @@
                         if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
                             target.classList.remove('small-video')
                             target.classList.add('big-video')
+                            this.sendStageStatus('onStage-big', id)
                         }else {
                             target.classList.remove('big-video')
                             target.classList.add('small-video')
+                            this.sendStageStatus('onStage-small', id)
                         }
                     }, 1)
 
@@ -746,9 +820,11 @@
                     if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
                         target.classList.remove('small-video')
                         target.classList.add('big-video')
+                        this.sendStageStatus('onStage-big', id)
                     }else {
                         target.classList.remove('big-video')
                         target.classList.add('small-video')
+                        this.sendStageStatus('onStage-small', id)
                     }
                 }
             },
@@ -757,24 +833,52 @@
             onStage(id) {
                 this.dragVideoId = id
                 this.dragVideoIdCache = id
+                this.studentOnStageType = 'small'
                 const playArea = this.$refs.playArea
                 const target = document.querySelector('#video' + id)
                 const targetStyle = target.style
-                const targetHeight = 271
-                const targetWidth = 414
-                targetStyle.top = targetHeight / 2 + 22 + playArea.offsetTop + 'px'
-                targetStyle.left = targetWidth / 2 + 22 + playArea.offsetLeft + 'px'
+                targetStyle.top = 22 + playArea.offsetTop + 'px'
+                targetStyle.left = 22 + playArea.offsetLeft + 'px'
                 target.classList.add('small-video')
+                this.sendStageStatus('onStage-small', id)
+            },
+
+            // 学生上台后发送socket状态
+            sendStageStatus(type, id) {
+                const params = {
+                    type,
+                    id,
+                    name: this.studentNameObj[id]
+                }
+                this.rtcRoom.sendMessage(params)
+            },
+
+            // 学生下台后发送socket状态
+            sendOutStageStatus(id) {
+                const params = {
+                    type: 'outStage',
+                    id
+                }
+                this.rtcRoom.sendMessage(params)
             },
 
             // 移除拖拽的视频
             removeDragStudentVideo(e) {
                 if (this.dragVideoIdCache === this.dragVideoId) {
+                    this.studentOnStageType = ''
                     const target = document.querySelector('#video' + this.dragVideoId)
                     const targetStyle = target.style
                     targetStyle.top = 0
                     targetStyle.left = 0
+                    // 关闭操作权限
+                    const params = {
+                        type: 'controlStudentOperate',
+                        status: 2
+                    }
+                    this.$store.commit('setControlStatus', {id: this.dragVideoIdCache, status: 2})
+                    this.rtcRoom.sendMessage(params, this.dragVideoIdCache)
                     target.classList.remove('small-video', 'big-video')
+                    this.sendOutStageStatus(this.dragVideoId)
                     this.dragVideoId = ''
                 }
             },
@@ -797,15 +901,12 @@
 
             // 画面铺满
             pictureCovered() {
+                if (this.peerIdList.length === 0) return
                 this.showPicture = false
                 this.showStudentStatus = false
                 if (this.dragVideoId) { // 还原拖拽的视频
-                    const target = document.querySelector('#video' + this.dragVideoId)
-                    const targetStyle = target.style
-                    targetStyle.top = 0
-                    targetStyle.left = 0
-                    target.classList.remove('small-video', 'big-video')
-                    this.dragVideoId = ''
+                    this.dragVideoIdCache = this.dragVideoId
+                    this.removeDragStudentVideo()
                 }
                 const main = this.$refs.main
                 const mainWidth = main.offsetWidth
@@ -1069,6 +1170,11 @@
                 .time {
                     font-size: 19px;
                     margin-right: 20px;
+                }
+                img {
+                    margin-left: 30px;
+                    cursor: pointer;
+                    margin-bottom: 17px;
                 }
             }
         }

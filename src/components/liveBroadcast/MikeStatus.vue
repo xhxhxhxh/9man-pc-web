@@ -85,7 +85,7 @@
             // 获取其他人麦克风音量
             getVolumeFromOthers () {
                 this.rtcRoom.on('audio-volume-change', (peerId, volume) => {
-                    console.log('peerId:' + peerId, 'volume:' + volume);
+                    // console.log('peerId:' + peerId, 'volume:' + volume);
                     if (peerId === this.id) {
                         this.volume = volume * 100
                     }

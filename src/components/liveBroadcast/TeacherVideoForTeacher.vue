@@ -5,11 +5,13 @@
             <span class="name">{{teacherName}}</span>
         </div>
         <div class="operate-area">
-            <button @click="() => {$emit('pictureCovered')}"><img src="./images/cover.png" alt="">视频铺满</button>
-            <button :class="{muteAll: !$store.getters.updateAudioStatus, mute: true}" @click="$store.commit('updateAudioStatusAll')">
+            <button @click="() => {$emit('pictureCovered')}" :class="{disable: studentsNum}"><img src="./images/cover.png" alt="">视频铺满</button>
+            <button :class="{muteAll: !$store.getters.updateAudioStatus, mute: true}"
+                    @click="$store.commit('updateAudioStatusAll')">
                 <img :src="muteSrc" alt="">{{muteText}}
             </button>
-            <button :class="{controlAll: $store.getters.controlAllStatus, control: true}" @click="$store.commit('updateControlStatusAll')" >
+            <button :class="{controlAll: $store.getters.controlAllStatus, control: true}"
+                    @click="$store.commit('updateControlStatusAll')" >
                 <img :src="controlSrc" alt="">{{controlText}}
             </button>
         </div>
@@ -33,7 +35,7 @@
 
             }
         },
-        props: ['rtcRoom', 'teacherName'],
+        props: ['rtcRoom', 'teacherName', 'peerIdList'],
         created () {
 
         },
@@ -67,6 +69,15 @@
                     return '全部操作'
                 }else {
                     return '取消操作'
+                }
+            },
+            // 房间内学生数
+            studentsNum () {
+                const studentsNum = this.peerIdList.length
+                if (studentsNum === 0) {
+                    return true
+                }else {
+                    return false
                 }
             }
         },
@@ -213,6 +224,10 @@
                         background: #fff;
                         color: #FF6A04;
                     }
+                }
+                &.disable {
+                    background: #CDCDCD !important;
+                    cursor: unset;
                 }
                 img {
                     width: 21px;

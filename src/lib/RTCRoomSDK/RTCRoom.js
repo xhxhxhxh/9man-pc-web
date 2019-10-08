@@ -205,6 +205,7 @@ export default class extends EventEmitter
         case 'new_peer' :
         {
           let peerId = data.peerId;
+
           let properties = {};
           properties[peerId] = data.property;
 
@@ -344,6 +345,8 @@ export default class extends EventEmitter
         // Handle the failure
 
         this.clearStats(peerId);
+      }else if (pc.iceConnectionState === "completed") {
+
       }
     };
 
@@ -543,7 +546,6 @@ export default class extends EventEmitter
       let constraints = mediaConstraints;
 
       if (this._onlyAudio) {
-        console.log("onlyAudio");
         constraints = {
           "video": false,
           "audio": true

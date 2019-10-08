@@ -1,11 +1,13 @@
 <template>
     <div class="sketchpadForShow-container" :style="{ transform: `scale(${canvasScale})`}">
         <div :id="'sketchpad' + id" class="sketchpad"></div>
+        <div class="wrapper"></div>
     </div>
 </template>
 
 <script>
-    const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min');;
+    const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min');
+    // var ImageEditor = require('tui-image-editor');
     import 'tui-image-editor/dist/tui-image-editor.css'
     import icona from 'tui-image-editor/dist/svg/icon-a.svg'
     import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
@@ -171,7 +173,6 @@
                 const event = document.createEvent("MouseEvents");
                 rtcRoom.on('message-receive', (data) => {
                     if (data.id !== this.id) return
-                    // console.log(this.id, data)
                     const canvasScale = this.canvasScale
                     const type = data.type
                     const e = data.e
@@ -236,6 +237,12 @@
                         this.imageEditor.stopDrawingMode(); //即时更换线条颜色
                         this.drawByShape();
                         canvas.onmousemove = null;
+                    }else if (type === 'synchronize') { // 状态同步
+                        const result = data.values
+                        for (let key in result) {
+                            this[key] = result[key]
+                        }
+                        this.drawByShape();
                     }
 
                 });
@@ -248,6 +255,15 @@
 <style lang="less">
     .sketchpadForShow-container {
         transform-origin: left top;
+        position: relative;
+        .wrapper {
+            position: absolute;
+            width: 1152px;
+            height: 710px;
+            left: 0;
+            top: 0;
+            z-index: 999;
+        }
         .sketchpad {
             width: 1152px !important;
             height: 710px !important;

@@ -135,8 +135,8 @@
                     this.$axios.get( this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
                         .then(res => {
                             let data = res.data;
-                            this.$message.success('验证码发送成功',5);
                             if (data.code == 200) {
+                                this.$message.success('验证码发送成功',5);
                                 //倒计时60s
                                 if (this.timeOut) {
                                     return

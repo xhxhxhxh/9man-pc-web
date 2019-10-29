@@ -386,11 +386,11 @@
                     }
                 });
                 //鼠标点击事件
-                instance.on('mousedown', function(event, originPointer) {
-                    const shape = _this.shape;
+                instance.on('mousedown', function(event) {
+                    // const shape = _this.shape;
                     const canvasSize = instance.getCanvasSize()
-                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                    // const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
+                    // const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                     const e = {
                         screenX: event.screenX,
                         screenY: event.screenY,
@@ -423,8 +423,8 @@
 
                     //鼠标抬起事件
                     document.onmouseup = function (event) {
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                        // const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
+                        // const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,

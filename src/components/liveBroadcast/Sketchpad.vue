@@ -83,11 +83,13 @@
         methods: {
             // 控制学生操作
             controlStudentOperate() {
+                const {operatePermission, liveBroadcastDataCurrent} = this.$store.state.liveBroadcast
+                if (!operatePermission) return
                 const id = this.id
                 const params = {
                     type: 'controlStudentOperate',
                 }
-                const controlStatus = this.$store.state.liveBroadcast.liveBroadcastDataCurrent.controlStatus[id]
+                const controlStatus = liveBroadcastDataCurrent.controlStatus[id]
                 const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
                 const studentNum = this.$store.state.liveBroadcast.peerIdList.length
 
@@ -111,10 +113,10 @@
                     if (lengthOfControlOpenStatusCache > 1 && lengthOfControlOpenStatusCache < studentNum) return
                 }
                 if (controlStatus === 1) { // 禁止操作
-                    Object.assign(params, {status: 2})
+                    Object.assign(params, {status: 2, event: 'single_operations', data: {peerId: '0'}})
                     this.$store.commit('setControlStatus', {id: id, status: 2})
                 }else if (controlStatus === 2) { // 开启操作
-                    Object.assign(params, {status: 1})
+                    Object.assign(params, {status: 1, event: 'single_operations', data: {peerId: id}})
                     this.$store.commit('setControlStatus', {id: id, status: 1})
                 }
                 this.rtcRoom.sendMessage(params, id)

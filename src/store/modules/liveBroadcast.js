@@ -6,17 +6,66 @@ const liveBroadcast = {
         liveBroadcastData: { // 本地状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
+            stageStatus: {id: '', videoType: ''}, // 学生上台状态
+            mode: 'animate', // 缓存操作模式
+            coursewarePage: 0,
         },
         peerIdList: [], // 当前在线学生id
         liveBroadcastDataCurrent: { // 在线学生的状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
-        }
+        },
+        teacherId: '',
+        studentId: '',
+        operatePermission: true // 允许学生操作权限
     },
     mutations: {
         // 设置rtcRoom
         setRtcRoom (state, data) {
             state.rtcRoom = data
+        },
+
+        // 设置老师id
+        setTeacherId (state, id) {
+            state.teacherId = id
+        },
+
+        // 设置学生上台状态
+        setStageStatus (state, data) {
+            state.liveBroadcastData.stageStatus = data
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 设置mode
+        setMode (state, value) {
+            state.liveBroadcastData.mode = value
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 设置课件页数
+        setCoursewarePage (state, page) {
+            state.liveBroadcastData.coursewarePage = page
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 设置操作权限
+        setOperatePermission (state, permission) {
+            state.operatePermission = permission
+            if (!permission) { // 取消处于操作学生的操作
+                const updateControlStatus = this.getters.updateControlStatus
+                if (updateControlStatus) {
+                    const studentId = updateControlStatus[0]
+                    const data = {id: studentId, status: 2}
+                    this.commit('setControlStatus', data)
+                    const params = {
+                        type: 'controlStudentOperate',
+                        status: 2,
+                        event: 'single_operations',
+                        data: {peerId: 0}
+                    }
+                    state.rtcRoom.sendMessage(params, studentId)
+                }
+            }
         },
 
         // peerIdList
@@ -45,27 +94,31 @@ const liveBroadcast = {
 
         // 设置audioStatus
         setAudioStatus(state, data) {
-            const audioStatus = {...state.liveBroadcastData.audioStatus};
-            const audioStatusInCurrent = {...state.liveBroadcastDataCurrent.audioStatus};
+            // const audioStatus = {...state.liveBroadcastData.audioStatus};
+            // const audioStatusInCurrent = {...state.liveBroadcastDataCurrent.audioStatus};
             const id = data.id;
             const status = data.status;
-            audioStatus[id] = status
-            audioStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.audioStatus = {...audioStatusInCurrent}
-            state.liveBroadcastData.audioStatus = {...audioStatus}
+            // audioStatus[id] = status
+            // audioStatusInCurrent[id] = status
+            // state.liveBroadcastDataCurrent.audioStatus = {...audioStatusInCurrent}
+            // state.liveBroadcastData.audioStatus = {...audioStatus}
+            state.liveBroadcastDataCurrent.audioStatus[id] = status
+            state.liveBroadcastData.audioStatus[id] = status
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // controlStatus
         setControlStatus(state, data) {
-            const controlStatus = {...state.liveBroadcastData.controlStatus};
-            const controlStatusInCurrent = {...state.liveBroadcastDataCurrent.controlStatus};
+            // const controlStatus = {...state.liveBroadcastData.controlStatus};
+            // const controlStatusInCurrent = {...state.liveBroadcastDataCurrent.controlStatus};
             const id = data.id;
             const status = data.status;
-            controlStatus[id] = status
-            controlStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.controlStatus = {...controlStatusInCurrent}
-            state.liveBroadcastData.controlStatus = {...controlStatus}
+            // controlStatus[id] = status
+            // controlStatusInCurrent[id] = status
+            // state.liveBroadcastDataCurrent.controlStatus = {...controlStatusInCurrent}
+            // state.liveBroadcastData.controlStatus = {...controlStatus}
+            state.liveBroadcastData.controlStatus[id] = status
+            state.liveBroadcastDataCurrent.controlStatus[id] = status
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
@@ -105,20 +158,21 @@ const liveBroadcast = {
 
         // 全体操作
         updateControlStatusAll(state) {
+            return
             const controlOpenObj = this.getters.controlAllStatus
             const params = {
                 type: 'controlStudentOperate',
             }
             const controlCloseObj = state.liveBroadcastDataCurrent.controlStatus
             if (controlOpenObj) { // 全体禁止操作
-                Object.assign(params, {status: 2})
+                Object.assign(params, {status: 2, event: 'recover'})
                 state.rtcRoom.sendMessage(params)
                 for (let id in controlCloseObj) {
                     state.liveBroadcastData.controlStatus[id] = 2
                     state.liveBroadcastDataCurrent.controlStatus[id] = 2
                 }
             } else { // 全体操作
-                Object.assign(params, {status: 1})
+                Object.assign(params, {status: 1, event: 'single_operations', data: {peerId: state.teacherId}})
                 state.rtcRoom.sendMessage(params)
                 for (let id in controlCloseObj) {
                     state.liveBroadcastData.controlStatus[id] = 1

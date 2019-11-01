@@ -44,6 +44,9 @@
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
                     <iframe :src="iframeSrc" ref="iframe"></iframe>
                 </div>
+                <div class="video-area" v-show="mode === 'video'" ref="video-area">
+                    <video src="" ref="video-play" preload="auto" poster="./images/loading.gif" @ended="videoEnded"></video>
+                </div>
                 <transition name="fade-picture">
                     <div class="picture-covered-container" v-show="showPicture">
                         <div class="picture-covered" :style="{width: pictureCoveredWidth + 'px'}">
@@ -170,6 +173,7 @@
                 rtcRoom: null,
                 studentNameObj: {}, // 每个学生的姓名
                 studentOnStageId: '', // 上台学生id
+                roomId: '',
                 studentOnStageName: '', // 上台学生姓名
                 otherStudentOnStage: false, // 其他学生上台
                 // -----------playarea基础数据---------------
@@ -183,6 +187,9 @@
                 hideStudentStatus: false, // 隐藏状态栏
                 studentVideoScale: 2.06, // 学生区域缩放倍数
                 studentOnStage: false, // 学生上台状态
+                // -----------课件动画数据---------------
+                coursewareResource: [],
+                resourceIndex: 0, // 课件播放序号
             }
         },
         components: {
@@ -240,6 +247,7 @@
             this.init()
         },
         mounted () {
+            this.getClassInfo()
             this.paint()
             this.getDrawData()
         },
@@ -249,15 +257,16 @@
                 const rtcRoom = new RTCRoom()
                 const host = 'www2.9man.com'
                 const port = 3210
-                const roomId = '8888'
+                const roomId = '9n474171ko' // 9n474171ko
                 const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
-                const userParams = {name: '小王' + peerId}
+                const userParams = {name: '小王' + peerId, headUrl: '', role: 2}
                 this.studentId = peerId
+                this.roomId = roomId
                 const teacherId = this.teacherId
                 this.studentName = userParams.name
 
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
-                this.iframeSrc = ` https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
+                // this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
                 this.rtcRoom = rtcRoom
 
                 // 同步状态
@@ -268,6 +277,7 @@
                             this[key] = result[key]
                         }
                         this.drawByShape();
+                        this.changeAnimate(this.$event, 1)
                     }else if (data.type === 'controlStudentOperate') { // 控制学生操作
                         const status = data.status
 
@@ -337,6 +347,49 @@
                     type: 'pageDone',
                 }
                 this.rtcRoom.notifyMessage(params, this.teacherId)
+            },
+
+            // 获取课堂信息
+            getClassInfo () {
+                const params = {
+                    identity: 1,
+                    pageno: 1,
+                    pagesize: 10
+                }
+                this.$axios.get(this.$store.state.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const classInfo = data.data.data
+                            const coursewareId = classInfo[0]['courseware_id']
+                            this.getCoursewareInfo(coursewareId)
+                        } else {
+
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+            },
+
+            // 获取课件信息
+            getCoursewareInfo (id) {
+                const params = {
+                    id
+                }
+                this.$axios.get(this.$store.state.rootUrl + '/v1/courseware/queryCoursewareDetail', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            this.coursewareResource = data.data.data.resource
+                            this.changeAnimate(this.$event, 1) // 载入课件
+                        } else {
+
+                        }
+                    })
+                    .catch(() => {
+
+                    })
             },
 
             // 画图
@@ -567,14 +620,39 @@
                 this.rtcRoom.sendMessage(params, this.teacherId)
             },
 
+            // 视频播放结束
+            videoEnded (e) {
+                const video = e.target
+                video.currentTime = 0
+            },
+
+            // 切换动画
+            changeAnimate () {
+                const courseware = this.coursewareResource[this.resourceIndex]
+                const type = courseware.type
+                const url = courseware.url
+                const resourceUrl = this.$store.state.resourceUrl
+                if (type === 1) { // 视频
+                    this.mode = 'video'
+                    const video = this.$refs['video-play']
+                    video.src = resourceUrl + url
+                    video.pause();
+                }else if (type === 2) { // 动画
+                    this.mode = 'animate'
+                    this.iframeSrc = '/' + resourceUrl + url + `&roomId=${this.roomId}&peerId=` + this.studentId
+                }
+            },
+
             //接收画图数据，建立连接
             getDrawData () {
                 const upperCanvas = document.querySelector('.upper-canvas')
                 const canvas = document.querySelector('#tui-image-editor');
+                const video = this.$refs['video-play']
 
                 const event = document.createEvent("MouseEvents");
                 this.rtcRoom.on('message-receive', (data) => {
                     // if (data.id === this.studentId) return
+                    console.log(data)
                     const type = data.type
                     const e = data.e
                     let scrollLeft = ''
@@ -677,6 +755,19 @@
                         this.studentOutStage(id)
                     }else if (type === 'init') { // 全部操作时，通知学生发送初始化数据到画板
                         this.synchronize(this.studentId)
+                    }else if (type === 'control_video_play') { // 控制视频播放
+                        const isplay = data.isplay
+                        if (isplay) {
+                            video.play()
+                        }else {
+                            video.pause();
+                        }
+                    }else if (type === 'control_video_progress') { // 控制视频播放
+                        const progress = data.progress
+                        video.currentTime = progress * video.duration
+                    }else if (type === 'animate_page_change') { // 控制视频播放
+                        this.resourceIndex = data.page
+                        this.changeAnimate()
                     }
                 });
             },
@@ -828,6 +919,16 @@
                     &.dragStudentVideoCenter {
                         animation: drag-animate-center .5s ease;
                         animation-fill-mode: forwards;
+                    }
+                }
+                > .video-area {
+                    width: 100%;
+                    height: 710px;
+                    border-radius:20px;
+                    background-color: #000;
+                    video {
+                        width: 100%;
+                        height: 100%;
                     }
                 }
                 .animate-area {

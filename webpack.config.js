@@ -26,7 +26,17 @@ module.exports = {
                 target: 'https://www2.9man.com',
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
-            }
+            },
+            "/v1": {
+                target: 'http://kt2.9man.com/tp5/public/api',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true
+            },
+            "/admin/file": {
+                target: 'http://kt2.9man.com/tp5/public/uploads',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true
+            },
         },
     },
     plugins: [

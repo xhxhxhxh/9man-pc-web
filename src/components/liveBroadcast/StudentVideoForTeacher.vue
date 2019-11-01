@@ -136,15 +136,17 @@
 
             // 控制学生操作
             controlStudentOperate() {
+                const {operatePermission, liveBroadcastDataCurrent} = this.$store.state.liveBroadcast
+                if (!operatePermission) return
                 const id = this.id
                 const params = {
                     type: 'controlStudentOperate',
                 }
-                const controlStatus = this.$store.state.liveBroadcast.liveBroadcastDataCurrent.controlStatus[id]
+                const controlStatus = liveBroadcastDataCurrent.controlStatus[id]
                 const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
                 const studentNum = this.peerIdList.length
 
-                if (controlOpenStatus) {
+                if (controlOpenStatus) { // 注释以取消 原切换操作需先取消正获得操作权限学生的权限
                     const controlOpenStatusCache = [...controlOpenStatus] // 拷贝一个controlOpenStatus
                     if (controlStatus === 1) { // 禁止操作
                         // 当controlOpenStatusCache存在这个id时，将其从中剔除
@@ -164,10 +166,10 @@
                     if (lengthOfControlOpenStatusCache > 1 && lengthOfControlOpenStatusCache < studentNum) return
                 }
                 if (controlStatus === 1) { // 禁止操作
-                    Object.assign(params, {status: 2})
+                    Object.assign(params, {status: 2, event: 'single_operations', data: {peerId: '0'}})
                     this.$store.commit('setControlStatus', {id: id, status: 2})
                 }else if (controlStatus === 2) { // 开启操作
-                    Object.assign(params, {status: 1})
+                    Object.assign(params, {status: 1, event: 'single_operations', data: {peerId: id}})
                     this.$store.commit('setControlStatus', {id: id, status: 1})
                 }
                 this.rtcRoom.sendMessage(params, id)

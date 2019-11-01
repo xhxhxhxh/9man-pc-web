@@ -12,7 +12,8 @@ export default new Vuex.Store({
         liveBroadcast
     },
     state: {
-        rootUrl: '', //https://edu.9man.com
+        rootUrl: '', // https://edu.9man.com
+        resourceUrl: '', // http://kt2.9man.com/tp5/public/uploads/
         identity: '',
         updateInfo: 0,
         updateUsername: 0,

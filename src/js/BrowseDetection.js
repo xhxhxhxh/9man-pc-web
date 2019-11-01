@@ -1,12 +1,12 @@
-// try {
-//     var urlhash = window.location.hash;
-//     if (!urlhash.match("fromapp")) {
-//         if ((navigator.userAgent.match(/(iPhone|iPod|Android|ios|iPad)/i))) {
-//             window.location = "http://m.9mankid.com/"; //这里的网址请改为你手机站的网址
-//         }
-//     }
-// } catch (err) {
-// }
+try {
+    var urlhash = window.location.hash;
+    if (!urlhash.match("fromapp")) {
+        if ((navigator.userAgent.match(/(iPhone|iPod|Android|ios|iPad)/i))) {
+            window.location = "http://m.9mankid.com/"; //这里的网址请改为你手机站的网址
+        }
+    }
+} catch (err) {
+}
 
 function getBrowserInfo() {
     var Sys = {};

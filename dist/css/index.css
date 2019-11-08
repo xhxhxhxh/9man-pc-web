@@ -1618,6 +1618,14 @@
   opacity: 0;
   z-index: 99;
 }
+.LiveBroadcast-container main .playArea .operate-wrapper {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  z-index: 99;
+}
 .LiveBroadcast-container main .playArea .load-image {
   position: absolute;
   left: 22px;
@@ -1725,6 +1733,7 @@
   -moz-box-pack: justify;
   -ms-flex-pack: justify;
   justify-content: space-between;
+  position: relative;
 }
 .LiveBroadcast-container main .playArea .operate .mode-animate .ant-slider {
   width: 772px;
@@ -1774,6 +1783,72 @@
 }
 .LiveBroadcast-container main .playArea .operate .mode-animate .skip {
   background-image: url(data:image/png;base64,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);
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area {
+  position: absolute;
+  padding: 14px;
+  right: 0px;
+  bottom: 83px;
+  width: 515px;
+  height: 324px;
+  background: rgba(249, 254, 240, 0.9);
+  border-radius: 20px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: start;
+  -webkit-justify-content: flex-start;
+  -moz-box-pack: start;
+  -ms-flex-pack: start;
+  justify-content: flex-start;
+  -webkit-flex-wrap: wrap;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  -webkit-box-align: start;
+  -webkit-align-items: flex-start;
+  -moz-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  z-index: 999;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* 滚动条的滑轨背景颜色 */
+  /* 滑块颜色 */
+  /* 滑轨两头的监听按钮颜色 */
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box img {
+  width: 146px;
+  height: 91px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  margin-right: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box::-webkit-scrollbar {
+  width: 10px;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box::-webkit-scrollbar-track {
+  border-radius: 5px;
+  background-color: #fff;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  background-color: #D2D2D2;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box::-webkit-scrollbar-button {
+  height: 0;
+}
+.LiveBroadcast-container main .playArea .operate .mode-animate .skip-animate-area .skip-animate-area-box::-webkit-scrollbar-corner {
+  height: 0;
 }
 .LiveBroadcast-container main .playArea .operate .mode-picture {
   display: -webkit-box;
@@ -1847,6 +1922,10 @@
   margin-bottom: 12px;
   margin-right: 12px;
   cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .LiveBroadcast-container main .playArea .operate .mode-picture .skip-picture-area .skip-picture-area-box::-webkit-scrollbar {
   width: 10px;
@@ -2890,6 +2969,16 @@ to {
   animation: drag-animate-center 0.5s ease;
   -webkit-animation-fill-mode: forwards;
   animation-fill-mode: forwards;
+}
+.liveBroadcast-student-container main .playArea > .video-area {
+  width: 100%;
+  height: 710px;
+  border-radius: 20px;
+  background-color: #000;
+}
+.liveBroadcast-student-container main .playArea > .video-area video {
+  width: 100%;
+  height: 100%;
 }
 .liveBroadcast-student-container main .playArea .animate-area {
   width: 100%;

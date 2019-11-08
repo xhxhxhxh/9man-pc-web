@@ -16,7 +16,7 @@ let RTC_USER_ROLE = {
   Teacher: 1,  //老师
   Student: 2,  //学生
   Visitor: 3,  //旁听
-  Patrol: 4    //巡课
+  Invisible: 4 //隐身
 };
 
 let RTC_ERROR_MSG = {

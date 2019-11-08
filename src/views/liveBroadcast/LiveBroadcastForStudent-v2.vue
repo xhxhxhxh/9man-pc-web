@@ -29,8 +29,11 @@
                 <div class="video-teacher">
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId" v-show="!studentOnStage"></TeacherVideo>
                     <div class="student-on-stage-box" v-show="otherStudentOnStage">
-                        <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" v-show="id === studentOnStageId"
-                                      :studentVideoScale="studentVideoScale" v-for="id in peerIdList" :key="id"></StudentVideo>
+<!--                        <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" v-show="id === studentOnStageId"-->
+<!--                                      :studentVideoScale="studentVideoScale" v-for="id in peerIdList" :key="id"></StudentVideo>-->
+                        <StudentVideo :id="studentOnStageId" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[studentOnStageId]"
+                                      :stream="streamObj[studentOnStageId]"
+                                      :studentVideoScale="studentVideoScale"></StudentVideo>
                     </div>
                 </div>
                 <div class="video-students">
@@ -40,12 +43,12 @@
             </div>
             <div class="playArea" ref="playArea">
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
-                <div class="wrapper" v-show="!controlStudentOperate"></div>
+                <div class="wrapper" v-show="!controlStudentOperate" :style="{zIndex: wrapperZIndex}"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
                     <iframe :src="iframeSrc" ref="iframe"></iframe>
                 </div>
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
-                    <video src="" ref="video-play" preload="auto" poster="./images/loading.gif" @ended="videoEnded"></video>
+                    <video src="" ref="video-play" preload="auto" @ended="videoEnded"></video>
                 </div>
                 <transition name="fade-picture">
                     <div class="picture-covered-container" v-show="showPicture">
@@ -55,7 +58,7 @@
                                               :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
                             </div>
                             <div class="picture-covered-box" v-for="id in peerIdList" :key="id">
-                                <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]"
+                                <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
                                               :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
                             </div>
                         </div>
@@ -167,11 +170,12 @@
                 // -----------rtcRoom数据---------------
                 studentId: '', // 学生id
                 studentName: '',
-                teacherId: '1',
+                teacherId: 'PKE528EQ',
                 teacherName: '',
                 peerIdList: [], // 所有学生的ID
                 rtcRoom: null,
                 studentNameObj: {}, // 每个学生的姓名
+                streamObj: {}, // 每个学生视频流
                 studentOnStageId: '', // 上台学生id
                 roomId: '',
                 studentOnStageName: '', // 上台学生姓名
@@ -180,6 +184,7 @@
                 iframeSrc: '',
                 showPicture: false, // 控制视频平铺
                 controlStudentOperate: false, // 控制学生操作
+                wrapperZIndex: 99, // 缓存学生操作
                 // -----------基础数据---------------
                 mode: 'animate', // 直播模式
                 mikeStatus: true, // 开启麦克风
@@ -254,8 +259,8 @@
         methods: {
             // 初始化
             init () {
-                const rtcRoom = new RTCRoom()
-                const host = 'www2.9man.com'
+                const rtcRoom = RTCRoom.getInstance()
+                const host = 'www.9mankid.com'
                 const port = 3210
                 const roomId = '9n474171ko' // 9n474171ko
                 const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
@@ -279,11 +284,11 @@
                         this.drawByShape();
                         this.changeAnimate(this.$event, 1)
                     }else if (data.type === 'controlStudentOperate') { // 控制学生操作
-                        const status = data.status
+                        const id = data.data.peerId
 
-                        if (status === 1) {
+                        if (id === this.studentId) {
                             this.controlStudentOperate = true
-                        } else {
+                        }else {
                             this.controlStudentOperate = false
                         }
                     }
@@ -297,6 +302,7 @@
                             const peerId = item._peerId
                             if (peerId !== teacherId && peerId !== this.studentId) {
                                 this.studentNameObj[peerId] = item.name
+                                this.streamObj[peerId] = null
                                 this.peerIdList.push(peerId)
                             }
                             if (peerId === teacherId) {
@@ -316,6 +322,14 @@
                     }
                 })
 
+                //用户连接成功成功时设置用户状态
+                rtcRoom.on('user-peer-connected',(id) => {
+                    console.log('用户连接：' + id)
+                    if (id !== this.teacherId) {
+                        rtcRoom.closeVideo(this.studentId, [this.teacherId])
+                    }
+                })
+
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
@@ -325,6 +339,22 @@
                         this.peerIdList.splice(index, 1)
                     }
                 });
+
+                //  学生点击预览动画后执行
+                rtcRoom.on('ai-action-notify',(method,data) => {
+                    console.log('ai-action-notify:' + method, data)
+                    const peerId = data.peerId
+                    if (peerId === this.studentId) {
+                        this.wrapperZIndex = 99
+                    }
+                });
+
+                rtcRoom.on('media-receive', (peerId, stream) => {
+                    console.log('peerId:' + peerId)
+                    if (peerId !== this.studentId) {
+                        this.$set(this.streamObj, peerId, stream)
+                    }
+                })
             },
 
             // 离开房间
@@ -356,7 +386,7 @@
                     pageno: 1,
                     pagesize: 10
                 }
-                this.$axios.get(this.$store.state.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
+                this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassSchedule', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
@@ -377,7 +407,7 @@
                 const params = {
                     id
                 }
-                this.$axios.get(this.$store.state.rootUrl + '/v1/courseware/queryCoursewareDetail', {params})
+                this.$axios.get(this.$store.state.apiUrl + '/v1/courseware/queryCoursewareDetail', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
@@ -633,13 +663,13 @@
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 if (type === 1) { // 视频
-                    this.mode = 'video'
                     const video = this.$refs['video-play']
                     video.src = resourceUrl + url
                     video.pause();
                 }else if (type === 2) { // 动画
-                    this.mode = 'animate'
                     this.iframeSrc = '/' + resourceUrl + url + `&roomId=${this.roomId}&peerId=` + this.studentId
+                    // 显示动画时先允许操作
+                    this.wrapperZIndex = 0
                 }
             },
 
@@ -716,11 +746,11 @@
                     }else if (type === 'cancelPictureCovered') { // 取消视频铺满
                         this.showPicture = false
                     }else if (data.type === 'controlStudentOperate') { // 控制学生操作
-                        const status = data.status
+                        const id = data.data.peerId
 
-                        if (status === 1) {
+                        if (id === this.studentId || id === 'all') {
                             this.controlStudentOperate = true
-                        } else {
+                        }else {
                             this.controlStudentOperate = false
                         }
                     }else if (type === 'changeMode') { // 切换模式
@@ -731,7 +761,7 @@
                         this.studentOutStage(id)
                         this.studentOnStage = true
                         if (id === this.studentId) { // 上台学生是自己时
-                            const targetDom = document.getElementById('video' + id)
+                            const targetDom = document.querySelector('.video-students #video' + id)
                             targetDom.classList.add('onStage')
                         } else {
                             this.otherStudentOnStage = true
@@ -743,8 +773,13 @@
                         const name = data.name
                         this.studentOutStage(id)
                         this.studentOnStage = false
-                        const targetDom = document.getElementById('video' + id)
-                        targetDom.classList.add('onStage-big')
+                        if (id === this.studentId) {
+                            const targetDom = document.querySelector('.video-students #video' + id)
+                            targetDom.classList.add('onStage-big')
+                        }else {
+                            const targetDom = document.querySelector('.student-on-stage-box .video-area')
+                            targetDom.classList.add('onStage-big')
+                        }
                         if (id !== this.studentId) {
                             this.otherStudentOnStage = true
                             this.studentOnStageId = id
@@ -765,6 +800,9 @@
                     }else if (type === 'control_video_progress') { // 控制视频播放
                         const progress = data.progress
                         video.currentTime = progress * video.duration
+                        if (video.paused) {
+                            video.play()
+                        }
                     }else if (type === 'animate_page_change') { // 控制视频播放
                         this.resourceIndex = data.page
                         this.changeAnimate()
@@ -775,8 +813,13 @@
             // 学生下台
             studentOutStage(id) {
                 this.studentOnStage = false
-                const targetDom = document.getElementById('video' + id)
-                targetDom.classList.remove('onStage', 'onStage-big')
+                if (id === this.studentId) {
+                    const targetDom = document.querySelector('.video-students #video' + id)
+                    targetDom.classList.remove('onStage', 'onStage-big')
+                }else {
+                    const targetDom = document.querySelector('.student-on-stage-box .video-area')
+                    targetDom.classList.remove('onStage', 'onStage-big')
+                }
                 this.otherStudentOnStage = false
                 this.studentOnStageId = ''
                 this.studentOnStageName = ''

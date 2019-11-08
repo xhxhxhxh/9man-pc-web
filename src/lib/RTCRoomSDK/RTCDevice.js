@@ -16,7 +16,7 @@ export default class extends EventEmitter
 
     super();
 
-    this.deviceState = true;
+    this.deviceState = 0;
 
     this._deviceList = [];
 
@@ -30,6 +30,8 @@ export default class extends EventEmitter
       return;
     }
 
+    await this.checkDeviceStatus();
+
     let that = this;
 
     let constraints = {video: true, audio: true};
@@ -38,8 +40,6 @@ export default class extends EventEmitter
       .then(function (stream) {
 
       }).catch(function (err) {
-
-        that.deviceState = false;
 
         if(err.name === "NotFoundError"){
           that._emitError(RTC_DEVICE_ERROR.NotFoundError);
@@ -63,6 +63,35 @@ export default class extends EventEmitter
       console.log(event);
     }
 
+  }
+
+  async checkDeviceStatus()
+  {
+    let audioStatus = true;
+    let videoStatus = true;
+    await navigator.mediaDevices.getUserMedia({video: false, audio: true})
+      .then(function (stream) {
+
+      }).catch(function (err) {
+        audioStatus = false;
+      });
+
+    await navigator.mediaDevices.getUserMedia({video: true, audio: false})
+      .then(function (stream) {
+
+      }).catch(function (err) {
+        videoStatus = false;
+      });
+
+    if (audioStatus && videoStatus) {
+      this.deviceState = 0;
+    }else if (audioStatus && !videoStatus) {
+      this.deviceState = 1;
+    }else if (!audioStatus && videoStatus) {
+      this.deviceState = 2;
+    }else {
+      this.deviceState = 3;
+    }
   }
 
   _emitError(msg)

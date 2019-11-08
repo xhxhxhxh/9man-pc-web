@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
-// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
     mode: 'development',
@@ -28,12 +28,12 @@ module.exports = {
                 changeOrigin: true
             },
             "/v1": {
-                target: 'http://kt2.9man.com/tp5/public/api',
+                target: 'https://api.9mankid.com/api',
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
             },
-            "/admin/file": {
-                target: 'http://kt2.9man.com/tp5/public/uploads',
+            "/admin": {
+                target: 'https://api.9mankid.com/uploads',
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
             },
@@ -41,7 +41,7 @@ module.exports = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        // new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
+        new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
         new htmlWebpackPlugin ({
             template: path.join(__dirname,'./src/index.html'),
             filename: 'index.html',
@@ -67,7 +67,7 @@ module.exports = {
                         }
                     ]
             },
-            {test: /\.(jpg|png|gif|bmp|jpeg)$/, use: ['url-loader?limit=102400&name=[hash:8]-[name].[ext]']},
+            {test: /\.(jpg|png|gif|bmp|jpeg)$/, use: ['url-loader?limit=30000&name=[hash:8]-[name].[ext]']},
             {test: /\.(ttf|eot|svg|woff|woff2)$/, use: ['url-loader']},
             {test: /\.(mp4)$/, use: ['file-loader?limit=1']},
             {test: /\.js$/, exclude: /node_modules/, use: [{loader: 'babel-loader'}]},

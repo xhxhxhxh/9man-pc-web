@@ -12,13 +12,15 @@ const EventEmitter = require('events').EventEmitter;
 
 const logger = new Logger('RTCRoomManager');
 
-export default class extends EventEmitter {
+export default class RTCRoomManager extends EventEmitter {
 
   constructor()
   {
     logger.debug('constructor');
 
     super();
+
+    this.instance = null;
 
     this._rtcRoom = null;
 
@@ -28,15 +30,23 @@ export default class extends EventEmitter {
 
     this._property = {};
 
-    this._device = this._createDevice();
+    this._device = null;
 
+    this._createDevice();
+  }
+
+  static getInstance() {
+    if(!this.instance) {
+      this.instance = new RTCRoomManager();
+    }
+    return this.instance;
   }
 
   _createDevice()
   {
-    let device = new RTCDevice();
+    this._device = new RTCDevice();
 
-    device.on('device_error',(msg) => {
+    this._device.on('device_error',(msg) => {
       let data = {
         code: 1005,
         msg: msg
@@ -44,14 +54,11 @@ export default class extends EventEmitter {
       this.RTCRoomErrorNotice(data);
     });
 
-    return device;
   }
 
   _createRtcRoom(host,port,roomId,peerId)
   {
-    let onlyAudio = !this._device.deviceState;
-
-    let rtcRoom = new RTCRoom({host,port,roomId,peerId,onlyAudio});
+    let rtcRoom = new RTCRoom({host,port,roomId,peerId});
 
     rtcRoom.on('rtc-socket-connect',(data) => {
       this._rtcRoom.joinRoom(this._property);
@@ -153,6 +160,14 @@ export default class extends EventEmitter {
       sync: status
     };
     this.sendRequestMessage('ai_sync',data);
+  }
+
+  restartAICourseware(resource)
+  {
+    let data = {
+      resource: resource ? resource : ''
+    };
+    this.sendRequestMessage('ai_restart',data);
   }
 
   openVideo(peerId,except)
@@ -381,8 +396,10 @@ export default class extends EventEmitter {
       let except = data.except;
       this.handleRoomUserMediaControl(mediaType,status,except);
 
+    }else if (method === 'ai_start') {
+      this.emit('ai-action-notify',method,data);
     }else if (method === 'ai_result') {
-
+      this.emit('ai-action-notify',method,data);
     }
   }
 
@@ -464,6 +481,7 @@ export default class extends EventEmitter {
     }
 
     property['peerId'] = this._peerId;
+    property['device'] = this._device.deviceState;
 
     return property;
   }

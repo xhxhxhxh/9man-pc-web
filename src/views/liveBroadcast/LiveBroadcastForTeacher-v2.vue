@@ -61,8 +61,9 @@
                         </div>
                     </a-upload>
                 </div>
+                <div class="operate-wrapper" v-show="$store.getters.updateControlStatus"></div>
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
-                    <video src="" ref="video-play" preload="auto" poster="./images/loading.gif" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
+                    <video src="" ref="video-play" preload="auto" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
                 </div>
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
                 <div class="wrapper" v-show="showWrapper && mode === 'animate'"></div>
@@ -72,11 +73,17 @@
                 <div class="operate">
                     <div class="mode-animate" v-show="mode !== 'picture'">
                         <span class="play" @click="videoPlay" ref="play" :class="{disable: mode === 'animate'}"></span>
-                        <a-slider id="test" :defaultValue="0" :disabled="disabled"
-                                  v-model="progressBar" @change="changeVideoProgress"/>
+                        <a-slider id="test" :disabled="disabled" @change="videoPause" ref="slider"
+                                  v-model="progressBar" @afterChange="changeVideoProgress"/>
                         <span class="back" @click="changeAnimate($event, 0)"></span>
                         <span class="fast-forward" @click="changeAnimate($event, 2)"></span>
-                        <span class="skip"></span>
+                        <span class="skip" @click="showSkipAnimateArea = !showSkipAnimateArea"></span>
+                        <div class="skip-animate-area" v-show="showSkipAnimateArea">
+                            <div class="skip-animate-area-box">
+                                <img :src="$store.state.resourceUrl + '/' + item.img" alt="" v-for="(item, index) in coursewareResource" :key="index"
+                                     @click="changeAnimate(resourceIndex = index, 1)">
+                            </div>
+                        </div>
                     </div>
                     <div class="mode-picture" v-show="mode === 'picture' && mode !== 'video'">
                         <div class="draw-operate">
@@ -222,6 +229,7 @@
                 imageList: [exampleImg], // 图片列表
                 indexOfImageList: 0, // 显示图片的索引
                 showSkipPictureArea: false, // 显示跳转图片区域
+                showSkipAnimateArea: false,
                 studentOnStageType: '', // 学生是出于大屏模式还是小屏
                 // -----------视频拖拽数据---------------
                 dragVideoId: '', // 被拖拽的视频id
@@ -234,6 +242,7 @@
                 videoAreaWidth: '637px', // 播放区域宽度
                 showStudentStatus: true, // student video中的状态栏显示
                 studentVideoScale: 1, // 学生区域缩放倍数
+                firstLoad: true,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 resourceIndex: 0, // 课件播放序号
@@ -388,11 +397,11 @@
 
             // 初始化rtcROOM
             initRtcRoom() {
-                const rtcRoom = new RTCRoom()
-                const host = 'www2.9man.com'
+                const rtcRoom = RTCRoom.getInstance()
+                const host = 'www.9mankid.com'
                 const port = 3210
                 const roomId = '9n474171ko' // 9n474171ko
-                const teacherPeerId = '1'
+                const teacherPeerId = 'PKE528EQ'
                 const userParams = {name: '小明', headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)
                 this.teacherId = teacherPeerId
@@ -447,20 +456,28 @@
                     const userControlStatus = liveBroadcastData.controlStatus[id]
                     const params = {
                         type: 'controlStudentOperate',
+                        event: 'single_operations',
+                        data: {
+                            sync: {
+                                page: this.resourceIndex,
+                                type: this.mode === 'picture'? 1: 0
+                            }
+                        }
                     }
                     if (userControlStatus) {
-                        Object.assign(params, {status: userControlStatus})
                         if (userControlStatus === 1) {
-                            Object.assign(params, {event: 'single_operations', data: {peerId: id}})
+                            Object.assign(params.data, {peerId: id})
                         } else if (userControlStatus === 2) {
-                            Object.assign(params, {event: 'single_operations', data: {peerId: '0'}})
+                            Object.assign(params.data, {peerId: '0'})
                         }
-                        rtcRoom.notifyMessage(params, id)
+                        rtcRoom.notifyMessage(params)
                     } else {
-                        Object.assign(params, {status: 2, event: 'single_operations', data: {peerId: '0'}})
-                        rtcRoom.notifyMessage(params, id)
+                        Object.assign(params.data, {peerId: '0'})
+                        rtcRoom.notifyMessage(params)
                         this.$store.commit('setControlStatus', {id: id, status: 2})
                     }
+
+                    this.synchronize(id) // 同步数据到移动端
 
                     // 处理学生上台状态
                     const stageStatus = liveBroadcastData.stageStatus
@@ -514,7 +531,12 @@
             // 还原老师掉线前状态
             recoverPage () {
                 const liveBroadcastData = this.$store.state.liveBroadcast.liveBroadcastData
-                this.mode = liveBroadcastData.mode
+                const mode = liveBroadcastData.mode
+                if (!mode) { // 无本地缓存时
+                    this.firstLoad = false
+                }else {
+                    this.mode = mode
+                }
                 this.resourceIndex = liveBroadcastData.coursewarePage? liveBroadcastData.coursewarePage: 0
             },
 
@@ -531,6 +553,17 @@
                         shape: this.shape,
                         drawingShape: this.drawingShape,
                         resourceIndex: this.resourceIndex
+                    },
+                    event: 'live_sync',
+                    data: {
+                        type: this.mode === 'picture'? 1: 0,
+                        time: 240,
+                        "animate_page": this.resourceIndex,
+                        "multiMedia_page": 0,
+                        sync: {
+                            page: this.resourceIndex,
+                            type: this.mode === 'picture'? 1: 0
+                        },
                     }
                 }
                 this.rtcRoom.notifyMessage(params, userId)
@@ -550,7 +583,7 @@
                     pageno: 1,
                     pagesize: 10
                 }
-                this.$axios.get(this.$store.state.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
+                this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassSchedule', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
@@ -571,12 +604,12 @@
                 const params = {
                    id
                 }
-                this.$axios.get(this.$store.state.rootUrl + '/v1/courseware/queryCoursewareDetail', {params})
+                this.$axios.get(this.$store.state.apiUrl + '/v1/courseware/queryCoursewareDetail', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
                             this.coursewareResource = data.data.data.resource
-                            this.changeAnimate(this.$event, 1, true) // 载入课件
+                            this.changeAnimate(this.$event, 1, this.firstLoad) // 载入课件
                         } else {
 
                         }
@@ -1005,6 +1038,7 @@
                     params.data.isBig = 1
                     data.videoType = 'big'
                 }
+                this.rtcRoom.openVideo(id) // 发送学生视频
                 this.$store.commit('setStageStatus', data) // 存储本地学生上台状态
                 this.rtcRoom.sendMessage(params)
             },
@@ -1027,6 +1061,7 @@
                 const data = {id: '', videoType: ''}
                 this.$store.commit('setStageStatus', data) // 存储本地学生上台状态
                 this.rtcRoom.sendMessage(params)
+                this.rtcRoom.closeVideo(id, [this.teacherId])
             },
 
             // 移除拖拽的视频 学生下台
@@ -1172,23 +1207,40 @@
                 const video = e.target
                 const currentTime = video.currentTime
                 //计算进度条百分比
-                this.progressBar = parseInt(currentTime / video.duration * 100)
+                if (!video.paused) {
+                    this.progressBar = parseInt(currentTime / video.duration * 100)
+                }
             },
 
             // 改变视频播放进度
             changeVideoProgress (value) {
-                console.log(value)
+                const slider = this.$refs['slider']
                 const video = this.$refs['video-play']
-                video.currentTime = value / 100 * video.duration
+                const play = this.$refs['play']
+                slider.blur() // antd slider bug
                 this.sendMediaData(0, !video.paused, value / 100)
+                if (video.paused) {
+                    video.play()
+                    play.classList.add('pause')
+                }
+                video.currentTime = value / 100 * video.duration
+            },
+
+            // 拖拽进度条时，暂停视频
+            videoPause () {
+                const video = this.$refs['video-play']
+                if (!video.paused) {
+                    video.pause()
+                }
             },
 
             // 视频播放结束
             videoEnded (e) {
                 const video = e.target
                 const play = this.$refs['play']
-                play.classList.remove('pause')
                 video.currentTime = 0
+                this.progressBar = 0
+                play.classList.remove('pause')
             },
 
             // 发送多媒体操作数据
@@ -1324,7 +1376,7 @@
                     this.mode = firstLoad? this.mode: 'video'
                     this.disabled = false
                     const video = this.$refs['video-play']
-                    video.src = resourceUrl + url
+                    video.src = '/' + resourceUrl + url
                     const play = this.$refs['play']
                     play.classList.remove('pause')
                     video.pause();
@@ -1337,6 +1389,11 @@
                 this.sendMediaData(0, false)
                 const params = {
                     type: 'animate_page_change',
+                    event: 'show_content_change',
+                    data: {
+                        page: this.resourceIndex,
+                        type: 0
+                    },
                     page: this.resourceIndex
                 }
                 this.$store.commit('setCoursewarePage', this.resourceIndex)
@@ -1473,6 +1530,14 @@
                     opacity: 0;
                     z-index: 99;
                 }
+                .operate-wrapper {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+                    left: 0;
+                    top: 0;
+                    z-index: 99;
+                }
                 .load-image {
                     position: absolute;
                     left: 22px;
@@ -1571,6 +1636,7 @@
                     .mode-animate {
                         display: flex;
                         justify-content: space-between;
+                        position: relative;
                         .ant-slider {
                             width: 772px;
                             &:hover .ant-slider-rail {
@@ -1620,6 +1686,56 @@
                         .skip {
                             background-image: url("images/skip.png");
                         }
+                        .skip-animate-area {
+                            position: absolute;
+                            padding: 14px;
+                            right: 0px;
+                            bottom: 83px;
+                            width:515px;
+                            height:324px;
+                            background:rgba(249,254,240,.9);
+                            border-radius:20px;
+                            display: flex;
+                            justify-content: flex-start;
+                            flex-wrap: wrap;
+                            align-items: flex-start;
+                            z-index: 999;
+                            .skip-animate-area-box {
+                                width: 100%;
+                                height: 100%;
+                                overflow: auto;
+                                img {
+                                    width:146px;
+                                    height:91px;
+                                    border-radius:20px;
+                                    margin-bottom: 12px;
+                                    margin-right: 12px;
+                                    cursor: pointer;
+                                    user-select: none;
+                                }
+                                &::-webkit-scrollbar {
+                                    width: 10px;
+                                }
+                                &::-webkit-scrollbar-track {
+                                    border-radius: 5px;
+                                    background-color: #fff;
+                                } /* 滚动条的滑轨背景颜色 */
+
+                                &::-webkit-scrollbar-thumb {
+                                    border-radius: 5px;
+                                    background-color: #D2D2D2;
+                                } /* 滑块颜色 */
+
+                                &::-webkit-scrollbar-button {
+                                    height: 0;
+                                } /* 滑轨两头的监听按钮颜色 */
+
+                                &::-webkit-scrollbar-corner {
+                                    height: 0;
+                                }
+                            }
+
+                        }
                     }
                     .mode-picture {
                         display: flex;
@@ -1665,6 +1781,7 @@
                                     margin-bottom: 12px;
                                     margin-right: 12px;
                                     cursor: pointer;
+                                    user-select: none;
                                 }
                                 &::-webkit-scrollbar {
                                     width: 10px;

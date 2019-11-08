@@ -38,7 +38,7 @@
                 identity: 'self',
             }
         },
-        props: ['id', 'studentVideoScale', 'showStudentStatus', 'rtcRoom', 'studentName', 'mode', 'showPicture'],
+        props: ['id', 'studentVideoScale', 'showStudentStatus', 'rtcRoom', 'studentName', 'mode', 'showPicture', 'stream'],
         components: {
             NetStatus,
             MikeStatus,
@@ -50,12 +50,22 @@
         },
         mounted() {
             if (this.mode === 'others') {
-                this.getStudentVideo()
+                // this.getStudentVideo()
             } else {
                 this.video()
             }
         },
         computed: {
+        },
+        watch: {
+            stream: function (val) {
+                const video = this.$refs.video
+                try {
+                    video.srcObject = val;
+                } catch (error) {
+                    video.src = window.URL.createObjectURL(val);
+                }
+            }
         },
         methods: {
             // 检测设备

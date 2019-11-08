@@ -13,7 +13,8 @@ export default new Vuex.Store({
     },
     state: {
         rootUrl: '', // https://edu.9man.com
-        resourceUrl: '', // http://kt2.9man.com/tp5/public/uploads/
+        resourceUrl: '', // https://api.9mankid.com/uploads
+        apiUrl: '', // https://api.9mankid.com/api
         identity: '',
         updateInfo: 0,
         updateUsername: 0,

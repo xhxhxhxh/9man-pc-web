@@ -5,9 +5,10 @@
 import adapter from 'webrtc-adapter';
 import io from 'socket.io-client';
 import Logger from './RTCLogger';
-import {RTC_ERROR_MSG} from './RTCDefine';
+import {RTC_USER_ROLE,RTC_ERROR_MSG} from './RTCDefine';
 import SoundMeter from './soundmeter'
 import RTCStats from './RTCStats'
+import RTCRoomManager from './RTCRoomManager'
 
 const EventEmitter = require('events').EventEmitter;
 
@@ -17,8 +18,8 @@ const configuration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }]};
 
 const mediaConstraints = {
   "video": {
-    width: {exact: 320},
-    height: {exact: 240},
+    width: 320,
+    height: 240,
     frameRate: { ideal: 10, max: 15 }
   },
   "audio": true
@@ -59,7 +60,6 @@ export default class extends EventEmitter
       port,
       roomId,
       peerId,
-      onlyAudio
     }
   )
   {
@@ -73,7 +73,7 @@ export default class extends EventEmitter
 
     this._peerId = peerId;
 
-    this._onlyAudio = onlyAudio;
+    this._deviceStatus = 0;
 
     this._volume_timer = null;
   }
@@ -189,15 +189,13 @@ export default class extends EventEmitter
             let peerId = ids[i];
             let pc = peerConnections.get(peerId);
             await that._addTrack(pc);
-          }
 
-//          peerConnections.forEach((item, key, mapObj) => {
-//            that._createOffer(item);
-//          });
-          for (let i in ids) {
-            let peerId = ids[i];
-            let pc = peerConnections.get(peerId);
-            await that._createOffer(pc, peerId);
+            let property = data.properties[peerId];
+            let device = property['device'] ? property['device'] : 0;
+            if (device !== 0 || this._deviceStatus === 0) {
+              await that._createOffer(pc, peerId);
+            }
+
           }
 
           break;
@@ -225,6 +223,11 @@ export default class extends EventEmitter
           let pc = peerConnections.get(peerId);
 
           that._addTrack(pc);
+
+          let device = data.property['device'] ? data.property['device'] : 0;
+          if (device !== 0 && this._deviceStatus === 0) {
+            await that._createOffer(pc, peerId);
+          }
 
           break;
         }
@@ -291,6 +294,8 @@ export default class extends EventEmitter
   async joinRoom(userProperty)
   {
     logger.debug('_joinRoom()');
+
+    this._deviceStatus = userProperty ? userProperty['device'] : 0;
 
     let data = userProperty ? userProperty : {};
 
@@ -443,8 +448,14 @@ export default class extends EventEmitter
 
     try {
 
-      await pc.setLocalDescription(await pc.createOffer([iceOptions]));
+      let sdp = await pc.createOffer([iceOptions]);
+
+      let sdp_new = that._rewriteSdp(sdp,peerId);
+
+      await pc.setLocalDescription(sdp_new);
       // send the offer to the other peer
+
+//      console.log(pc.localDescription);
 
       let data = {
         "from": that._peerId,
@@ -462,6 +473,7 @@ export default class extends EventEmitter
     }
   }
 
+
   async _createAnswer(pc, peerId, desc) {
     let that = this;
 
@@ -470,6 +482,8 @@ export default class extends EventEmitter
       await pc.setRemoteDescription(new nativeRTCSessionDescription(desc));
 
       await pc.setLocalDescription(await pc.createAnswer());
+
+//      console.log(pc.localDescription);
 
       let data = {
         "from": that._peerId,
@@ -486,6 +500,27 @@ export default class extends EventEmitter
       console.error(err);
     }
   }
+
+  _rewriteSdp(session_desc,peerId) {
+    let sdp = session_desc.sdp;
+    let sdp_new;
+    let roomManager = RTCRoomManager.getInstance();
+    let localUser = roomManager.getRoomUser(this._peerId);
+    let user = roomManager.getRoomUser(peerId);
+    let a = localUser.property['role'] == RTC_USER_ROLE.Invisible;
+    let b = user.property['role'] == RTC_USER_ROLE.Invisible;
+    if (a && b) {
+      sdp_new = sdp.replace(/sendrecv/g, "inactive");
+    }else if (a && !b) {
+      sdp_new = sdp.replace(/sendrecv/g, "recvonly");
+    }else if (!a && b) {
+      sdp_new = sdp.replace(/sendrecv/g, "sendonly");
+    }else {
+      sdp_new = sdp;
+    }
+    session_desc.sdp = sdp_new;
+    return session_desc;
+  };
 
   sendMessage(message,peerId) {
     let data = JSON.stringify(message);
@@ -523,6 +558,10 @@ export default class extends EventEmitter
 
   async _addTrack(pc) {
 
+    if (this._deviceStatus === 3) {
+      return;
+    }
+
     if (!localMediaStream) {
       await this.initLocalMediaStream();
     }
@@ -541,14 +580,23 @@ export default class extends EventEmitter
 
   async initLocalMediaStream() {
 
+    if (this._deviceStatus === 3) {
+      return;
+    }
+
     if (!localMediaStream) {
 
       let constraints = mediaConstraints;
 
-      if (this._onlyAudio) {
+      if (this._deviceStatus === 1) {
         constraints = {
           "video": false,
           "audio": true
+        }
+      }else if (this._deviceStatus === 2) {
+        constraints = {
+          "video": true,
+          "audio": false
         }
       }
 
@@ -560,7 +608,10 @@ export default class extends EventEmitter
       };
       this.emit('rtc-media-receive',obj);
 
-      this.voiceActivityDetection();
+      if (this._deviceStatus === 0 || this._deviceStatus === 1) {
+        this.voiceActivityDetection();
+      }
+
     }
   }
 

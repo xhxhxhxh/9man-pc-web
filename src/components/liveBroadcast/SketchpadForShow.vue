@@ -6,8 +6,8 @@
 </template>
 
 <script>
-    const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min');
-    // var ImageEditor = require('tui-image-editor');
+    // const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min');
+    const ImageEditor = require('tui-image-editor');
     import 'tui-image-editor/dist/tui-image-editor.css'
     import icona from 'tui-image-editor/dist/svg/icon-a.svg'
     import iconb from 'tui-image-editor/dist/svg/icon-b.svg'

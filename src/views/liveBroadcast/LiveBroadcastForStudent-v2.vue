@@ -262,7 +262,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = '9n474171ko' // 9n474171ko
+                const roomId = '222' // 9n474171ko
                 const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
                 const userParams = {name: '小王' + peerId, headUrl: '', role: 2}
                 this.studentId = peerId
@@ -282,7 +282,7 @@
                             this[key] = result[key]
                         }
                         this.drawByShape();
-                        this.changeAnimate(this.$event, 1)
+                        this.changeAnimate(true)
                     }else if (data.type === 'controlStudentOperate') { // 控制学生操作
                         const id = data.data.peerId
 
@@ -290,6 +290,7 @@
                             this.controlStudentOperate = true
                         }else {
                             this.controlStudentOperate = false
+                            this.wrapperZIndex = 99
                         }
                     }
                 })
@@ -412,7 +413,7 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.coursewareResource = data.data.data.resource
-                            this.changeAnimate(this.$event, 1) // 载入课件
+                            this.changeAnimate(true) // 载入课件
                         } else {
 
                         }
@@ -657,17 +658,19 @@
             },
 
             // 切换动画
-            changeAnimate () {
+            changeAnimate (firstLoad) {
                 const courseware = this.coursewareResource[this.resourceIndex]
                 const type = courseware.type
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 if (type === 1) { // 视频
                     const video = this.$refs['video-play']
-                    video.src = resourceUrl + url
+                    video.src = resourceUrl + '/' + url
+                    this.mode = firstLoad? this.mode: 'video'
                     video.pause();
                 }else if (type === 2) { // 动画
-                    this.iframeSrc = '/' + resourceUrl + url + `&roomId=${this.roomId}&peerId=` + this.studentId
+                    this.mode = firstLoad? this.mode: 'animate'
+                    this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.studentId
                     // 显示动画时先允许操作
                     this.wrapperZIndex = 0
                 }
@@ -752,6 +755,7 @@
                             this.controlStudentOperate = true
                         }else {
                             this.controlStudentOperate = false
+                            this.wrapperZIndex = 99
                         }
                     }else if (type === 'changeMode') { // 切换模式
                         this.mode = data.mode
@@ -847,7 +851,7 @@
 <style lang="less">
     .liveBroadcast-student-container {
         width: 100%;
-        min-width: 1920px;
+        min-width: 1903px;
         background:linear-gradient(0deg,rgba(242,153,74,1),rgba(242,201,76,1));
         background-size: cover;
         .statusBar {
@@ -901,9 +905,9 @@
             }
         }
         main {
-            padding: 30px;
+            padding: 30px 0 0 30px;
             .playArea {
-                float: right;
+                float: left;
                 width: 1194px;
                 height: 916px;
                 padding: 22px;
@@ -1253,7 +1257,7 @@
             .videoArea {
                 float: left;
                 height: 100%;
-                margin-right: 10px;
+                margin-right: 25px;
                 .video-teacher {
                     width: 100%;
                     height: 416px;

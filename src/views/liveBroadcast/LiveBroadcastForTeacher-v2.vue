@@ -46,7 +46,7 @@
                 </div>
             </div>
             <div class="playArea" v-show="showPicture && (!$store.getters.controlAllStatus || peerIdList.length <= 1)" @drop.stop="videoDropIn" @dragover.prevent="() => {}" ref="playArea">
-                <div class="load-image" v-if="showLoadImage && mode !== 'animate'">
+                <div class="load-image" v-if="showLoadImage && mode === 'picture'">
                     <a-upload
                             name="image"
                             listType="picture-card"
@@ -400,7 +400,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = '9n474171ko' // 9n474171ko
+                const roomId = '222' // 9n474171ko
                 const teacherPeerId = 'PKE528EQ'
                 const userParams = {name: '小明', headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)
@@ -411,7 +411,7 @@
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
-                // this.peerIdList = ['1', '2']
+                // this.peerIdList = ['2']
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -929,6 +929,7 @@
                 this.dragVideoId = dragVideoIdCache
                 const offsetX = e.clientX - playAreaOffsetLeft
                 const offsetY = e.clientY - playAreaOffsetTop
+                console.log(playArea.offsetLeft)
 
                 if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
                     this.studentOnStageType = 'big'
@@ -964,15 +965,14 @@
 
                 if (target.classList.contains('small-video') || target.classList.contains('big-video')) {
                     target.classList.remove('small-video', 'big-video')
+                    targetStyle.top = this.dragVideoPosition.y
+                    targetStyle.left = this.dragVideoPosition.x
                     setTimeout(() => {
-                        targetStyle.top = this.dragVideoPosition.y
-                        targetStyle.left = this.dragVideoPosition.x
-                        if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
-                            target.classList.remove('small-video')
+
+                        if (offsetX > editAreaWidth / 2 && offsetY > editAreaHeight / 2) {
                             target.classList.add('big-video')
                             this.sendStageStatus('onStage-big', id)
                         }else {
-                            target.classList.remove('big-video')
                             target.classList.add('small-video')
                             this.sendStageStatus('onStage-small', id)
                         }
@@ -981,7 +981,7 @@
                 }else {
                     targetStyle.top = this.dragVideoPosition.y
                     targetStyle.left = this.dragVideoPosition.x
-                    if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
+                    if (offsetX > editAreaWidth / 2 && offsetY > editAreaHeight / 2) {
                         target.classList.remove('small-video')
                         target.classList.add('big-video')
                         this.sendStageStatus('onStage-big', id)
@@ -1088,18 +1088,16 @@
 
             // 初始化iframe
             initIframe() {
-                // const iframe = this.$refs.iframe
-                // console.log(iframe);
-                // const _this = this
-                // iframe.onload = function () {
-                //     const body = this.contentWindow.document.body
-                    // body.ondragover = function (e) {
-                    //     // e.preventDefault()
-                    // }
-                    // body.ondrop = function (e) {
-                    //     _this.$refs.playArea.drop()
-                    // }
-                // }
+                const iframe = this.$refs.iframe
+                console.log(iframe);
+                const _this = this
+                iframe.onload = function () {
+                    const body = this.contentWindow.document.body
+                    body.onmousedown = function (e) {
+                        // e.preventDefault()
+                        console.log(123)
+                    }
+                }
             },
 
             // 画面铺满
@@ -1376,7 +1374,7 @@
                     this.mode = firstLoad? this.mode: 'video'
                     this.disabled = false
                     const video = this.$refs['video-play']
-                    video.src = '/' + resourceUrl + url
+                    video.src = resourceUrl + '/' + url
                     const play = this.$refs['play']
                     play.classList.remove('pause')
                     video.pause();
@@ -1384,7 +1382,7 @@
                     this.$store.commit('setOperatePermission', true)
                     this.mode = firstLoad? this.mode: 'animate'
                     this.disabled = true
-                    this.iframeSrc = '/' + resourceUrl + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
                 this.sendMediaData(0, false)
                 const params = {
@@ -1397,7 +1395,10 @@
                     page: this.resourceIndex
                 }
                 this.$store.commit('setCoursewarePage', this.resourceIndex)
-                this.rtcRoom.sendMessage(params)
+                if (!firstLoad) {
+                    this.rtcRoom.sendMessage(params)
+                }
+
             },
 
         }
@@ -1458,7 +1459,7 @@
 
     .LiveBroadcast-container {
         width: 100%;
-        min-width: 1920px;
+        min-width: 1903px;
         background:linear-gradient(0deg,rgba(242,153,74,1),rgba(242,201,76,1));
         background-size: cover;
         .statusBar {
@@ -1512,9 +1513,9 @@
             }
         }
         main {
-            padding: 30px;
+            padding: 30px 0 0 30px;
             .playArea {
-                float: right;
+                float: left;
                 width: 1194px;
                 height: 916px;
                 padding: 22px;
@@ -2023,7 +2024,7 @@
             .videoArea {
                 float: left;
                 height: 100%;
-                margin-right: 10px;
+                margin-right: 20px;
                 .video-teacher {
                     width: 100%;
                     height: 202px;

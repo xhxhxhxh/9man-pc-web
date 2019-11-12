@@ -1,5 +1,8 @@
 import Axios from 'axios';
 
+const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOiJKRzc5UkU2TyIsImlhdCI6MTU3MzQ1NDc0OCwibmJmIjoxNTczNDU0NzQ4LCJleHAiOjE1NzQwNTk1NDh9.9EIApRpAL-J-6XrvF68jlm-7qygpy5-sXWx6WpAdZPQ"
+Axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+
 Axios.interceptors.response.use(function (response) {
     // 对响应数据做点什么
 
@@ -12,10 +15,6 @@ Axios.interceptors.response.use(function (response) {
 // 添加请求拦截器
 Axios.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么
-    const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOiJQS0U1MjhFUSIsImlhdCI6MTU3Mjg0MDY4MSwibmJmIjoxNTcyODQwNjgxLCJleHAiOjE1NzM0NDU0ODF9.CRFVyOjduU9xKJd6ep4QFNZMSX1Rv2tNPBQv2Kkl8RI";
-    if (token) {
-        config.headers.Authorization = token
-    }
     return config;
 }, function (error) {
     // 对请求错误做些什么

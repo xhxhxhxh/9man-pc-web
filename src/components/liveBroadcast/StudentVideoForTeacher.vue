@@ -137,7 +137,8 @@
             // 控制学生操作
             controlStudentOperate() {
                 const {operatePermission, liveBroadcastDataCurrent, teacherId, liveBroadcastData} = this.$store.state.liveBroadcast
-                if (!operatePermission) return
+                const mode = liveBroadcastData.mode
+                if (!operatePermission && mode !== 'picture') return
                 const id = this.id
                 const params = {
                     type: 'controlStudentOperate',
@@ -215,7 +216,7 @@
         @keyframes drag-animate {
             to {
                 top: 116px;
-                left: 718px;
+                left: 714px;
                 opacity: 1;
                 transform: scale(1);
             }
@@ -223,7 +224,7 @@
         @keyframes drag-animate-center {
             to {
                 top: 116px;
-                left: 752px;
+                left: 748px;
                 opacity: 1;
                 transform: scale(1);
             }
@@ -237,7 +238,7 @@
             float: left;
             position: relative;
             width: 100%;
-            height: 100%;
+            height: 180px;
             border-radius: 20px;
             z-index: 1;
 

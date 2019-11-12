@@ -199,7 +199,7 @@
             &.onStage-big {
                 position: absolute;
                 top: 116px;
-                left: 752px;
+                left: 748px;
                 width: 1084px;
                 height: 710px;
                 overflow: hidden;

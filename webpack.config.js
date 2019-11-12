@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
-const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 
 module.exports = {
     mode: 'development',
@@ -41,7 +41,7 @@ module.exports = {
     },
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
-        new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
+        // new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
         new htmlWebpackPlugin ({
             template: path.join(__dirname,'./src/index.html'),
             filename: 'index.html',

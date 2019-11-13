@@ -1517,7 +1517,7 @@
 }
 .LiveBroadcast-container {
   width: 100%;
-  min-width: 1920px;
+  min-width: 1903px;
   background: -webkit-gradient(linear, left bottom, left top, from(#f2994a), to(#f2c94c));
   background: linear-gradient(0deg, #f2994a, #f2c94c);
   background-size: cover;
@@ -1598,10 +1598,10 @@
   margin-bottom: 17px;
 }
 .LiveBroadcast-container main {
-  padding: 30px;
+  padding: 30px 0 0 30px;
 }
 .LiveBroadcast-container main .playArea {
-  float: right;
+  float: left;
   width: 1194px;
   height: 916px;
   padding: 22px;
@@ -2193,7 +2193,7 @@
 .LiveBroadcast-container main .videoArea {
   float: left;
   height: 100%;
-  margin-right: 10px;
+  margin-right: 20px;
 }
 .LiveBroadcast-container main .videoArea .video-teacher {
   width: 100%;
@@ -2466,7 +2466,7 @@
 @-webkit-keyframes drag-animate-data-v-20104ae0 {
 to {
     top: 116px;
-    left: 718px;
+    left: 714px;
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -2475,7 +2475,7 @@ to {
 @keyframes drag-animate-data-v-20104ae0 {
 to {
     top: 116px;
-    left: 718px;
+    left: 714px;
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -2484,7 +2484,7 @@ to {
 @-webkit-keyframes drag-animate-center-data-v-20104ae0 {
 to {
     top: 116px;
-    left: 752px;
+    left: 748px;
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -2493,7 +2493,7 @@ to {
 @keyframes drag-animate-center-data-v-20104ae0 {
 to {
     top: 116px;
-    left: 752px;
+    left: 748px;
     opacity: 1;
     -webkit-transform: scale(1);
     transform: scale(1);
@@ -2503,7 +2503,7 @@ to {
   float: left;
   position: relative;
   width: 100%;
-  height: 100%;
+  height: 180px;
   border-radius: 20px;
   z-index: 1;
 }
@@ -2814,7 +2814,7 @@ to {
 
 .liveBroadcast-student-container {
   width: 100%;
-  min-width: 1920px;
+  min-width: 1903px;
   background: -webkit-gradient(linear, left bottom, left top, from(#f2994a), to(#f2c94c));
   background: linear-gradient(0deg, #f2994a, #f2c94c);
   background-size: cover;
@@ -2895,10 +2895,10 @@ to {
   margin-bottom: 17px;
 }
 .liveBroadcast-student-container main {
-  padding: 30px;
+  padding: 30px 0 0 30px;
 }
 .liveBroadcast-student-container main .playArea {
-  float: right;
+  float: left;
   width: 1194px;
   height: 916px;
   padding: 22px;
@@ -3308,7 +3308,7 @@ to {
 .liveBroadcast-student-container main .videoArea {
   float: left;
   height: 100%;
-  margin-right: 10px;
+  margin-right: 25px;
 }
 .liveBroadcast-student-container main .videoArea .video-teacher {
   width: 100%;
@@ -3421,7 +3421,7 @@ to {
 .studentVideo-container .video-area.onStage-big[data-v-195fbc69] {
   position: absolute;
   top: 116px;
-  left: 752px;
+  left: 748px;
   width: 1084px;
   height: 710px;
   overflow: hidden;

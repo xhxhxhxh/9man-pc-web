@@ -308,7 +308,7 @@
                     this.$axios.post(this.rootUrl + '/indexapp.php?c=Upload&a=UploadFileVue&id=' + this.id, data)
                         .then(res => {
                             let responseData = res.data;
-                            if (responseData.code == 200) {
+                            if (responseData.code === 200) {
                                 this.avatarSrc = responseData.imgprefix + responseData.image;
                                 this.updateAvatar();
                             } else {
@@ -332,7 +332,7 @@
                 this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=updateUserInfo', {params})
                     .then(res => {
                         let data = res.data;
-                        if (data.code == 200) {
+                        if (data.code === 200) {
                             this.$message.success('头像更新成功！');
                             this.$store.commit('updateUserInfo', this.avatarSrc);
                             this.cacheAvatar = this.avatarSrc;

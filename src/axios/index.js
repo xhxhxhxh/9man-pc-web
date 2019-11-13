@@ -1,11 +1,14 @@
 import Axios from 'axios';
-
-const AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1aWQiOiJKRzc5UkU2TyIsImlhdCI6MTU3MzQ1NDc0OCwibmJmIjoxNTczNDU0NzQ4LCJleHAiOjE1NzQwNTk1NDh9.9EIApRpAL-J-6XrvF68jlm-7qygpy5-sXWx6WpAdZPQ"
-Axios.defaults.headers.common['Authorization'] = AUTH_TOKEN;
+import common from '@/api/common.js';
+import router from '@/router/router';
 
 Axios.interceptors.response.use(function (response) {
     // 对响应数据做点什么
-
+    const data = response.data;
+    if (data.code === 401) {
+        localStorage.removeItem('token');
+        router.push('/login')
+    }
     return response;
 }, function (error) {
     // 对响应错误做点什么
@@ -15,6 +18,10 @@ Axios.interceptors.response.use(function (response) {
 // 添加请求拦截器
 Axios.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么
+    const AUTH_TOKEN = common.getLocalStorage('token');
+    if (AUTH_TOKEN.length !== 0) {
+        config.headers['Authorization'] = AUTH_TOKEN;
+    }
     return config;
 }, function (error) {
     // 对请求错误做些什么

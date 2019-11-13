@@ -12,7 +12,7 @@ const whiteList = ['/login', '/register', '/home'] // no redirect whitelist
 
 // router.beforeEach((to, from, next) => {
 //     NProgress.start()
-//     if (common.getLocalStorage('id').length !== 0) {
+//     if (common.getLocalStorage('token').length !== 0) {
 //         if (to.path === '/login') {
 //             next({path: '/'})
 //             NProgress.done() // if current page is dashboard will not trigger	afterEach hook, so manually handle it

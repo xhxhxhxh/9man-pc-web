@@ -170,7 +170,7 @@
                 // -----------rtcRoom数据---------------
                 studentId: '', // 学生id
                 studentName: '',
-                teacherId: 'PKE528EQ',
+                teacherId: '2GW8Z7DO',
                 teacherName: '',
                 peerIdList: [], // 所有学生的ID
                 rtcRoom: null,
@@ -262,7 +262,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = '222' // 9n474171ko
+                const roomId = 'mry79me13q' // 9n474171ko
                 const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
                 const userParams = {name: '小王' + peerId, headUrl: '', role: 2}
                 this.studentId = peerId

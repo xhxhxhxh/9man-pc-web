@@ -1,13 +1,12 @@
 <template>
     <div class="studentVideo-container"
-         :style="{width: 308 * studentVideoScale + 'px', height: 202 * studentVideoScale + 'px'}">
+         :style="{width: studentVideoScale === 1? '100%': '30%'}">
         <div class="video-area" :id="'video' + id">
             <span class="name">{{studentName}}</span>
             <video autoplay loop type="video/*" ref="video" v-show="!showPicture"></video>
         </div>
         <div class="status-area">
-            <div class="status-bar" v-if="showStudentStatus"
-                 :style="{transform: `scale(${studentVideoScale})`, width: `${100 / studentVideoScale}%`}">
+            <div class="status-bar" v-if="showStudentStatus">
                 <div class="netStatus">
                     <NetStatus></NetStatus>
                     <span>网络状态</span>
@@ -104,7 +103,7 @@
                 }
                 this.checkDevice()
                 navigator.getUserMedia({
-                    video: {width: 308, height: 202},
+                    video: {width: 300, height: 225},
                     audio: false
                 }, this.onSuccess, this.onError);
             },
@@ -170,19 +169,24 @@
     .studentVideo-container {
         user-select: none;
         border-radius: 20px;
-        overflow: hidden;
         background-image: url("images/background.png");
         background-size: cover;
+        padding-top: 75%;
+        box-sizing: content-box;
+        position: relative;
 
         .video-area {
             float: left;
-            position: relative;
+            position: absolute;
+            left: 0;
+            top: 0;
             width: 100%;
             height: 100%;
-            border-radius: 20px;
+            border-radius: 20px 20px 0 0;
             z-index: 1;
 
             video {
+                border-radius: 20px 20px 0 0;
                 width: 100%;
                 height: 100%;
             }
@@ -191,7 +195,7 @@
                 position: absolute;
                 left: 30px;
                 top: 94px;
-                width: 635px;
+                width: 100%;
                 height: 416px;
                 overflow: hidden;
             }
@@ -222,9 +226,14 @@
         }
 
         .status-area {
-            width: 100%;
-            height: 100%;
+            width: 50%;
+            height: 0;
+            left: 0;
+            bottom: -44px;
             position: relative;
+            border-radius: 0 0 10px 10px;
+            transform: scale(2);
+            transform-origin: left bottom;
 
             .status-bar {
                 position: absolute;
@@ -238,6 +247,7 @@
                 padding: 0 15px;
                 transform-origin: left bottom;
                 z-index: 2;
+                border-radius: 0 0 10px 10px;
 
                 > div {
                     float: left;

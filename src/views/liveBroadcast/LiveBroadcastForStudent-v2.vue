@@ -190,7 +190,7 @@
                 mikeStatus: true, // 开启麦克风
                 showStudentStatus: true, // student video中的状态栏显示
                 hideStudentStatus: false, // 隐藏状态栏
-                studentVideoScale: 2.06, // 学生区域缩放倍数
+                studentVideoScale: 1, // 学生区域缩放倍数
                 studentOnStage: false, // 学生上台状态
                 // -----------课件动画数据---------------
                 coursewareResource: [],
@@ -905,7 +905,7 @@
             }
         }
         main {
-            padding: 30px 0 0 30px;
+            padding: 30px 30px 60px 30px;
             .playArea {
                 float: left;
                 width: 1194px;
@@ -1256,6 +1256,7 @@
             }
             .videoArea {
                 float: left;
+                width: 33%;
                 height: 100%;
                 margin-right: 25px;
                 .video-teacher {

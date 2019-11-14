@@ -62,7 +62,7 @@
     .teacherVideo-container {
         .video-area {
             float: left;
-            width: 635px;
+            width: 100%;
             height: 416px;
             border-radius: 20px;
             overflow: hidden;

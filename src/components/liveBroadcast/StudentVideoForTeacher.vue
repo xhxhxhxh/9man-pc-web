@@ -269,13 +269,6 @@
                     animation-fill-mode: forwards;
                 }
 
-                .operate-area {
-                    width: 46px !important;
-                    height: 202px !important;
-                    top: 21px !important;
-                    right: 17px !important;
-                }
-
                 .name {
                     width: 82px;
                     height: 27px;
@@ -405,6 +398,46 @@
                 }
             }
         }
+
+        @media (max-width: 1400px){
+            .video-area {
+                &.small-video {
+                    width: 214px;
+                    height: 161px;
+                }
+                &.big-video {
+                    width: 564px;
+                    height: 423px;
+                }
+            }
+        }
+
+        @media (max-width: 1650px) and (min-width: 1400px){
+            .video-area {
+                &.small-video {
+                    width: 255px;
+                    height: 191px;
+                }
+                &.big-video {
+                    width: 672px;
+                    height: 504px;
+                }
+            }
+        }
+
+        @media (max-width: 1900px) and (min-width: 1650px){
+            .video-area {
+                &.small-video {
+                    width: 305px;
+                    height: 229px;
+                }
+                &.big-video {
+                    width: 803px;
+                    height: 602px;
+                }
+            }
+        }
+
         @media (max-width: 1300px){
             .status-area {
                 .status-bar{

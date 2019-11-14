@@ -622,6 +622,23 @@
 
             // 画图
             paint () {
+                // 根据屏幕宽度调整画板大小
+                const screenWidth = window.innerWidth;
+                const screenStyle = {width: '', height: ''}
+
+                if (screenWidth > 1900) {
+                    screenStyle.width = 1152;
+                    screenStyle.height = 710;
+                }else if (screenWidth >= 1650) {
+                    screenStyle.width = 976;
+                    screenStyle.height = 602;
+                }else if (screenWidth >= 1400) {
+                    screenStyle.width = 816;
+                    screenStyle.height = 504;
+                }else {
+                    screenStyle.width = 686;
+                    screenStyle.height = 423;
+                }
                 const instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
                     includeUI: {
                         loadImage: {
@@ -632,8 +649,8 @@
                         initMenu: 'filter',
                         menuBarPosition: 'bottom'
                     },
-                    cssMaxWidth: 1152,
-                    cssMaxHeight: 710,
+                    cssMaxWidth: screenStyle.width,
+                    cssMaxHeight: screenStyle.height,
                     selectionStyle: {
                         cornerSize: 20,
                         rotatingPointOffset: 70
@@ -642,6 +659,29 @@
                 this.imageEditor = instance;
                 const _this = this;
                 const canvas = document.querySelector('#tui-image-editor');
+
+                window.onresize = () => {
+                    const screenWidth = window.innerWidth;
+                    const canvasMaxWidth = instance['_graphics'].cssMaxWidth
+                    const canvasMaxHeight = instance['_graphics'].cssMaxHeight
+                    if (screenWidth > 1900) {
+                        if (canvasMaxWidth !== 1152) {
+                            instance.resizeCanvasDimension({width: 1152, height: 710})
+                        }
+                    }else if (screenWidth >= 1650) {
+                        if (canvasMaxWidth !== 976) {
+                            instance.resizeCanvasDimension({width: 976, height: 602})
+                        }
+                    }else if (screenWidth >= 1400) {
+                        if (canvasMaxWidth !== 816) {
+                            instance.resizeCanvasDimension({width: 816, height: 504})
+                        }
+                    }else {
+                        if (canvasMaxWidth !== 686) {
+                            instance.resizeCanvasDimension({width: 686, height: 423})
+                        }
+                    }
+                }
 
                 // 编辑文字事件
                 instance.on('textEditing', function() {
@@ -901,6 +941,7 @@
                 if (dragVideoId && dragVideoId !== dragVideoIdCache) { // 一个学生上台时，拖拽另一个学生上台，取消前一个学生上台状态
                     const target = document.querySelector('#video' + dragVideoId)
                     const targetStyle = target.style
+                    target.parentElement.style.position = 'relative'
                     targetStyle.top = 0
                     targetStyle.left = 0
                     target.classList.remove('small-video', 'big-video')
@@ -931,20 +972,33 @@
                 const offsetX = e.clientX - playAreaOffsetLeft
                 const offsetY = e.clientY - playAreaOffsetTop
 
+                const screenWidth = window.innerWidth;
+                let smallVideoHeight = 270
+                if (screenWidth > 1900) {
+                    smallVideoHeight = 270
+                }else if (screenWidth > 1650) {
+                    smallVideoHeight = 229
+                }else if (screenWidth > 1400) {
+                    smallVideoHeight = 191
+                }else  {
+                    smallVideoHeight = 161
+                }
+                const videoScale = editAreaHeight / smallVideoHeight
+
                 if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
                     this.studentOnStageType = 'big'
-                    if (targetHeight !== 710) {
-                        this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX * 2.62 + playArea.offsetLeft + 22 + 'px' // 2.62为放大倍数
-                        this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY * 2.62 + playArea.offsetTop + 22 + 'px'
+                    if (targetHeight !== editAreaHeight) {
+                        this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX * videoScale + playArea.offsetLeft + 22 + 'px' // videoScale为放大倍数
+                        this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY * videoScale + playArea.offsetTop + 22 + 'px'
                     }else {
                         this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX + playArea.offsetLeft + 22 + 'px'
                         this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY + playArea.offsetTop + 22 + 'px'
                     }
                 }else {
                     this.studentOnStageType = 'small'
-                    if (targetHeight === 710) {
-                        this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX / 2.62 + playArea.offsetLeft + 22 + 'px' // 2.62为放大倍数
-                        this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY / 2.62 + playArea.offsetTop + 22 + 'px'
+                    if (targetHeight === editAreaHeight) {
+                        this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX / videoScale + playArea.offsetLeft + 22 + 'px' // videoScale为放大倍数
+                        this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY / videoScale + playArea.offsetTop + 22 + 'px'
                     }else {
                         this.dragVideoPosition.x = offsetX - this.dragVideoPosition.offsetX + playArea.offsetLeft + 22 + 'px'
                         this.dragVideoPosition.y = offsetY - this.dragVideoPosition.offsetY + playArea.offsetTop + 22 + 'px'
@@ -998,6 +1052,9 @@
             // 添加动画rules
             addAnimationRules () {
                 const playArea = this.$refs.playArea
+                const playAreaWidth = playArea.offsetWidth - 44 // 44为padding
+                const videoHeight = playAreaWidth / 1.622 // 1.622为画板的宽高比
+                const videoWidth = videoHeight / 0.75 // 0.75为视频的宽高比
                 const styleRule = document.styleSheets[0]
                 if (styleRule.rules.length === 11) {
                     styleRule.deleteRule(0)
@@ -1014,7 +1071,7 @@
                 styleRule.insertRule(`@keyframes drag-animate-center {
                         to {
                             top: ${ playArea.offsetTop + 22 + 'px'};
-                            left: ${ playArea.offsetLeft + 123 + 'px'};
+                            left: ${ playArea.offsetLeft + 22 + (playAreaWidth - videoWidth) / 2 + 'px'};
                             opacity: 1;
                             transform: scale(1);
                         }
@@ -1557,7 +1614,7 @@
                 .wrapper {
                     position: absolute;
                     width: 1152px;
-                    height: 710px;
+                    height: 100%;
                     left: 22px;
                     top: 22px;
                     opacity: 0;
@@ -1611,10 +1668,11 @@
                     }
                 }
                 > .video-area {
-                    width: 100%;
+                    width: 1152px;
                     height: 710px;
                     border-radius:20px;
                     background-color: #000;
+                    overflow: hidden;
                     video {
                         width: 100%;
                         height: 100%;
@@ -1622,7 +1680,7 @@
                 }
 
                 .animate-area {
-                    width: 100%;
+                    width: 1152px;
                     height: 710px;
                     border-radius:20px;
                     overflow: hidden;
@@ -1638,8 +1696,8 @@
                     border-radius:20px;
                     overflow: hidden;
                     .tui-image-editor-main-container {
-                        width: 1152px;
-                        height: 710px;
+                        width: 100%;
+                        height: 100%;
                         background-color: unset !important;
                         .tui-image-editor-header {
                             display: none;
@@ -1697,6 +1755,7 @@
                             width: 55px;
                             display: inline-block;
                             cursor: pointer;
+                            background-size: cover;
                         }
                         .play {
                             background-image: url("images/play.png");
@@ -1779,6 +1838,7 @@
                             width: 55px;
                             display: inline-block;
                             cursor: pointer;
+                            background-size: cover;
                         }
                         .back {
                             background-image: url("images/goback.png");
@@ -2162,6 +2222,199 @@
                         &:nth-of-type(2) {
                             margin: 0 100px;
                         }
+                    }
+                }
+            }
+            @media (max-width: 1400px){
+                .playArea{
+                    width: 730px;
+                    height: 561px;
+                    .load-image {
+                        width: 686px;
+                        height: 423px;
+                    }
+                    > .video-area {
+                        width: 686px;
+                        height: 423px;
+                    }
+                    .animate-area {
+                        width: 686px;
+                        height: 423px;
+                    }
+                    .operate {
+                        margin-top: 17px;
+                        .mode-animate {
+                            margin-bottom: 22px;
+                            .ant-slider {
+                                width: 458px;
+                                top: -8px;
+                                .ant-slider-rail {
+                                    height: 12px;
+                                    border-radius: 12px;
+                                }
+                                .ant-slider-track {
+                                    height: 12px;
+                                    border-radius: 12px 0 0 12px;
+                                }
+                                .ant-slider-handle {
+                                    height: 26px;
+                                    width: 26px;
+                                    border: 2px solid #FF6A04;
+                                }
+                            }
+                            > span {
+                                width: 32px;
+                                height: 32px;
+                            }
+                            .skip-animate-area {
+                                bottom: 53px;
+                            }
+                        }
+                        .mode-picture {
+                            .draw-operate {
+                                width: 486px;
+                                height: 46px;
+                            }
+                            > span {
+                                width: 39px;
+                                height: 39px;
+                            }
+                            .skip-picture-area {
+                                right: 0;
+                                bottom: 58px;
+                            }
+                        }
+                        .mode {
+                            margin-top: 16px !important;
+                            button {
+                                width: 100px;
+                                height: 33px;
+                                font-size: 16px;
+                            }
+                        }
+                    }
+                    #tui-image-editor {
+                        width: 686px !important;
+                        height: 423px !important;
+                    }
+                }
+            }
+            @media (max-width: 1650px) and (min-width: 1400px){
+                .playArea{
+                    width: 860px;
+                    height: 662px;
+                    .load-image {
+                        width: 816px;
+                        height: 504px;
+                    }
+                    > .video-area {
+                        width: 816px;
+                        height: 504px;
+                    }
+                    .animate-area {
+                        width: 816px;
+                        height: 504px;
+                    }
+                    .operate {
+                        margin-top: 20px;
+                        .mode-animate {
+                            margin-bottom: 17px;
+                            .ant-slider {
+                                width: 550px;
+                                top: -8px;
+                            }
+                            > span {
+                                width: 39px;
+                                height: 39px;
+                            }
+                            .skip-animate-area {
+                                bottom: 59px;
+                            }
+                        }
+                        .mode-picture {
+                            .draw-operate {
+                                width: 583px;
+                                height: 46px;
+                            }
+                            > span {
+                                width: 39px;
+                                height: 39px;
+                            }
+                            .skip-picture-area {
+                                right: 0;
+                                bottom: 61px;
+                            }
+                        }
+                        .mode {
+                            margin-top: 16px !important;
+                            button {
+                                width: 120px;
+                                height: 40px;
+                            }
+                        }
+                    }
+                    #tui-image-editor {
+                        width: 816px !important;
+                        height: 504px !important;
+                    }
+                }
+            }
+            @media (max-width: 1900px) and (min-width: 1650px){
+                .playArea{
+                    width: 1020px;
+                    height: 785px;
+                    .load-image {
+                        width: 976px;
+                        height: 602px
+                    }
+                    > .video-area {
+                        width: 976px;
+                        height: 602px
+                    }
+                    .animate-area {
+                        width: 976px;
+                        height: 602px
+                    }
+                    .operate {
+                        margin-top: 24px;
+                        .mode-animate {
+                            .ant-slider {
+                                width: 660px;
+                                top: -4px;
+                            }
+                            > span {
+                                width: 47px;
+                                height: 47px;
+                            }
+                            .skip-animate-area {
+                                bottom: 71px;
+                            }
+                        }
+                        .mode-picture {
+                            .draw-operate {
+                                width: 700px;
+                                height: 55px;
+                            }
+                            > span {
+                                width: 47px;
+                                height: 47px;
+                            }
+                            .skip-picture-area {
+                                right: 0;
+                                bottom: 74px;
+                            }
+                        }
+                        .mode {
+                            margin-top: 19px;
+                            button {
+                                width: 145px;
+                                height: 48px;
+                            }
+                        }
+                    }
+                    #tui-image-editor {
+                        width: 976px !important;
+                        height: 602px !important;
                     }
                 }
             }

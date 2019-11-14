@@ -1,12 +1,12 @@
 <template>
     <div class="studentVideo-container"
-         :style="{width: 308 * studentVideoScale + 'px', height: 202 * studentVideoScale + 'px'}">
+         :style="{width: studentVideoScale === 1? '48%': '30%', paddingTop: studentVideoScale === 1? '36%': '22.5%',
+         borderRadius: studentVideoScale === 1? '20px 20px 0 0': '20px', overflow: studentVideoScale === 1? 'unset': 'hidden'}">
         <div class="video-area dragStudentVideoCenter dragStudentVideo" :id="'video' + id" draggable="true"
              @dragstart="startDrag" @dragend="endDrag" @drop.stop="videoDropIn" @dragover.prevent="() => {}">
             <span class="name" draggable="false">{{studentName}}</span>
             <video autoplay loop type="video/*" ref="video"></video>
-            <div class="operate-area" :style="{width: 34 * studentVideoScale + 'px', height: 150 * studentVideoScale + 'px',
-            top: 16 * studentVideoScale + 'px', right: 13 * studentVideoScale + 'px'}" draggable="false">
+            <div class="operate-area" draggable="false">
                 <img draggable="false" :src="muteSrc" alt="" @click="mute">
                 <img draggable="false" src="./images/star-stu.png" alt="">
                 <img draggable="false" :src="controlSrc" alt="" @click="controlStudentOperate">
@@ -213,42 +213,56 @@
 
 <style lang="less" scoped>
     .studentVideo-container {
-        @keyframes drag-animate {
-            to {
-                top: 116px;
-                left: 714px;
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-        @keyframes drag-animate-center {
-            to {
-                top: 116px;
-                left: 748px;
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
+        /*@keyframes drag-animate {*/
+        /*    to {*/
+        /*        top: 116px;*/
+        /*        left: 714px;*/
+        /*        opacity: 1;*/
+        /*        transform: scale(1);*/
+        /*    }*/
+        /*}*/
+        /*@keyframes drag-animate-center {*/
+        /*    to {*/
+        /*        top: 116px;*/
+        /*        left: 748px;*/
+        /*        opacity: 1;*/
+        /*        transform: scale(1);*/
+        /*    }*/
+        /*}*/
         user-select: none;
-        border-radius: 20px;
-        overflow: hidden;
+        border-radius: 20px 20px 0 0;
         background-image: url("images/background.png");
+        background-size: cover;
+        width: 48%;
+        padding-top: 36%;
+        box-sizing: content-box;
+        position: relative;
 
         .video-area {
             float: left;
-            position: relative;
+            position: absolute;
+            left: 0;
+            top: 0;
             width: 100%;
-            height: 180px;
-            border-radius: 20px;
+            height: 100%;
+            border-radius: 20px 20px 0 0;
             z-index: 1;
 
+            video {
+                border-radius: 20px 20px 0 0;
+            }
+
             &.small-video {
-                position: absolute;
                 z-index: 999;
-                width: 414px;
-                height: 271px;
+                width: 360px;
+                height: 270px;
                 opacity: 0;
                 transform: scale(0);
+                border-radius: 20px;
+
+                video {
+                    border-radius: 20px;
+                }
 
                 &.dragStudentVideo {
                     animation: drag-animate .5s ease;
@@ -272,12 +286,16 @@
             }
 
             &.big-video {
-                position: absolute;
                 z-index: 999;
-                width: 1084px;
+                width: 947px;
                 height: 710px;
                 opacity: 0;
                 transform: scale(0);
+                border-radius: 20px;
+
+                video {
+                    border-radius: 20px;
+                }
 
                 &.dragStudentVideoCenter {
                     animation: drag-animate-center .5s ease;
@@ -303,11 +321,11 @@
             }
 
             .operate-area {
-                width: 34px;
-                height: 150px;
+                width: 14%;
+                height: 80%;
                 position: absolute;
-                top: 16px;
-                right: 13px;
+                top: 9%;
+                right: 8%;
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
@@ -337,8 +355,11 @@
 
         .status-area {
             width: 100%;
-            height: 100%;
+            height: 0;
             position: relative;
+            left: 0;
+            bottom: -22px;
+            border-radius: 0 0 20px 20px;
 
             .status-bar {
                 position: absolute;
@@ -352,6 +373,9 @@
                 padding: 0 15px;
                 transform-origin: left bottom;
                 z-index: 2;
+                border-radius: 0 0 20px 20px;
+                display: flex;
+                justify-content: space-between;
 
                 > div {
                     float: left;
@@ -365,8 +389,6 @@
                 }
 
                 .mikeStatus {
-                    margin-left: 20px;
-
                     img {
                         height: 17px;
                         margin-right: 4px;
@@ -380,6 +402,13 @@
                         height: 17px;
                         margin-right: 3px;
                     }
+                }
+            }
+        }
+        @media (max-width: 1300px){
+            .status-area {
+                .status-bar{
+                    padding: 0 5px;
                 }
             }
         }

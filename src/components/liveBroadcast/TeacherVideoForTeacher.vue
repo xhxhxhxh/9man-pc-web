@@ -236,5 +236,36 @@
                 }
             }
         }
+        @media (max-width: 1550px){
+            .operate-area {
+                margin-left: 10px;
+                width: 120px;
+                button {
+                    font-size: 18px;
+                    img {
+                        width: 18px;
+                        height: 18px;
+                    }
+                }
+            }
+        }
+        @media (max-width: 1410px){
+            .operate-area {
+                margin-left: 5px;
+                width: 70px;
+                button {
+                    font-size: 14px;
+                    img {
+                        display: none;
+                    }
+                }
+            }
+        }
+        @media (max-width: 1250px){
+            .operate-area {
+                margin-left: 5px;
+                width: 60px;
+            }
+        }
     }
 </style>

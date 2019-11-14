@@ -12,9 +12,9 @@ export default new Vuex.Store({
         liveBroadcast
     },
     state: {
-        rootUrl: 'https://edu.9man.com', // https://edu.9man.com
-        resourceUrl: 'https://api.9mankid.com/uploads', // https://api.9mankid.com/uploads
-        apiUrl: 'https://api.9mankid.com/api', // https://api.9mankid.com/api
+        rootUrl: '', // https://edu.9man.com
+        resourceUrl: '', // https://api.9mankid.com/uploads
+        apiUrl: '', // https://api.9mankid.com/api
         identity: '',
         updateInfo: 0,
         updateUsername: 0,

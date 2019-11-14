@@ -239,7 +239,7 @@
                 // -----------基础数据---------------
                 mikeStatus: true, // 开启麦克风
                 showPicture: true, // 控制视频平铺
-                videoAreaWidth: '637px', // 播放区域宽度
+                videoAreaWidth: '33%', // 播放区域宽度
                 showStudentStatus: true, // student video中的状态栏显示
                 studentVideoScale: 1, // 学生区域缩放倍数
                 firstLoad: true,
@@ -297,6 +297,7 @@
         },
         mounted () {
             this.paint()
+            this.addAnimationRules()
         },
         watch: {
             strokeWidth: function (val) {
@@ -400,7 +401,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = 'mry79me13q' // 9n474171ko
+                const roomId = '222' // 9n474171ko
                 const teacherPeerId = '2GW8Z7DO'
                 const userParams = {name: '小明', headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)
@@ -411,7 +412,7 @@
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
-                // this.peerIdList = ['2']
+                // this.peerIdList = ['2', '3']
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -929,7 +930,6 @@
                 this.dragVideoId = dragVideoIdCache
                 const offsetX = e.clientX - playAreaOffsetLeft
                 const offsetY = e.clientY - playAreaOffsetTop
-                console.log(playArea.offsetLeft)
 
                 if (offsetX > editAreaWidth / 2 &&  offsetY > editAreaHeight / 2) {
                     this.studentOnStageType = 'big'
@@ -962,13 +962,15 @@
                 // this.rtcRoom.sendMessage(params, this.dragVideoIdCache)
 
                 const id = this.dragVideoId
-
+                this.addAnimationRules()
+                target.parentElement.style.position = 'unset'
                 if (target.classList.contains('small-video') || target.classList.contains('big-video')) {
                     target.classList.remove('small-video', 'big-video')
+                    targetStyle.display = 'none' // 防止闪烁
                     targetStyle.top = this.dragVideoPosition.y
                     targetStyle.left = this.dragVideoPosition.x
                     setTimeout(() => {
-
+                        targetStyle.display = 'block'
                         if (offsetX > editAreaWidth / 2 && offsetY > editAreaHeight / 2) {
                             target.classList.add('big-video')
                             this.sendStageStatus('onStage-big', id)
@@ -993,6 +995,32 @@
                 }
             },
 
+            // 添加动画rules
+            addAnimationRules () {
+                const playArea = this.$refs.playArea
+                const styleRule = document.styleSheets[0]
+                if (styleRule.rules.length === 11) {
+                    styleRule.deleteRule(0)
+                    styleRule.deleteRule(0)
+                }
+                styleRule.insertRule(`@keyframes drag-animate {
+                        to {
+                            top: ${ playArea.offsetTop + 22 + 'px'};
+                            left: ${ playArea.offsetLeft + 22 + 'px'};
+                            opacity: 1;
+                            transform: scale(1);
+                        }
+                    }`)
+                styleRule.insertRule(`@keyframes drag-animate-center {
+                        to {
+                            top: ${ playArea.offsetTop + 22 + 'px'};
+                            left: ${ playArea.offsetLeft + 123 + 'px'};
+                            opacity: 1;
+                            transform: scale(1);
+                        }
+                    }`)
+            },
+
             // 学生上台（小窗）
             onStage(id) {
                 this.dragVideoId = id
@@ -1001,6 +1029,7 @@
                 const playArea = this.$refs.playArea
                 const target = document.querySelector('#video' + id)
                 const targetStyle = target.style
+                target.parentElement.style.position = 'unset'
                 targetStyle.top = 22 + playArea.offsetTop + 'px'
                 targetStyle.left = 22 + playArea.offsetLeft + 'px'
                 target.classList.add('small-video')
@@ -1015,6 +1044,7 @@
                 const playArea = this.$refs.playArea
                 const target = document.querySelector('#video' + id)
                 const targetStyle = target.style
+                target.parentElement.style.position = 'unset'
                 targetStyle.top = 22 + playArea.offsetTop + 'px'
                 targetStyle.left = 22 + playArea.offsetLeft + 'px'
                 target.classList.add('big-video')
@@ -1072,6 +1102,7 @@
                     const targetStyle = target.style
                     targetStyle.top = 0
                     targetStyle.left = 0
+                    target.parentElement.style.position = 'relative'
                     // 关闭操作权限
                     // const params = {
                     //     type: 'controlStudentOperate',
@@ -1130,7 +1161,7 @@
             cancelPictureCovered() {
                 this.showPicture = true
                 this.showStudentStatus = true
-                this.videoAreaWidth = '637px'
+                this.videoAreaWidth = '33%'
                 this.studentVideoScale = 1
                 const params = {
                     type: 'cancelPictureCovered',
@@ -1459,7 +1490,7 @@
 
     .LiveBroadcast-container {
         width: 100%;
-        min-width: 1903px;
+        min-width: 1200px;
         background:linear-gradient(0deg,rgba(242,153,74,1),rgba(242,201,76,1));
         background-size: cover;
         .statusBar {
@@ -1513,7 +1544,8 @@
             }
         }
         main {
-            padding: 30px 0 0 30px;
+            padding: 30px;
+            max-width: 1920px;
             .playArea {
                 float: left;
                 width: 1194px;
@@ -2024,7 +2056,8 @@
             .videoArea {
                 float: left;
                 height: 100%;
-                margin-right: 20px;
+                margin-right: 25px;
+
                 .video-teacher {
                     width: 100%;
                     height: 202px;
@@ -2041,7 +2074,7 @@
                         color: #fff;
                     }
                     > div {
-                        margin-bottom: 22px;
+                        margin-bottom: 44px;
                     }
                     .operateStudentsVideo {
                         width: 100%;

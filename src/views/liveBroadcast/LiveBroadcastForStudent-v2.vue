@@ -262,7 +262,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = 'mry79me13q' // 9n474171ko
+                const roomId = '222' // 9n474171ko mry79me13q
                 const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
                 const userParams = {name: '小王' + peerId, headUrl: '', role: 2}
                 this.studentId = peerId

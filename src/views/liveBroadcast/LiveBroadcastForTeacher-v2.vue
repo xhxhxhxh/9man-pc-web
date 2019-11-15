@@ -401,7 +401,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = '222' // 9n474171ko mry79me13q
+                const roomId = 'mry79me13q' // 9n474171ko mry79me13q
                 const teacherPeerId = '2GW8Z7DO'
                 const userParams = {name: '小明', headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)

@@ -276,6 +276,22 @@
                 }
             }
         }
+        @media (max-width: 1400px) {
+            .video-area {
+                &.onStage-big {
+                    width: 597px;
+                    height: 448px;
+                }
+            }
+        }
+        @media (max-width: 1600px) and (min-width: 1400px) {
+            .video-area {
+                &.onStage-big {
+                    width: 704px;
+                    height: 528px;
+                }
+            }
+        }
         @media (max-width: 1850px) and (min-width: 1600px) {
             .video-area {
                 &.onStage-big {

@@ -44,9 +44,9 @@
             </div>
             <div class="playArea" ref="playArea">
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
-                <div class="wrapper" v-show="!controlStudentOperate" :style="{zIndex: wrapperZIndex}"></div>
+                <div class="wrapper" v-show="!controlStudentOperate"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
-                    <iframe :src="iframeSrc" ref="iframe"></iframe>
+                    <iframe :src="iframeSrc" ref="iframe" allow="autoplay"></iframe>
                 </div>
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
                     <video src="" ref="video-play" preload="auto" @ended="videoEnded"></video>
@@ -439,11 +439,11 @@
                     screenStyle.width = 996;
                     screenStyle.height = 615;
                 }else if (screenWidth >= 1400) {
-                    screenStyle.width = 816;
-                    screenStyle.height = 504;
+                    screenStyle.width = 856;
+                    screenStyle.height = 528;
                 }else {
-                    screenStyle.width = 686;
-                    screenStyle.height = 423;
+                    screenStyle.width = 726;
+                    screenStyle.height = 448;
                 }
                 const instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
                     includeUI: {
@@ -482,12 +482,14 @@
                             instance.resizeCanvasDimension({width: 996, height: 615})
                         }
                     }else if (screenWidth >= 1400) {
-                        if (canvasMaxWidth !== 816) {
-                            instance.resizeCanvasDimension({width: 816, height: 504})
+                        this.playAreaWidth = 856
+                        if (canvasMaxWidth !== 856) {
+                            instance.resizeCanvasDimension({width: 856, height: 528})
                         }
                     }else {
-                        if (canvasMaxWidth !== 686) {
-                            instance.resizeCanvasDimension({width: 686, height: 423})
+                        this.playAreaWidth = 726
+                        if (canvasMaxWidth !== 726) {
+                            instance.resizeCanvasDimension({width: 726, height: 448})
                         }
                     }
                 }
@@ -724,9 +726,10 @@
 
             //接收画图数据，建立连接
             getDrawData () {
-                const upperCanvas = document.querySelector('.upper-canvas')
+                const upperCanvas = document.querySelector('.upper-canvas');
                 const canvas = document.querySelector('#tui-image-editor');
-                const video = this.$refs['video-play']
+                const video = this.$refs['video-play'];
+                const playArea = this.$refs.playArea;
 
                 const event = document.createEvent("MouseEvents");
                 this.rtcRoom.on('message-receive', (data) => {
@@ -736,9 +739,11 @@
                     const e = data.e
                     let scrollLeft = ''
                     let scrollTop = ''
+                    let canvasScale = 1 // 双端canvas的比例
                     if (e) {
                         scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
                         scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                        canvasScale = canvas.offsetWidth / data.canvasWidth
                     }
                     if (type === 'setStrokeWidth') {
                         this.strokeWidth = data.strokeWidth
@@ -772,13 +777,15 @@
                         this.stopDrawing()
                     } else if (type === 'mousedown') {
                         event.initMouseEvent("mousedown", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
+                            e.clientX * canvasScale + playArea.offsetLeft + 22 - scrollLeft,
+                            e.clientY * canvasScale + playArea.offsetTop + 22 - scrollTop,
                             false, false, false, false, 0, null);
                         upperCanvas.dispatchEvent(event);
                         this.drawByShape()
                     }else if (type === 'mousemove') {
                         event.initMouseEvent("mousemove", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
+                            e.clientX * canvasScale + playArea.offsetLeft + 22 - scrollLeft,
+                            e.clientY * canvasScale + playArea.offsetTop + 22 - scrollTop,
                             false, false, false, false, 0, null);
                         upperCanvas.dispatchEvent(event);
 
@@ -842,7 +849,7 @@
                             const targetDom2 = document.querySelector('.video-students .video-area')
                             const targetWidth = targetDom2.offsetWidth
                             targetDom.classList.add('onStage-big')
-                            console.log(targetWidth, playAreaWidth, videoBigWidth)
+
                             targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
                             22px)`
                         }
@@ -1331,40 +1338,81 @@
                     width: 100%;
                 }
             }
-            @media (max-width: 1600px) and (min-width: 1400px) {
+            @media (max-width: 1400px){
                 .playArea{
-                    width: 1040px;
-                    height: 800px;
+                    width: 770px;
+                    height: 592px;
                     .wrapper {
-                        width: 996px;
-                        height: 615px;
+                        width: 726px;
+                        height: 448px;
                     }
                     .picture-covered-container {
-                        width: 996px;
-                        height: 615px;
+                        width: 726px;
+                        height: 448px;
                     }
                     > .video-area {
-                        height: 615px;
+                        height: 448px;
                     }
                     .animate-area {
-                        height: 615px;
+                        height: 448px;
                     }
                     #tui-image-editor {
-                        width: 996px !important;
-                        height: 615px !important;
+                        width: 726px !important;
+                        height: 448px !important;
                     }
                     .operate {
-                        margin-top: 24px;
+                        margin-top: 18px;
                         .mode-picture {
                             .draw-operate {
-                                height: 56px;
+                                height: 48px;
+                                padding: 0 118px;
                             }
                         }
                         .student-list {
-                            height: 58px;
-                            margin-top: 14px;
+                            height: 43px;
+                            margin-top: 0;
                             > div {
-                                margin-right: 5px;
+                                margin-right: -49px;
+                            }
+                        }
+                    }
+                }
+            }
+            @media (max-width: 1600px) and (min-width: 1400px) {
+                .playArea{
+                    width: 900px;
+                    height: 692px;
+                    .wrapper {
+                        width: 856px;
+                        height: 528px;
+                    }
+                    .picture-covered-container {
+                        width: 856px;
+                        height: 528px;
+                    }
+                    > .video-area {
+                        height: 528px;
+                    }
+                    .animate-area {
+                        height: 528px;
+                    }
+                    #tui-image-editor {
+                        width: 856px !important;
+                        height: 528px !important;
+                    }
+                    .operate {
+                        margin-top: 21px;
+                        .mode-picture {
+                            .draw-operate {
+                                height: 48px;
+                                padding: 0 138px;
+                            }
+                        }
+                        .student-list {
+                            height: 50px;
+                            margin-top: 12px;
+                            > div {
+                                margin-right: -23px;
                             }
                         }
                     }
@@ -1397,6 +1445,7 @@
                         .mode-picture {
                             .draw-operate {
                                 height: 56px;
+                                padding: 0 160px;
                             }
                         }
                         .student-list {

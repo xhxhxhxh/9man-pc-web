@@ -24,7 +24,7 @@ const constantRouterMap = [
 ];
 
 const router = new VueRouter ({
-    // mode: 'history',
+    mode: 'history',
     routes: constantRouterMap,
 });
 

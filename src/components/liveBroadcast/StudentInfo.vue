@@ -115,6 +115,18 @@
             }
         }
     }
+    @media (max-width: 1400px) {
+        .studentInfo-container {
+            transform: scale(0.64);
+            transform-origin: left center;
+        }
+    }
+    @media (max-width: 1600px) and (min-width: 1400px) {
+        .studentInfo-container {
+            transform: scale(0.75);
+            transform-origin: left center;
+        }
+    }
     @media (max-width: 1850px) and (min-width: 1600px) {
         .studentInfo-container {
             transform: scale(0.87);

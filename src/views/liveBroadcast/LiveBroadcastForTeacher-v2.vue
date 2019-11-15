@@ -68,7 +68,7 @@
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
                 <div class="wrapper" v-show="showWrapper && mode === 'animate'"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
-                    <iframe :src="iframeSrc" ref="iframe"></iframe>
+                    <iframe :src="iframeSrc" ref="iframe" allow="autoplay"></iframe>
                 </div>
                 <div class="operate">
                     <div class="mode-animate" v-show="mode !== 'picture'">
@@ -707,13 +707,13 @@
                 //鼠标点击事件
                 instance.on('mousedown', function(event, originPointer) {
                     const shape = _this.shape;
-                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                    // const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
+                    // const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                     const e = {
                         screenX: event.screenX,
                         screenY: event.screenY,
-                        clientX: event.clientX + scrollLeft,
-                        clientY: event.clientY + scrollTop,
+                        clientX: event.layerX,
+                        clientY: event.layerY,
                     }
                     let mobileDrawShape = ''
                     if (shape === 'SHAPE') {
@@ -741,6 +741,7 @@
                     }
                     const params = {
                         type: 'mousedown',
+                        canvasWidth: canvas.offsetWidth,
                         e
                     }
                     _this.drawByShape();
@@ -751,12 +752,13 @@
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
-                            clientX: event.clientX + scrollLeft,
-                            clientY: event.clientY + scrollTop,
+                            clientX: event.layerX,
+                            clientY: event.layerY,
                         }
                         let endPoint = []
                         const params = {
                             type: 'mousemove',
+                            canvasWidth: canvas.offsetWidth,
                             e
                         }
                         if (shape === 'FREE_DRAWING') {
@@ -770,13 +772,11 @@
                     };
                     //鼠标抬起事件
                     document.onmouseup = function (event) {
-                        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
-                        const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
-                            clientX: event.clientX + scrollLeft,
-                            clientY: event.clientY + scrollTop,
+                            clientX: event.layerX,
+                            clientY: event.layerY,
                         }
                         let endPoint = [event.layerX, event.layerY]
                         mobileDeviceData.pointlist = [startPoint, endPoint]
@@ -784,6 +784,7 @@
                             data: mobileDeviceData,
                             event: 'draw',
                             type: 'mouseup',
+                            canvasWidth: canvas.offsetWidth,
                             e
                         }
                         _this.sendDrawData(params)

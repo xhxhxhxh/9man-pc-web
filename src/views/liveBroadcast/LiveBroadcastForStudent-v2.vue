@@ -27,8 +27,9 @@
         <main class="clearfix" ref="main">
             <div class="videoArea">
                 <div class="video-teacher">
-                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId" v-show="!studentOnStage"></TeacherVideo>
-                    <div class="student-on-stage-box" v-show="otherStudentOnStage">
+                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :teacherId="teacherId" v-show="!studentOnStage"
+                    :class="{studentOnStageTypeIsBig}"></TeacherVideo>
+                    <div v-show="otherStudentOnStage" :class="{'student-on-stage-box': true, studentOnStageTypeIsBig}">
 <!--                        <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" v-show="id === studentOnStageId"-->
 <!--                                      :studentVideoScale="studentVideoScale" v-for="id in peerIdList" :key="id"></StudentVideo>-->
                         <StudentVideo :id="studentOnStageId" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[studentOnStageId]"
@@ -53,11 +54,11 @@
                 <transition name="fade-picture">
                     <div class="picture-covered-container" v-show="showPicture">
                         <div class="picture-covered" :style="{width: pictureCoveredWidth + 'px'}">
-                            <div class="picture-covered-box">
+                            <div class="picture-covered-box" :style="{width: playAreaWidth * 0.32 + 'px'}">
                                 <StudentVideo :id="studentId" mode="self" :rtcRoom="rtcRoom" :studentName="studentName"
                                               :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
                             </div>
-                            <div class="picture-covered-box" v-for="id in peerIdList" :key="id">
+                            <div class="picture-covered-box" v-for="id in peerIdList" :key="id" :style="{width: playAreaWidth * 0.32 + 'px'}">
                                 <StudentVideo :id="id" mode="others" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
                                               :studentVideoScale="1.17" :showStudentStatus="hideStudentStatus"></StudentVideo>
                             </div>
@@ -180,11 +181,13 @@
                 roomId: '',
                 studentOnStageName: '', // 上台学生姓名
                 otherStudentOnStage: false, // 其他学生上台
+                studentOnStageTypeIsBig: false, // 学生是否处于大屏上台状态
                 // -----------playarea基础数据---------------
                 iframeSrc: '',
                 showPicture: false, // 控制视频平铺
                 controlStudentOperate: false, // 控制学生操作
                 wrapperZIndex: 99, // 缓存学生操作
+                playAreaWidth: 1152, // 中心画板宽度
                 // -----------基础数据---------------
                 mode: 'animate', // 直播模式
                 mikeStatus: true, // 开启麦克风
@@ -237,7 +240,7 @@
         computed: {
             // 视频铺满区域的动态宽度
             pictureCoveredWidth () {
-                const width = 377
+                const width = this.playAreaWidth * 0.32
                 const length = this.peerIdList.length
                 if (length === 0) {
                     return width
@@ -425,6 +428,23 @@
 
             // 画图
             paint () {
+                // 根据屏幕宽度调整画板大小
+                const screenWidth = window.innerWidth;
+                const screenStyle = {width: '', height: ''}
+
+                if (screenWidth > 1850) {
+                    screenStyle.width = 1152;
+                    screenStyle.height = 710;
+                }else if (screenWidth >= 1600) {
+                    screenStyle.width = 996;
+                    screenStyle.height = 615;
+                }else if (screenWidth >= 1400) {
+                    screenStyle.width = 816;
+                    screenStyle.height = 504;
+                }else {
+                    screenStyle.width = 686;
+                    screenStyle.height = 423;
+                }
                 const instance = new ImageEditor(document.querySelector('#tui-image-editor'), {
                     includeUI: {
                         loadImage: {
@@ -435,8 +455,8 @@
                         initMenu: 'filter',
                         menuBarPosition: 'bottom'
                     },
-                    cssMaxWidth: 1152,
-                    cssMaxHeight: 710,
+                    cssMaxWidth: screenStyle.width,
+                    cssMaxHeight: screenStyle.height,
                     selectionStyle: {
                         cornerSize: 20,
                         rotatingPointOffset: 70
@@ -445,6 +465,32 @@
                 this.imageEditor = instance;
                 const _this = this;
                 const canvas = document.querySelector('#tui-image-editor');
+                const playArea = this.$refs.playArea;
+                this.playAreaWidth = playArea.offsetWidth - 44;
+
+                window.onresize = () => {
+                    const screenWidth = window.innerWidth;
+                    const canvasMaxWidth = instance['_graphics'].cssMaxWidth
+                    if (screenWidth > 1850) {
+                        this.playAreaWidth = 1152
+                        if (canvasMaxWidth !== 1152) {
+                            instance.resizeCanvasDimension({width: 1152, height: 710})
+                        }
+                    }else if (screenWidth >= 1600) {
+                        this.playAreaWidth = 996
+                        if (canvasMaxWidth !== 996) {
+                            instance.resizeCanvasDimension({width: 996, height: 615})
+                        }
+                    }else if (screenWidth >= 1400) {
+                        if (canvasMaxWidth !== 816) {
+                            instance.resizeCanvasDimension({width: 816, height: 504})
+                        }
+                    }else {
+                        if (canvasMaxWidth !== 686) {
+                            instance.resizeCanvasDimension({width: 686, height: 423})
+                        }
+                    }
+                }
 
 
                 // 编辑文字事件
@@ -777,12 +823,28 @@
                         const name = data.name
                         this.studentOutStage(id)
                         this.studentOnStage = false
+                        this.studentOnStageTypeIsBig = true
+
+                        const screenWidth = window.innerWidth;
+                        const playAreaWidth = this.playAreaWidth
+                        let videoBigWidth = playAreaWidth / 1.622 / 0.75
+
                         if (id === this.studentId) {
                             const targetDom = document.querySelector('.video-students #video' + id)
+                            const targetWidth = targetDom.offsetWidth
+                            const targetHeight = targetDom.offsetHeight
+
                             targetDom.classList.add('onStage-big')
+                            targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
+                            ${-targetHeight - 78}px)`
                         }else {
                             const targetDom = document.querySelector('.student-on-stage-box .video-area')
+                            const targetDom2 = document.querySelector('.video-students .video-area')
+                            const targetWidth = targetDom2.offsetWidth
                             targetDom.classList.add('onStage-big')
+                            console.log(targetWidth, playAreaWidth, videoBigWidth)
+                            targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
+                            22px)`
                         }
                         if (id !== this.studentId) {
                             this.otherStudentOnStage = true
@@ -817,11 +879,14 @@
             // 学生下台
             studentOutStage(id) {
                 this.studentOnStage = false
+                this.studentOnStageTypeIsBig = false
                 if (id === this.studentId) {
                     const targetDom = document.querySelector('.video-students #video' + id)
+                    targetDom.style.transform = `translate(0, 0)`
                     targetDom.classList.remove('onStage', 'onStage-big')
                 }else {
                     const targetDom = document.querySelector('.student-on-stage-box .video-area')
+                    targetDom.style.transform = `translate(0, 0)`
                     targetDom.classList.remove('onStage', 'onStage-big')
                 }
                 this.otherStudentOnStage = false
@@ -851,7 +916,7 @@
 <style lang="less">
     .liveBroadcast-student-container {
         width: 100%;
-        min-width: 1903px;
+        min-width: 1200px;
         background:linear-gradient(0deg,rgba(242,153,74,1),rgba(242,201,76,1));
         background-size: cover;
         .statusBar {
@@ -938,7 +1003,7 @@
                 }
                 .picture-covered-container {
                     height: 710px;
-                    width: 1150px;
+                    width: 1152px;
                     left: 22px;
                     top: 22px;
                     position: absolute;
@@ -951,6 +1016,10 @@
                         .picture-covered-box {
                             padding: 8px;
                             float: left;
+                            .studentVideo-container {
+                                border-radius: 20px;
+                                overflow: hidden;
+                            }
                         }
                     }
                 }
@@ -973,6 +1042,7 @@
                     height: 710px;
                     border-radius:20px;
                     background-color: #000;
+                    overflow: hidden;
                     video {
                         width: 100%;
                         height: 100%;
@@ -995,8 +1065,8 @@
                     border-radius:20px;
                     overflow: hidden;
                     .tui-image-editor-main-container {
-                        width: 1152px;
-                        height: 710px;
+                        width: 100%;
+                        height: 100%;
                         background-color: unset !important;
                         .tui-image-editor-header {
                             display: none;
@@ -1229,47 +1299,114 @@
                             margin-right: 45px;
                         }
                     }
-                    .mode {
-                        margin-top: 26px;
-                        text-align: center;
-                        button {
-                            width:170px;
-                            height:56px;
-                            background-color:#fff;
-                            background-image: none;
-                            border-radius:10px;
-                            font-size: 18px;
-                            color: #FF6700;
-                            border: 0;
-                            cursor: pointer;
-                            outline: unset;
-                            &.active {
-                                background-image:url("images/button-bcg.png");
-                                color: #fff;
+                }
+            }
+            .videoArea {
+                float: left;
+                width: 28%;
+                height: 100%;
+                margin-right: 50px;
+                .video-teacher {
+                    width: 100%;
+                    padding-top: 75%;
+                    position: relative;
+                    margin-bottom: 100px;
+                    > .studentOnStageTypeIsBig:first-of-type {
+                        z-index: 1;
+                    }
+                    .student-on-stage-box {
+                        height: 100%;
+                        width: 100%;
+                        position: absolute;
+                        left: 0;
+                        top: 0;
+                        border-radius: 20px;
+                        overflow: hidden;
+                        &.studentOnStageTypeIsBig {
+                            overflow: unset;
+                        }
+                    }
+                }
+                .video-students {
+                    width: 100%;
+                }
+            }
+            @media (max-width: 1600px) and (min-width: 1400px) {
+                .playArea{
+                    width: 1040px;
+                    height: 800px;
+                    .wrapper {
+                        width: 996px;
+                        height: 615px;
+                    }
+                    .picture-covered-container {
+                        width: 996px;
+                        height: 615px;
+                    }
+                    > .video-area {
+                        height: 615px;
+                    }
+                    .animate-area {
+                        height: 615px;
+                    }
+                    #tui-image-editor {
+                        width: 996px !important;
+                        height: 615px !important;
+                    }
+                    .operate {
+                        margin-top: 24px;
+                        .mode-picture {
+                            .draw-operate {
+                                height: 56px;
                             }
-                            & + button {
-                                margin-left: 30px;
+                        }
+                        .student-list {
+                            height: 58px;
+                            margin-top: 14px;
+                            > div {
+                                margin-right: 5px;
                             }
                         }
                     }
                 }
             }
-            .videoArea {
-                float: left;
-                width: 33%;
-                height: 100%;
-                margin-right: 25px;
-                .video-teacher {
-                    width: 100%;
-                    height: 416px;
-                    margin-bottom: 84px;
-                    overflow: hidden;
-                    .student-on-stage-box {
-                        height: 100%;
+            @media (max-width: 1850px) and (min-width: 1600px) {
+                .playArea{
+                    width: 1040px;
+                    height: 800px;
+                    .wrapper {
+                        width: 996px;
+                        height: 615px;
                     }
-                }
-                .video-students {
-                    width: 100%;
+                    .picture-covered-container {
+                        width: 996px;
+                        height: 615px;
+                    }
+                    > .video-area {
+                        height: 615px;
+                    }
+                    .animate-area {
+                        height: 615px;
+                    }
+                    #tui-image-editor {
+                        width: 996px !important;
+                        height: 615px !important;
+                    }
+                    .operate {
+                        margin-top: 24px;
+                        .mode-picture {
+                            .draw-operate {
+                                height: 56px;
+                            }
+                        }
+                        .student-list {
+                            height: 58px;
+                            margin-top: 14px;
+                            > div {
+                                margin-right: 5px;
+                            }
+                        }
+                    }
                 }
             }
         }

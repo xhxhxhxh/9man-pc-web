@@ -336,33 +336,33 @@
                     video.pause();
                 }
             },
-            updateControlStatus: function (val) {
-                // if (val.length === 1) { // 当只有一个学生授权操作，总学生数大于1时，该学生上台
-                //     const studentId = val[0]
-                //     this.cancelPictureCovered()
-                //     if (this.dragVideoId && this.dragVideoId !== val[0]) { // 学生数为2时，全部操作后，取消一个学生操作
-                //         this.dragVideoIdCache = this.dragVideoId
-                //         this.removeDragStudentVideo()
-                //     }
-                //     if (this.dragVideoId && this.dragVideoId === val[0]) { // 学生数为2时，全部操作后，取消一个学生操作，还原学生界面状态
-                //         const studentOnStageType = this.studentOnStageType
-                //         const id = this.dragVideoId
-                //         if (studentOnStageType === 'small') {
-                //             this.sendStageStatus('onStage-small', id)
-                //         }else if (studentOnStageType === 'big') {
-                //             this.sendStageStatus('onStage-big', id)
-                //         }
-                //     }
-                //     if (this.dragVideoId) return // 防止与拖拽操作重复
-                //     this.$nextTick(function () {
-                //         this.onStage(studentId)
-                //     })
-                // }
-                if (!val) { // 取消上台
-                    this.rtcRoom.changeAISyncStatus(true)
-                    // this.removeDragStudentVideo()
-                }
-            },
+            // updateControlStatus: function (val) {
+            //     // if (val.length === 1) { // 当只有一个学生授权操作，总学生数大于1时，该学生上台
+            //     //     const studentId = val[0]
+            //     //     this.cancelPictureCovered()
+            //     //     if (this.dragVideoId && this.dragVideoId !== val[0]) { // 学生数为2时，全部操作后，取消一个学生操作
+            //     //         this.dragVideoIdCache = this.dragVideoId
+            //     //         this.removeDragStudentVideo()
+            //     //     }
+            //     //     if (this.dragVideoId && this.dragVideoId === val[0]) { // 学生数为2时，全部操作后，取消一个学生操作，还原学生界面状态
+            //     //         const studentOnStageType = this.studentOnStageType
+            //     //         const id = this.dragVideoId
+            //     //         if (studentOnStageType === 'small') {
+            //     //             this.sendStageStatus('onStage-small', id)
+            //     //         }else if (studentOnStageType === 'big') {
+            //     //             this.sendStageStatus('onStage-big', id)
+            //     //         }
+            //     //     }
+            //     //     if (this.dragVideoId) return // 防止与拖拽操作重复
+            //     //     this.$nextTick(function () {
+            //     //         this.onStage(studentId)
+            //     //     })
+            //     // }
+            //     if (!val) { // 取消上台
+            //         // this.rtcRoom.changeAISyncStatus(true)
+            //         // this.removeDragStudentVideo()
+            //     }
+            // },
             controlAllStatus: function (val) { // 全部操作时，取消铺满
                 // if (val && this.peerIdList.length > 0) {
                 //     this.cancelPictureCovered()
@@ -401,7 +401,7 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = '222' // 9n474171ko
+                const roomId = '222' // 9n474171ko mry79me13q
                 const teacherPeerId = '2GW8Z7DO'
                 const userParams = {name: '小明', headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)
@@ -663,7 +663,6 @@
                 window.onresize = () => {
                     const screenWidth = window.innerWidth;
                     const canvasMaxWidth = instance['_graphics'].cssMaxWidth
-                    const canvasMaxHeight = instance['_graphics'].cssMaxHeight
                     if (screenWidth > 1900) {
                         if (canvasMaxWidth !== 1152) {
                             instance.resizeCanvasDimension({width: 1152, height: 710})

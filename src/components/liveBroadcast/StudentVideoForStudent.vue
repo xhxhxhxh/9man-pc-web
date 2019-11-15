@@ -1,6 +1,5 @@
 <template>
-    <div class="studentVideo-container"
-         :style="{width: studentVideoScale === 1? '100%': '30%'}">
+    <div class="studentVideo-container">
         <div class="video-area" :id="'video' + id">
             <span class="name">{{studentName}}</span>
             <video autoplay loop type="video/*" ref="video" v-show="!showPicture"></video>
@@ -168,7 +167,7 @@
 <style lang="less" scoped>
     .studentVideo-container {
         user-select: none;
-        border-radius: 20px;
+        border-radius: 20px 20px 0 0;
         background-image: url("images/background.png");
         background-size: cover;
         padding-top: 75%;
@@ -192,20 +191,18 @@
             }
 
             &.onStage {
-                position: absolute;
-                left: 30px;
-                top: 94px;
-                width: 100%;
-                height: 416px;
+                left: 0;
+                top: -100%;
+                transform: translate(0, -100px) !important;
+                border-radius: 20px;
                 overflow: hidden;
             }
 
             &.onStage-big {
-                position: absolute;
-                top: 116px;
-                left: 748px;
-                width: 1084px;
+                width: 947px;
                 height: 710px;
+                transform: translate(-50px, -100px);
+                border-radius: 20px;
                 overflow: hidden;
             }
 
@@ -276,6 +273,25 @@
                         height: 17px;
                         margin-right: 3px;
                     }
+                }
+            }
+        }
+        @media (max-width: 1850px) and (min-width: 1600px) {
+            .video-area {
+                &.onStage-big {
+                    width: 820px;
+                    height: 615px;
+                }
+            }
+        }
+        @media (max-width: 1600px) {
+            .status-area {
+                width: 100%;
+                bottom: -22px;
+                border-radius: 0 0 20px 20px;
+                transform: scale(1);
+                .status-bar {
+                    border-radius: 0 0 20px 20px;
                 }
             }
         }

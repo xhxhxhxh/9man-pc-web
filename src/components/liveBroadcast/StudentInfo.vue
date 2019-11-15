@@ -115,4 +115,10 @@
             }
         }
     }
+    @media (max-width: 1850px) and (min-width: 1600px) {
+        .studentInfo-container {
+            transform: scale(0.87);
+            transform-origin: left center;
+        }
+    }
 </style>

@@ -12,9 +12,9 @@ export default new Vuex.Store({
         liveBroadcast
     },
     state: {
-        rootUrl: 'https://edu.9man.com', // https://edu.9man.com
-        resourceUrl: 'https://api.9mankid.com/uploads', // https://api.9mankid.com/uploads
-        apiUrl: 'https://api.9mankid.com/api', // https://api.9mankid.com/api
+        rootUrl: '', // https://edu.9man.com
+        resourceUrl: '', // https://api.9mankid.com/uploads
+        apiUrl: '', // https://api.9mankid.com/api
         identity: '',
         updateInfo: 0,
         updateUsername: 0,
@@ -57,7 +57,7 @@ export default new Vuex.Store({
         },
 
         userInfo(state) {
-            const updateInfo = state.updateInfo;
+            const updateInfo = state.updateInfo; // 仅用于触发组件更新
             const userInfo = common.getLocalStorage('userInfo');
             if (!userInfo.headimg) {
                 return avatarImg
@@ -68,7 +68,7 @@ export default new Vuex.Store({
 
         //更新后的名字
         username(state) {
-            const updateUsername = state.updateUsername;
+            const updateUsername = state.updateUsername; // 仅用于触发组件更新
             const userInfo = common.getLocalStorage('userInfo');
             return userInfo.uname
         },

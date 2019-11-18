@@ -125,7 +125,7 @@ const liveBroadcast = {
         // 读取本地存储
         readLiveBroadcastDataFromLocalStorage(state) {
             const localStorage = common.getLocalStorage('9manLiveBroadcast')
-            if (localStorage && !(localStorage instanceof Array)) {
+            if (localStorage) {
                 state.liveBroadcastData = localStorage
             }
         },

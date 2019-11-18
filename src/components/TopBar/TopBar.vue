@@ -1,5 +1,6 @@
 <template>
-    <div class="topBar-container" v-if="hashAddress !== 'liveBroadcastForTeacher' && hashAddress !== 'liveBroadcastForStudent'">
+    <div class="topBar-container" v-if="hashAddress !== 'liveBroadcastForTeacher' && hashAddress !== 'liveBroadcastForStudent'
+    && hashAddress !== 'login'">
         <div class="logo">少儿思维</div>
         <div class="nav">
             <a-menu
@@ -52,6 +53,7 @@
         data () {
             const userInfo = common.getLocalStorage('userInfo');
           return {
+              token: common.getLocalStorage('token'),
               hashAddress: this.$route.path.split('/')[1],
               hasLogin: true,
               username: userInfo.uname
@@ -65,7 +67,7 @@
         methods: {
             // 退出登录
             logout () {
-                localStorage.removeItem('id')
+                localStorage.removeItem('token')
                 if (this.$route.path !== '/home') {
                     this.$router.push('/login')
                 } else {

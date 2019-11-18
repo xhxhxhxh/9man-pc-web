@@ -121,20 +121,6 @@
 <script>
     const ImageEditor = require('tui-image-editor');
     import 'tui-image-editor/dist/tui-image-editor.min.css'
-    import icona from 'tui-image-editor/dist/svg/icon-a.svg'
-    import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
-    import iconc from 'tui-image-editor/dist/svg/icon-c.svg'
-    import icond from 'tui-image-editor/dist/svg/icon-d.svg'
-
-    const blackTheme = { // or white
-                       // main icons
-        'menu.normalIcon.path': icond,
-        'menu.activeIcon.path': iconb,
-        'menu.disabledIcon.path': icona,
-        'menu.hoverIcon.path': iconc,
-        'submenu.normalIcon.path': icond,
-        'submenu.activeIcon.path': iconb
-    };
     import exampleImg from './images/example.jpg'
 
     // 导入socket
@@ -148,6 +134,20 @@
     import TeacherVideo from '@/components/liveBroadcast/TeacherVideoForStudent'
     import StudentVideo from '@/components/liveBroadcast/StudentVideoForStudent'
     import StudentInfo from '@/components/liveBroadcast/StudentInfo'
+
+    const icona = '/svg/icon-a.svg'
+    const iconb = '/svg/icon-b.svg'
+    const iconc = '/svg/icon-c.svg'
+    const icond = '/svg/icon-d.svg'
+    const blackTheme = { // or white
+        // main icons
+        'menu.normalIcon.path': icond,
+        'menu.activeIcon.path': iconb,
+        'menu.disabledIcon.path': icona,
+        'menu.hoverIcon.path': iconc,
+        'submenu.normalIcon.path': icond,
+        'submenu.activeIcon.path': iconb
+    };
 
     export default {
         name: "LiveBroadcast",
@@ -791,7 +791,8 @@
 
                     }else if (type === 'mouseup') {
                         event.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX - scrollLeft, e.clientY - scrollTop,
+                            e.clientX * canvasScale + playArea.offsetLeft + 22 - scrollLeft,
+                            e.clientY * canvasScale + playArea.offsetTop + 22 - scrollTop,
                             false, false, false, false, 0, null);
                         upperCanvas.dispatchEvent(event);
                         this.imageEditor.stopDrawingMode(); //即时更换线条颜色
@@ -989,7 +990,7 @@
                 .wrapper {
                     position: absolute;
                     width: 1152px;
-                    height: 800px;
+                    height: 100%;
                     left: 22px;
                     top: 22px;
                     opacity: 0;
@@ -1344,7 +1345,6 @@
                     height: 592px;
                     .wrapper {
                         width: 726px;
-                        height: 448px;
                     }
                     .picture-covered-container {
                         width: 726px;
@@ -1384,7 +1384,6 @@
                     height: 692px;
                     .wrapper {
                         width: 856px;
-                        height: 528px;
                     }
                     .picture-covered-container {
                         width: 856px;
@@ -1424,7 +1423,6 @@
                     height: 800px;
                     .wrapper {
                         width: 996px;
-                        height: 615px;
                     }
                     .picture-covered-container {
                         width: 996px;

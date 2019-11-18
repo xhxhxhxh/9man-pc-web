@@ -1576,6 +1576,22 @@
 .LiveBroadcast-container .statusBar .startClass {
   line-height: 64px;
   min-width: 235px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  width: 300px;
 }
 .LiveBroadcast-container .statusBar .startClass button {
   width: 140px;
@@ -1590,12 +1606,9 @@
 }
 .LiveBroadcast-container .statusBar .startClass .time {
   font-size: 19px;
-  margin-right: 20px;
 }
 .LiveBroadcast-container .statusBar .startClass img {
-  margin-left: 30px;
   cursor: pointer;
-  margin-bottom: 17px;
 }
 .LiveBroadcast-container main {
   padding: 30px;
@@ -3166,7 +3179,7 @@
 .liveBroadcast-student-container main .playArea .wrapper {
   position: absolute;
   width: 1152px;
-  height: 800px;
+  height: 100%;
   left: 22px;
   top: 22px;
   opacity: 0;
@@ -3581,7 +3594,6 @@
 }
 .liveBroadcast-student-container main .playArea .wrapper {
     width: 726px;
-    height: 448px;
 }
 .liveBroadcast-student-container main .playArea .picture-covered-container {
     width: 726px;
@@ -3619,7 +3631,6 @@
 }
 .liveBroadcast-student-container main .playArea .wrapper {
     width: 856px;
-    height: 528px;
 }
 .liveBroadcast-student-container main .playArea .picture-covered-container {
     width: 856px;
@@ -3657,7 +3668,6 @@
 }
 .liveBroadcast-student-container main .playArea .wrapper {
     width: 996px;
-    height: 615px;
 }
 .liveBroadcast-student-container main .playArea .picture-covered-container {
     width: 996px;

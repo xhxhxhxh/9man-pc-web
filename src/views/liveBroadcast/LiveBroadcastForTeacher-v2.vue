@@ -162,19 +162,10 @@
 <script>
     var ImageEditor = require('tui-image-editor');
     import 'tui-image-editor/dist/tui-image-editor.css'
-    import icona from 'tui-image-editor/dist/svg/icon-a.svg'
-    import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
-    import iconc from 'tui-image-editor/dist/svg/icon-c.svg'
-    import icond from 'tui-image-editor/dist/svg/icon-d.svg'
-    var blackTheme = { // or white
-                       // main icons
-        'menu.normalIcon.path': icond,
-        'menu.activeIcon.path': iconb,
-        'menu.disabledIcon.path': icona,
-        'menu.hoverIcon.path': iconc,
-        'submenu.normalIcon.path': icond,
-        'submenu.activeIcon.path': iconb
-    };
+    // import icona from 'tui-image-editor/dist/svg/icon-a.svg'
+    // import iconb from 'tui-image-editor/dist/svg/icon-b.svg'
+    // import iconc from 'tui-image-editor/dist/svg/icon-c.svg'
+    // import icond from 'tui-image-editor/dist/svg/icon-d.svg'
     import exampleImg from './images/example.jpg'
 
     // 导入socket
@@ -193,6 +184,20 @@
     import cancelMuteImg from './images/cancel_mute.png'
     import controlImg from './images/control.png'
     import cancelControlImg from './images/control-cancel.png'
+
+    const icona = '/svg/icon-a.svg'
+    const iconb = '/svg/icon-b.svg'
+    const iconc = '/svg/icon-c.svg'
+    const icond = '/svg/icon-d.svg'
+    const blackTheme = { // or white
+        // main icons
+        'menu.normalIcon.path': icond,
+        'menu.activeIcon.path': iconb,
+        'menu.disabledIcon.path': icona,
+        'menu.hoverIcon.path': iconc,
+        'submenu.normalIcon.path': icond,
+        'submenu.activeIcon.path': iconb
+    };
 
     export default {
         name: "LiveBroadcast",
@@ -1579,6 +1584,10 @@
             .startClass {
                 line-height: 64px;
                 min-width: 235px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                width: 300px;
                 button {
                     width: 140px;
                     height: 40px;
@@ -1591,12 +1600,9 @@
                 }
                 .time {
                     font-size: 19px;
-                    margin-right: 20px;
                 }
                 img {
-                    margin-left: 30px;
                     cursor: pointer;
-                    margin-bottom: 17px;
                 }
             }
         }

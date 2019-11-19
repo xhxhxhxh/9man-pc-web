@@ -8,7 +8,7 @@ import 'nprogress/nprogress.css' // progress bar style
 
 NProgress.configure({showSpinner: false}) // NProgress Configuration
 
-const whiteList = ['/login', '/register', '/home'] // no redirect whitelist
+const whiteList = ['/login', '/register', '/home', '/resetPassword'] // no redirect whitelist
 
 router.beforeEach((to, from, next) => {
     NProgress.start()
@@ -41,7 +41,7 @@ router.beforeEach((to, from, next) => {
             // console.log(to.path);
             next()
         } else {
-            next('/login')
+            next('/login?from=' + to.path)
             NProgress.done()
         }
     }

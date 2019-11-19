@@ -1,6 +1,6 @@
 <template>
     <div class="topBar-container" v-if="hashAddress !== 'liveBroadcastForTeacher' && hashAddress !== 'liveBroadcastForStudent'
-    && hashAddress !== 'login'">
+    && hashAddress !== 'login' && hashAddress !== 'resetPassword' && hashAddress !== 'register'">
         <div class="logo">少儿思维</div>
         <div class="nav">
             <a-menu
@@ -8,26 +8,26 @@
                     :selectedKeys="[hashAddress]"
                     mode="horizontal"
             >
-                <a-menu-item key="home" @click="$router.push('/home')">
-                  首页
+                <a-menu-item key="home">
+                    <router-link to="/home" tag="span">首页</router-link>
                 </a-menu-item>
-                <a-menu-item key="course" @click="$router.push('/course')" v-if="$store.state.identity !== '1'">
-                    我的课程
+                <a-menu-item key="course" v-if="$store.state.identity !== '1'">
+                    <router-link to="/personalCenter" tag="span">个人中心</router-link>
                 </a-menu-item>
                 <a-menu-item key="teachers" v-if="$store.state.identity !== '1'">
                     老师入驻
                 </a-menu-item>
-                <a-menu-item key="adminManage" @click="$router.push('/adminManage')" v-else>
-                    后台管理
+                <a-menu-item key="adminManage" v-else>
+                    <router-link to="/adminManage" tag="span">后台管理</router-link>
                 </a-menu-item>
                 <a-menu-item key="about">
                     关于我们
                 </a-menu-item>
-                <a-menu-item key="liveBroadcast" @click="$router.push('/liveBroadcastForTeacher')">
-                   直播
+                <a-menu-item key="liveBroadcast">
+                    <router-link to="/liveBroadcastForTeacher" tag="span">直播</router-link>
                 </a-menu-item>
-                <a-menu-item key="liveBroadcast2" @click="$router.push('/liveBroadcastForStudent')">
-                    学生直播
+                <a-menu-item key="liveBroadcast2">
+                    <router-link to="/liveBroadcastForStudent" tag="span">学生直播</router-link>
                 </a-menu-item>
             </a-menu>
         </div>
@@ -36,7 +36,7 @@
             <div class="avatar" v-else>
                 <a-popover placement="bottomRight" overlayClassName="userInfo">
                     <template slot="content">
-                        <p @click="$router.push('/users')">{{$store.getters.username | normalUrlEncode}}</p>
+                        <router-link to="/users" tag="p">{{$store.getters.username | normalUrlEncode}}</router-link>
                         <p @click="logout">退出登录</p>
                     </template>
                     <img :src="$store.getters.userInfo | normalUrlEncode" alt="">

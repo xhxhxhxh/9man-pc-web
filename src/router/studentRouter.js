@@ -4,14 +4,22 @@ import ReserveCourse from '@/views/myCourse/ReserveCourse';
 import TeacherCourse from '@/views/adminManage/TeacherCourse';
 import StatisticalSettlement from '@/views/adminManage/StatisticalSettlement';
 import StatisticalDetails from '@/views/adminManage/StatisticalDetails';
-import Layout from '@/views/myCourse/Layout';
-import TeacherLayout from '@/views/adminManage/Layout';
+import Layout from '@/views/personalCenter/Layout';
+import Course from '@/views/personalCenter/Course';
+import Salary from '@/views/personalCenter/Salary';
+import EquipmentInspection from '@/views/personalCenter/EquipmentInspection';
+import Setting from '@/views/personalCenter/Setting';
+
+import course from '@/views/personalCenter/images/course.png';
+import salary from '@/views/personalCenter/images/salary.png';
+import equipment_inspection from '@/views/personalCenter/images/equipment_inspection.png';
+import setting from '@/views/personalCenter/images/setting.png';
 
 const routerMap = {};
 routerMap.student = {
-    path: '/course',
+    path: '/personalCenter',
     component: Layout,
-    redirect: '/course/myCourse',
+    redirect: '/personalCenter/myCourse',
     children: [
         { path: 'myCourse', component: MyCourse, meta: {title: '我的课程'} },
         { path: 'makeUpCourse', component: MakeUpCourse, meta: {title: '补课课程'} },
@@ -19,13 +27,14 @@ routerMap.student = {
     ]
 };
 routerMap.teacher = {
-    path: '/adminManage',
-    component: TeacherLayout,
-    redirect: '/adminManage/teacherCourse',
+    path: '/personalCenter',
+    component: Layout,
+    redirect: '/personalCenter/course',
     children: [
-        { path: 'teacherCourse', component: TeacherCourse, meta: {title: '我的课程'} },
-        { path: 'statisticalSettlement', component: StatisticalSettlement, meta: {title: '统计结算'} },
-        { path: 'statisticalDetails', component: StatisticalDetails, meta: {title: '统计明细'} }
+        { path: 'course', component: Course, meta: {title: '课程', icon: course} },
+        { path: 'salary', component: Salary, meta: {title: '薪酬', icon: salary} },
+        { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '账户设置', icon: equipment_inspection} },
+        { path: 'setting', component: Setting, meta: {title: '硬件检测', icon: setting} },
     ]
 };
 export default routerMap

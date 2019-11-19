@@ -1,10 +1,9 @@
 <template>
-    <div class="login-container">
+    <div class="resetPassword-container">
         <div class="banner">
-            <div class="login">
+            <div class="resetPassword">
                 <header>
-                    <div :class="{selectedItem: login === 'telephone'}" @click="login = 'telephone'"><span>短信登录</span></div>
-                    <div :class="{selectedItem: login === 'account'}" @click="login = 'account'"><span>密码登录</span></div>
+                    <span>重置密码</span>
                 </header>
                 <main>
                     <a-form
@@ -29,21 +28,8 @@
                                                           ]"
                             />
                         </a-form-item>
-                        <a-form-item v-show="login === 'account'">
-                            <div class="icon" >
-                                <img src="./images/password.png" alt="">
-                            </div>
-                            <a-input type="password" placeholder="请输入密码"
-                                     v-decorator="[
-                                                            'password',
-                                                            {rules: [
-                                                             { required: true, message: '请输入密码' },
-                                                            ]}
-                                                          ]"
-                            />
-                        </a-form-item>
-                        <a-form-item v-show="login === 'telephone'">
-                            <div class="icon" >
+                        <a-form-item>
+                            <div class="icon">
                                 <img src="./images/keyboard.png" alt="">
                             </div>
                             <a-input type="number" oninput="if (value.length > 6){value = value.slice(0,6)}" placeholder="请输入验证码"
@@ -57,18 +43,33 @@
                             />
                             <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCode">{{verificationCodeText}}</span>
                         </a-form-item>
+                        <a-form-item>
+                            <div class="icon" >
+                                <img src="./images/password.png" alt="">
+                            </div>
+                            <a-input type="password" placeholder="请输入新密码"
+                                     v-decorator="[
+                                                            'password',
+                                                            {rules: [
+                                                             { required: true, message: '请输入新密码' },
+                                                            ]}
+                                                          ]"
+                            />
+                        </a-form-item>
                         <a-form-item
                                 :wrapper-col="{ span: 24 }"
                         >
-                            <span class="forget-password" v-show="login === 'account'" @click="$router.push('/resetPassword')">忘记密码?</span>
                             <a-button
                                     type="primary"
                                     html-type="submit"
                                     size="large"
                             >
-                                登 录
+                                重置并登录
                             </a-button>
-                            <div class="register"><span @click="$router.push('/register')">没有账号点击注册!</span></div>
+                            <div class="register">
+                                <p>已有账号? <span @click="$router.push('/login')">马上登录</span></p>
+                                <p>没有账号? <span @click="$router.push('/register')">5秒注册</span></p>
+                            </div>
                         </a-form-item>
                     </a-form>
                 </main>
@@ -98,13 +99,12 @@
         name: "Login",
         data () {
             return {
-                login: 'telephone',
                 form: this.$form.createForm(this),
                 hideRequiredMark: true,
                 verificationCodeText: '获取验证码',
                 alreadyGetCode: false,
                 timeOut: '',
-                rootUrl: this.$store.state.rootUrl,
+                rootUrl: this.$store.state.apiUrl,
                 verificationShowModal: false,
             }
         },
@@ -112,25 +112,16 @@
             PuzzleVerification
         },
         created () {
-            this.$store.commit('setIdentity', '') // 清除identity
+
         },
         methods: {
             //登录
             handleSubmit (e) {
                 e.preventDefault();
-                if (this.login === 'account') {
-                    this.form.validateFields(['telephone', 'password'], (err, values) => {
-                        if (err) return;
-                        this.loginByPassword(values);
-                    });
-
-                } else if (this.login === 'telephone') {
-                    this.form.validateFields(['telephone', 'VerificationCode'], (err, values) => {
-                        if (err) return;
-                        return
-                        this.loginByVerificationCode(values);
-                    });
-                }
+                this.form.validateFields((err, values) => {
+                    if (err) return;
+                    this.resetPassword(values);
+                });
 
             },
 
@@ -182,67 +173,21 @@
                 });
             },
 
-            //验证码登录
-            loginByVerificationCode (values) {
-                const params = {
-                    mobile: values.telephone,
-                    code: values.VerificationCode
-                };
-                this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=loginByMobile', {params})
-                    .then(res => {
-                        let data = res.data;
-                        // console.log(data);
-                        if (data.code === 200) {
-                            common.setLocalStorage('id', data.info.id);
-                            common.setLocalStorage('userInfo', data.info);
-                            this.$store.commit('setIdentity', data.info.identity);
-                            this.$store.commit('updateUserInfo');
-                            this.$store.commit('updateUsername');
-                            this.$router.addRoutes([this.$store.getters.roles,{path: '*', redirect: '/404'}]);
-                            const fromRoute = this.$route.query.from;
-                            if (fromRoute) {
-                                this.$router.push(fromRoute);
-                            }else {
-                                this.$router.push('/home');
-                            }
-
-                        } else {
-                            this.$message.warning(data.msg,5);
-                        }
-                    })
-                    .catch(() => {
-
-                    })
-
-            },
-
-            //密码登录
-            loginByPassword (values) {
+            //重置密码
+            resetPassword (values) {
+                return
                 const params = {
                     phone: values.telephone,
                     password: md5(values.password).toLowerCase()
                 };
-                this.$axios.post(this.$store.state.apiUrl + '/v1/login/login', params)
+                this.$axios.post(this.$store.state.apiUrl + '/v1/resetPassword/resetPassword', params)
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
                             const info = data.data
-                            common.setLocalStorage('token', info.token);
-                            common.setLocalStorage('userInfo', info.data);
-                            common.setLocalStorage('verificationWrongCount', 0);
-                            this.$store.commit('setIdentity', info.data.identity);
-                            this.$store.commit('updateUserInfo');
-                            this.$store.commit('updateUsername');
-                            this.$router.addRoutes([this.$store.getters.roles, {path: '*', redirect: '/404'}]);
-                            const fromRoute = this.$route.query.from;
-                            if (fromRoute) {
-                                this.$router.push(fromRoute);
-                            }else {
-                                this.$router.push('/home');
-                            }
-                        }else if (data.code === 403 || data.code === 404){
-                            this.$message.warning('用户名或密码错误',5);
-                            this.setVerificationWrongCount()
+                            this.$message.success('密码重置成功',5);
+                        }else {
+                            this.$message.warning(data.msg,5);
                         }
                     })
                     .catch(() => {
@@ -301,7 +246,7 @@
             }
         }
     }
-    .login-container {
+    .resetPassword-container {
         height: 100%;
         min-width: 500px;
         position: relative;
@@ -317,36 +262,27 @@
             background: url("images/banner.png") no-repeat center;
             background-size: cover;
             overflow: hidden;
-            .login {
+            .resetPassword {
                 width:368px;
-                height:463px;
+                height:465px;
                 margin: 121px auto 0;
-                background: url("images/login-bgc.png") no-repeat center;
+                background: url("images/resetPassword-bgc.png") no-repeat center;
                 background-size: cover;
-                padding-top: 60px;
+                padding-top: 50px;
                 header {
-                    width: 270px;
+                    width: 100%;
                     margin: 0 auto;
                     height: 50px;
-                    > div {
-                        width: 50%;
-                        height: 100%;
-                        font-size:20px;
-                        color:#D2D2D2;
-                        text-align: center;
-                        line-height: 50px;
-                        cursor: pointer;
-                        float: left;
-                        &.selectedItem {
-                            color:#999;
-                        }
-                    }
+                    color:#999;
+                    font-size:20px;
+                    text-align: center;
+                    line-height: 50px;
                 }
                 main {
-                    padding: 20px 45px 0;
+                    padding: 5px 45px 0;
                     form {
                         .ant-form-item {
-                            margin-bottom: 45px;
+                            margin-bottom: 23px;
                             position: relative;
                             height: 45px;
                             .icon {
@@ -375,36 +311,24 @@
                                     background-color: #FCC93A;
                                 }
                             }
-                            .forget-password {
-                                position: absolute;
-                                bottom: 50px;
-                                right: 5px;
-                                font-size:12px;
-                                color: #999;
-                                cursor: pointer;
-                                height: 20px;
-                                line-height: 20px;
-                                transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-                                &:hover {
-                                    color: #FCC93A;
-                                }
-                            }
                             .register {
                                 font-size:12px;
                                 color: #999;
-                                text-align: center;
                                 height: 36px;
                                 line-height: 36px;
+                                p:first-of-type {
+                                    float: left;
+                                }
+                                p:last-of-type {
+                                    float: right;
+                                }
                                 span {
                                     cursor: pointer;
-                                    transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
-                                    &:hover {
-                                        color: #FCC93A;
-                                    }
+                                    color: #FCC93A;
                                 }
                             }
                         }
-                        .ant-form-item:nth-child(3) {
+                        .ant-form-item:nth-child(2) {
                             .getVerificationCode {
                                 position: absolute;
                                 right: 11px;
@@ -425,9 +349,7 @@
                                 }
                             }
                         }
-                        /*.ant-form-item-with-help {*/
-                        /*    margin-bottom: 45px;*/
-                        /*}*/
+
                         .ant-form-explain {
                             font-size:12px;
                             font-weight:400;

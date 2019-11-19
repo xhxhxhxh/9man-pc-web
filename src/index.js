@@ -10,6 +10,8 @@ import 'normalize.css';
 import './css/base.css';
 import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider, TimePicker, Popover, Icon, Slider, Upload } from 'ant-design-vue';
 
+
+
 Vue.config.productionTip = false;
 // axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 axios.defaults.withCredentials = false;

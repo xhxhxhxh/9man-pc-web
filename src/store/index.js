@@ -49,9 +49,9 @@ export default new Vuex.Store({
     actions: {},
     getters: {
         roles(state) {
-            if (state.identity === '1') {
+            if (state.identity === 1) {
                 return studentRouter.teacher
-            } else if (state.identity === '2' || state.identity === '0') {
+            } else if (state.identity === 2 || state.identity === 0) {
                 return studentRouter.student
             }
         },

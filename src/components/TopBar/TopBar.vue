@@ -14,21 +14,6 @@
                 <a-menu-item key="course" v-if="$store.state.identity !== '1'">
                     <router-link to="/personalCenter" tag="span">个人中心</router-link>
                 </a-menu-item>
-                <a-menu-item key="teachers" v-if="$store.state.identity !== '1'">
-                    老师入驻
-                </a-menu-item>
-                <a-menu-item key="adminManage" v-else>
-                    <router-link to="/adminManage" tag="span">后台管理</router-link>
-                </a-menu-item>
-                <a-menu-item key="about">
-                    关于我们
-                </a-menu-item>
-                <a-menu-item key="liveBroadcast">
-                    <router-link to="/liveBroadcastForTeacher" tag="span">直播</router-link>
-                </a-menu-item>
-                <a-menu-item key="liveBroadcast2">
-                    <router-link to="/liveBroadcastForStudent" tag="span">学生直播</router-link>
-                </a-menu-item>
             </a-menu>
         </div>
         <div class="login">

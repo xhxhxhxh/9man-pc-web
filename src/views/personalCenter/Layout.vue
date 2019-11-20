@@ -7,7 +7,7 @@
         </header>
         <main>
             <div class="sideBar">
-                <div :class="{sideBarItem: true, chosen: hashAddress === item.path}"  @click="$router.push($store.getters.roles.path + '/' + item.path)" v-for="(item, index) in $store.getters.roles.children" :key="index">
+                <div :class="{sideBarItem: true, chosen: hashAddress === item.path}"  @click="$router.push($store.getters.roles.path + '/' + item.path)" v-for="(item, index) in $store.getters.roles[0].children" :key="index">
                     <img :src="item.meta['icon']" alt="">
                     <span class="text">{{item.meta['title']}}</span>
                 </div>

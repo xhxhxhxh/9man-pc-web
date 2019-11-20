@@ -94,6 +94,8 @@
     import md5 from 'blueimp-md5';
     import common from '@/api/common';
     import PuzzleVerification from 'vue-puzzle-verification';
+    import {constantRouterMap, mode} from '@/router/routerList';
+    import VueRouter from 'vue-router'
     export default {
         name: "Login",
         data () {
@@ -193,19 +195,8 @@
                         let data = res.data;
                         // console.log(data);
                         if (data.code === 200) {
-                            common.setLocalStorage('id', data.info.id);
-                            common.setLocalStorage('userInfo', data.info);
-                            this.$store.commit('setIdentity', data.info.identity);
-                            this.$store.commit('updateUserInfo');
-                            this.$store.commit('updateUsername');
-                            this.$router.addRoutes([this.$store.getters.roles,{path: '*', redirect: '/404'}]);
-                            const fromRoute = this.$route.query.from;
-                            if (fromRoute) {
-                                this.$router.push(fromRoute);
-                            }else {
-                                this.$router.push('/home');
-                            }
-
+                            const info = data.data
+                            this.afterLogin(info)
                         } else {
                             this.$message.warning(data.msg,5);
                         }
@@ -227,19 +218,7 @@
                         let data = res.data;
                         if (data.code === 200) {
                             const info = data.data
-                            common.setLocalStorage('token', info.token);
-                            common.setLocalStorage('userInfo', info.data);
-                            common.setLocalStorage('verificationWrongCount', 0);
-                            this.$store.commit('setIdentity', info.data.identity);
-                            this.$store.commit('updateUserInfo');
-                            this.$store.commit('updateUsername');
-                            this.$router.addRoutes([this.$store.getters.roles, {path: '*', redirect: '/404'}]);
-                            const fromRoute = this.$route.query.from;
-                            if (fromRoute) {
-                                this.$router.push(fromRoute);
-                            }else {
-                                this.$router.push('/home');
-                            }
+                            this.afterLogin(info)
                         }else if (data.code === 403 || data.code === 404){
                             this.$message.warning('用户名或密码错误',5);
                             this.setVerificationWrongCount()
@@ -259,6 +238,29 @@
                     this.verificationShowModal = true
                 }
                 common.setLocalStorage('verificationWrongCount', verificationWrongCount)
+            },
+
+            // 登录成功后执行的操作
+            afterLogin (info) {
+                common.setLocalStorage('token', info.token);
+                common.setLocalStorage('userInfo', info.data);
+                common.setLocalStorage('verificationWrongCount', 0);
+                this.$store.commit('setIdentity', info.data.identity);
+                this.$store.commit('updateUserInfo');
+                this.$store.commit('updateUsername');
+                const router = new VueRouter ({
+                    mode,
+                    routes: constantRouterMap,
+                });
+                this.$router.matcher = router.matcher; // 重置路由
+                const roles = this.$store.getters.roles;
+                this.$router.addRoutes(roles);
+                const fromRoute = this.$route.query.from;
+                if (fromRoute) {
+                    this.$router.push(fromRoute);
+                }else {
+                    this.$router.push('/personalCenter');
+                }
             }
         }
     }

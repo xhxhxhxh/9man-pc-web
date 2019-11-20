@@ -397,8 +397,8 @@
                 // 还原教师页面
                 this.recoverPage()
 
-                // 获取课堂信息
-                this.getClassInfo()
+                // 获取课件信息
+                this.getCoursewareInfo(this.$route.params.coursewareId)
             },
 
             // 初始化rtcROOM
@@ -406,9 +406,9 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = 'pk5w10e398' // 9n474171ko mry79me13q
-                const teacherPeerId = 'M97YRWYO'
-                const userParams = {name: '小明', headUrl: '', role: 1}
+                const roomId = this.$route.params.roomId
+                const teacherPeerId = this.$route.params.teacherId
+                const userParams = {name: this.$route.params.name, headUrl: '', role: 1}
                 rtcRoom.joinRoom(host,port,roomId,teacherPeerId,userParams)
                 this.teacherId = teacherPeerId
                 this.roomId = roomId
@@ -580,29 +580,6 @@
                 }else if (studentOnStageType === 'big') {
                     this.sendStageStatus('onStage-big', id)
                 }
-            },
-
-            // 获取课堂信息
-            getClassInfo () {
-                const params = {
-                    identity: 1,
-                    pageno: 1,
-                    pagesize: 10
-                }
-                this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassSchedule', {params})
-                    .then(res => {
-                        let data = res.data;
-                        if (data.code === 200) {
-                            const classInfo = data.data.data
-                            const coursewareId = classInfo[0]['courseware_id']
-                            this.getCoursewareInfo(coursewareId)
-                        } else {
-
-                        }
-                    })
-                    .catch(() => {
-
-                    })
             },
 
             // 获取课件信息

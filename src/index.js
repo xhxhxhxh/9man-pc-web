@@ -8,12 +8,12 @@ import store from '@/store';
 import './permission';
 import 'normalize.css';
 import './css/base.css';
-import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider, TimePicker, Popover, Icon, Slider, Upload } from 'ant-design-vue';
+import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
+    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination } from 'ant-design-vue';
 
 
 
 Vue.config.productionTip = false;
-// axios.defaults.headers['Content-Type'] = 'application/x-www-form-urlencoded';
 axios.defaults.withCredentials = false;
 Vue.prototype.$axios= axios;
 Vue.prototype.$message = message;
@@ -35,6 +35,8 @@ Vue.use(Popover);
 Vue.use(Icon);
 Vue.use(Slider);
 Vue.use(Upload);
+Vue.use(Spin);
+Vue.use(Pagination);
 
 
 Vue.use(VueRouter);

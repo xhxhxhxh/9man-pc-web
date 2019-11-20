@@ -255,7 +255,8 @@
             this.init()
         },
         mounted () {
-            this.getClassInfo()
+            // 获取课件信息
+            this.getCoursewareInfo(this.$route.params.coursewareId)
             this.paint()
             this.getDrawData()
         },
@@ -265,9 +266,10 @@
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
-                const roomId = 'pk5w10e398' // 9n474171ko mry79me13q
-                const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
-                const userParams = {name: '小王' + peerId, headUrl: '', role: 2}
+                const roomId = this.$route.params.roomId // 9n474171ko mry79me13q
+                // const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
+                const peerId = this.$route.params.studentId
+                const userParams = {name: this.$route.params.name, headUrl: '', role: 2}
                 this.studentId = peerId
                 this.roomId = roomId
                 const teacherId = this.teacherId
@@ -381,29 +383,6 @@
                     type: 'pageDone',
                 }
                 this.rtcRoom.notifyMessage(params, this.teacherId)
-            },
-
-            // 获取课堂信息
-            getClassInfo () {
-                const params = {
-                    identity: 1,
-                    pageno: 1,
-                    pagesize: 10
-                }
-                this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassSchedule', {params})
-                    .then(res => {
-                        let data = res.data;
-                        if (data.code === 200) {
-                            const classInfo = data.data.data
-                            const coursewareId = classInfo[0]['courseware_id']
-                            this.getCoursewareInfo(coursewareId)
-                        } else {
-
-                        }
-                    })
-                    .catch(() => {
-
-                    })
             },
 
             // 获取课件信息

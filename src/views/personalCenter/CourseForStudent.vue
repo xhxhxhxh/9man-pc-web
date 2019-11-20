@@ -1,5 +1,25 @@
 <template>
     <div class="course-container">
+        <div class="kid-course-box">
+            <div class="kids">
+                <div :class="{kid: true, selected: item.id === currentKidId}" v-for="item in kidList" :key="item.id">{{item.uname}}</div>
+                <div>添加孩子</div>
+            </div>
+            <div class="kid-info">
+                <div class="f_left">
+                    <img src="./images/avatar.png" alt="">
+                </div>
+                <div class="info">
+                    <div class="title">
+                        <span class="name">{{currentKidInfo && currentKidInfo.uname}}</span>
+                        <span class="star"><img src="./images/star.png" alt=""><span>99</span></span>
+                    </div>
+                    <p><span>出生年月</span>:<span>2011-15-45</span></p>
+                    <p><span>性别</span>:<span>女</span></p>
+                    <a-button>修改资料</a-button>
+                </div>
+            </div>
+        </div>
         <div class="course-box">
             <header>
                 <a-button size="large" :class="{chosen: isRecent}"
@@ -33,7 +53,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="$router.push(`/liveBroadcastForTeacher/${item['room_no']}/${item['teacher_uid']}/${item['courseware_id']}/${item['teacher_name']}`)">
+                                @click="$router.push(`/liveBroadcastForStudent/${item['room_no']}/${item['teacher_uid']}/${item['courseware_id']}/${currentKidName}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -60,7 +80,7 @@
     import common from '@/api/common';
     import moment from 'moment';
     export default {
-        name: "course",
+        name: "kidCourse",
         data () {
             return {
                 id: common.getLocalStorage('id'),
@@ -69,44 +89,53 @@
                 pageNum: 1,
                 pageSize: 10,
                 courseList: [],
+                kidList: [],
                 totalCount: 0,
-                isRecent: true
+                isRecent: true,
+                currentKidId: '',
+                currentKidName: '',
             }
         },
         created () {
-            this.queryCourse()
+            this.init()
+        },
+        computed: {
+            currentKidInfo () {
+                return this.kidList.filter(item => item.id === this.currentKidId)[0]
+            }
         },
         methods: {
+            async init () {
+                await this.queryChild()
+                    .then(res => {
+                        let data = res.data;
+                        console.log(data)
+                        if (data.code === 200) {
+                            const result = data.data.data;
+                            this.kidList = result;
+                            this.currentKidId = result[0].id;
+                            this.currentKidName = result[0].uname;
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+                this.queryCourse()
+            },
+
             // 获取课程信息
-            async queryCourse () {
+            queryCourse () {
                 this.loading = true;
                 const identity = this.$store.state.identity;
                 const params = {
                     identity,
                     pageno: this.pageNum,
-                    pagesize: this.pageSize
+                    pagesize: this.pageSize,
+                    child_id: this.currentKidId
                 };
 
                 if (this.isRecent) {
                     Object.assign(params, {recent: 1})
-                }
-
-                let childId = '';
-                if (identity === 2) {
-                    await this.queryChild()
-                        .then(res => {
-                            let data = res.data;
-                            if (data.code === 200) {
-                                childId = data.data.data[0].id
-                            }
-                        })
-                        .catch(() => {
-
-                        })
-                }
-
-                if (childId) {
-                    Object.assign(params, {child_id: childId})
                 }
 
                 this.$axios.get( this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
@@ -148,10 +177,116 @@
 
 <style lang="less" scoped>
     .course-container {
-        overflow: hidden;
-        background:rgba(255,255,255,1);
-        border-radius:6px;
+        .kid-course-box {
+            height: 178px;
+            padding-top: 13px;
+            margin-bottom: 13px;
+            .kids {
+                display: flex;
+                align-items: center;
+                height: 45px;
+                > div {
+                    display: inline-block;
+                    width: 135px;
+                    height: 45px;
+                    background-color: #FED45C;
+                    color: #fff;
+                    font-size: 16px;
+                    border-radius: 6px 6px 0 0;
+                    margin-right: 5px;
+                    cursor: pointer;
+                    text-align: center;
+                    line-height: 45px;
+                }
+                .kid.selected {
+                    height: 58px;
+                    line-height: 58px;
+                    background-color: #fff;
+                    color: #312C2C;
+                }
+            }
+            .kid-info {
+                border-radius:0 6px 6px 6px;
+                overflow: hidden;
+                height: 120px;
+                background-color: #fff;
+                padding: 14px 20px;
+                .f_left {
+                    width: 92px;
+                    height: 92px;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    margin-right: 20px;
+                    img {
+                        width: 100%;
+                    }
+                }
+                .info {
+                    overflow: hidden;
+                    position: relative;
+                    button {
+                        position: absolute;
+                        top: 50%;
+                        right: 50px;
+                        transform: translate(0, -50%);
+                        width:96px;
+                        height:28px;
+                        border:1px solid #FED45C;
+                        border-radius:14px;
+                        font-size: 14px;
+                        color: #FED45C;
+                        &:hover {
+                            color: #fff;
+                            background-color: #FED45C;
+                        }
+                    }
+                    .title {
+                        overflow: hidden;
+                        .name {
+                            font-size:20px;
+                            font-weight:bold;
+                            color:rgba(49,44,44,1);
+                            margin-right: 20px;
+                            float: left;
+                        }
+                        .star {
+                            float: left;
+                            display: flex;
+                            height: 27px;
+                            align-items: center;
+                            width: 100px;
+                            span {
+                                margin-left: 6px;
+                                font-size:20px;
+                                color: #FED45C;
+                            }
+                        }
+                    }
+                    p {
+                        margin-bottom: 0;
+                        font-size: 14px;
+                        color: #312C2C;
+                        &:first-of-type {
+                            margin-top: 12px;
+                            margin-bottom: 4px;
+                        }
+                        span:first-of-type {
+                            display: inline-block;
+                            width: 58px;
+                            text-align: justify;
+                            text-align-last: justify;
+                        }
+                        span:last-of-type {
+                            margin-left: 25px;
+                        }
+                    }
+                }
+            }
+        }
         .course-box {
+            background:rgba(255,255,255,1);
+            border-radius:6px;
+            overflow: hidden;
             header {
                 height: 80px;
                 line-height: 80px;

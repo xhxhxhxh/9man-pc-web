@@ -20,7 +20,8 @@ router.beforeEach((to, from, next) => {
             if (store.state.identity === '') {
                 const info = common.getLocalStorage('userInfo')
                 store.commit('setIdentity', info.identity)
-                router.addRoutes([store.getters.roles,{path: '*', redirect: '/404'}])
+                const roles = store.getters.roles;
+                router.addRoutes(roles)
                 const redirect = decodeURIComponent(from.query.redirect || to.path)
                 if (to.path === redirect) {
                     // hack方法 确保addRoutes已完成 ,set the replace: true so the navigation will not leave a history record

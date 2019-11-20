@@ -104,6 +104,8 @@
     import md5 from 'blueimp-md5';
     import common from '@/api/common';
     import PuzzleVerification from 'vue-puzzle-verification';
+    import {constantRouterMap, mode} from '@/router/routerList';
+    import VueRouter from 'vue-router'
     export default {
         name: "Login",
         data () {
@@ -196,14 +198,7 @@
                         console.log(data)
                         if (data.code === 200) {
                             const info = data.data
-                            common.setLocalStorage('token', info.token);
-                            common.setLocalStorage('userInfo', info.data);
-                            common.setLocalStorage('verificationWrongCount', 0);
-                            this.$store.commit('setIdentity', info.data.identity);
-                            this.$store.commit('updateUserInfo');
-                            this.$store.commit('updateUsername');
-                            this.$router.addRoutes([this.$store.getters.roles, {path: '*', redirect: '/404'}]);
-                            this.$router.push('/home');
+                            this.afterRegister(info)
                             this.$message.success('注册成功',5);
                         }else {
                             this.$message.warning(data.msg,5);
@@ -213,6 +208,24 @@
 
                     })
 
+            },
+
+            // 注册成功后执行的操作
+            afterRegister (info) {
+                common.setLocalStorage('token', info.token);
+                common.setLocalStorage('userInfo', info.data);
+                common.setLocalStorage('verificationWrongCount', 0);
+                this.$store.commit('setIdentity', info.data.identity);
+                this.$store.commit('updateUserInfo');
+                this.$store.commit('updateUsername');
+                const router = new VueRouter ({
+                    mode,
+                    routes: constantRouterMap,
+                });
+                this.$router.matcher = router.matcher; // 重置路由
+                const roles = this.$store.getters.roles;
+                this.$router.addRoutes(roles);
+                this.$router.push('/personalCenter');
             },
 
             // 设置验证错误次数

@@ -68,7 +68,10 @@
                 <div id="tui-image-editor" ref="editArea" v-show="mode === 'picture'"></div>
                 <div class="wrapper" v-show="showWrapper && mode === 'animate'"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
-                    <iframe :src="iframeSrc" ref="iframe" allow="autoplay"></iframe>
+                    <iframe :src="iframeSrc"
+                            ref="iframe" allow="autoplay"></iframe>
+                    <iframe :src="iframeSrcCache" style="display: none"
+                            ref="iframe" allow="autoplay"></iframe>
                 </div>
                 <div class="operate">
                     <div class="mode-animate" v-show="mode !== 'picture'">
@@ -224,7 +227,11 @@
                 roomId: '',
                 teacherName: '',
                 // -----------playarea基础数据---------------
+                iframeSrcPrevious: '', // 上一个iframe src
+                iframeSrcCurrent: '', // 当前iframe src
+                iframeSrcNext: '', // 下一个iframe src
                 iframeSrc: '',
+                iframeSrcCache: '',
                 disabled: true, // 控制播放器滑块
                 mode: 'animate', // 直播模式
                 videoMode: false, // video模式是否被开启
@@ -250,7 +257,13 @@
                 firstLoad: true,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
+                gameListIndex: [], // 存放游戏次序的数组
+                gameIndex: 0,
                 resourceIndex: 0, // 课件播放序号
+                realPreviousIndex: 0, // 记录初次载入课件的三个游戏序号
+                realCurrentIndex: 0,
+                realNextIndex: 0,
+
             }
         },
         components: {
@@ -592,6 +605,13 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.coursewareResource = data.data.data.resource
+                            const gameListIndex = []
+                            this.coursewareResource.forEach((item, index) => {
+                                if (item.type === 2) {
+                                    gameListIndex.push(index)
+                                }
+                            })
+                            this.gameListIndex = gameListIndex
                             this.changeAnimate(this.$event, 1, this.firstLoad) // 载入课件
                         } else {
 
@@ -1452,8 +1472,9 @@
                     this.$store.commit('setOperatePermission', true)
                     this.mode = firstLoad? this.mode: 'animate'
                     this.disabled = true
-                    this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    // this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
+                this.gameCache()
                 this.sendMediaData(0, false)
                 const params = {
                     type: 'animate_page_change',
@@ -1467,6 +1488,90 @@
                 this.$store.commit('setCoursewarePage', this.resourceIndex)
                 if (!firstLoad) {
                     this.rtcRoom.sendMessage(params)
+                }
+
+            },
+
+            // 缓存游戏
+            gameCache (firstLoad) {
+                const resourceUrl = this.$store.state.resourceUrl
+                const resourceIndex = this.resourceIndex
+                const gameListIndex = this.gameListIndex
+                const gameIndex = this.gameIndex = this.searchInsert(gameListIndex, resourceIndex)
+
+                let realCurrentIndex = gameListIndex[gameIndex]
+                let realNextIndex = gameListIndex[gameIndex + 1]
+
+                if (realCurrentIndex) {
+                    this.iframeSrc = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
+                        `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                }
+                if (realNextIndex) {
+                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url +
+                        `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                }
+                return
+                if (firstLoad) { // 初次加载载入三个动画
+                    let realPreviousIndex = gameListIndex[gameIndex - 1]
+                    let realCurrentIndex = gameListIndex[gameIndex]
+                    let realNextIndex = gameListIndex[gameIndex + 1]
+
+                    if (!realPreviousIndex) {
+                        realPreviousIndex = gameListIndex[gameListIndex.length - 1]
+                    }
+                    if (!realNextIndex) {
+                        realNextIndex = gameListIndex[0]
+                    }
+
+                    this.realPreviousIndex = realPreviousIndex
+                    this.realCurrentIndex = realCurrentIndex
+                    this.realNextIndex = realNextIndex
+
+                    if (realCurrentIndex) {
+                        this.iframeSrcCurrent = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
+                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    }
+                    if (realNextIndex) {
+                        this.iframeSrcNext = resourceUrl + '/' + this.coursewareResource[realNextIndex].url +
+                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    }
+                    if (realPreviousIndex) {
+                        this.iframeSrcPrevious = resourceUrl + '/' + this.coursewareResource[realPreviousIndex].url +
+                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    }
+                } else { // 非初次时
+                    const willIndex = gameListIndex[gameIndex]
+                    if (willIndex === this.realCurrentIndex) {
+                        return // 未进行课件跳转时
+                    } else if (willIndex === this.realNextIndex) {
+
+                    }
+                }
+            },
+
+            // 查找当前课件所在游戏列表的位置
+            searchInsert(nums, target) {
+                let right = nums.length - 1;
+                let left = 0;
+
+                if (target > nums[right]) {
+                    return 0;
+                }
+
+                if (target <= nums[left]) {
+                    return 0;
+                }
+
+                while (left <= right) {
+                    let middle = Math.floor((left + right) / 2);
+                    if (middle === left) return left + 1;
+                    if (target > nums[middle]) {
+                        left = middle;
+                    } else if (target < nums[middle]) {
+                        right = middle;
+                    } else {
+                        return middle;
+                    }
                 }
 
             },

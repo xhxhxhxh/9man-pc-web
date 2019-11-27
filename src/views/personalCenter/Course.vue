@@ -33,7 +33,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="$router.push(`/liveBroadcastForTeacher/${item['room_no']}/${item['teacher_uid']}/${item['courseware_id']}/${item['teacher_name']}`)">
+                                @click="$router.push(`/liveBroadcastForTeacher/${item['room_no']}/${userId}/${item['courseware_id']}/${item['teacher_name']}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -62,9 +62,10 @@
     export default {
         name: "course",
         data () {
+            const userInfo = common.getLocalStorage('userInfo')
             return {
-                id: common.getLocalStorage('id'),
                 rootUrl: this.$store.state.apiUrl,
+                userId: userInfo.uid,
                 loading: true,
                 pageNum: 1,
                 pageSize: 10,
@@ -147,6 +148,7 @@
 </script>
 
 <style lang="less" scoped>
+    @import "../../less/index.less";
     .course-container {
         overflow: hidden;
         background:rgba(255,255,255,1);

@@ -6,7 +6,8 @@ import ResetPassword from '@/views/resetPassword/ResetPassword';
 import Register from '@/views/register/Register';
 import page404 from '@/views/404/404';
 
-export const mode = 'hash' // history
+const env = process.env.NODE_ENV;
+export const mode = env === 'production'? 'history': 'hash'; // history
 
 export const constantRouterMap = [
     { path: '/', redirect: '/home' },

@@ -6,10 +6,11 @@ import app from './app.vue';
 import axios from '@/axios'
 import store from '@/store';
 import './permission';
+import './lib/animate.css'
 import 'normalize.css';
 import './css/base.css';
 import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
-    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination } from 'ant-design-vue';
+    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio } from 'ant-design-vue';
 
 
 
@@ -37,6 +38,7 @@ Vue.use(Slider);
 Vue.use(Upload);
 Vue.use(Spin);
 Vue.use(Pagination);
+Vue.use(Radio);
 
 
 Vue.use(VueRouter);

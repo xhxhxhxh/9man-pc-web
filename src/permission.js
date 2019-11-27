@@ -19,7 +19,9 @@ router.beforeEach((to, from, next) => {
         } else {
             if (store.state.identity === '') {
                 const info = common.getLocalStorage('userInfo')
+                const kidsInfo = common.getLocalStorage('kidsInfo')
                 store.commit('setIdentity', info.identity)
+                store.commit('setKidsInfo', kidsInfo)
                 const roles = store.getters.roles;
                 router.addRoutes(roles)
                 const redirect = decodeURIComponent(from.query.redirect || to.path)

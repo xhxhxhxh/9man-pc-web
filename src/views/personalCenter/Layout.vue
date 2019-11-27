@@ -6,10 +6,15 @@
             </div>
         </header>
         <main>
-            <div class="sideBar">
-                <div :class="{sideBarItem: true, chosen: hashAddress === item.path}"  @click="$router.push($store.getters.roles.path + '/' + item.path)" v-for="(item, index) in $store.getters.roles[0].children" :key="index">
-                    <img :src="item.meta['icon']" alt="">
-                    <span class="text">{{item.meta['title']}}</span>
+            <div class="sideBar-box">
+                <KidInfo></KidInfo>
+                <div class="sideBar">
+                    <div :class="{sideBarItem: true, chosen: hashAddress === item.path}"
+                         @click="$router.push($store.getters.roles[0].path + '/' + item.path)"
+                         v-for="(item, index) in $store.getters.roles[0].children" :key="index" v-if="!item.meta.hidden">
+                        <img :src="item.meta['icon']" alt="">
+                        <span class="text">{{item.meta['title']}}</span>
+                    </div>
                 </div>
             </div>
             <router-view></router-view>
@@ -18,6 +23,7 @@
 </template>
 
 <script>
+    import KidInfo from './components/KidInfo';
 
     export default {
         name: "Layout",
@@ -25,6 +31,9 @@
             return {
                 hashAddress: this.$route.path.split('/')[2]
             }
+        },
+        components: {
+            KidInfo
         },
         computed: {
             routes() {
@@ -40,12 +49,13 @@
 </script>
 
 <style lang="less" scoped>
+    @import "../../less/index.less";
     .layout-container {
         height: 100%;
         padding-top: 100px;
         background-color: #F4F5F7;
         header {
-            width: 816px;
+            width: 1100px;
             margin: 0 auto 35px;
             background-color: #fff;
             height: 44px;
@@ -63,14 +73,16 @@
             }
         }
         main {
-            width: 816px;
+            width: 1100px;
             margin: 0 auto;
         }
-        .sideBar {
+        .sideBar-box {
             float: left;
-            width:157px;
-            height:320px;
+            width: 157px;
             margin-right: 30px;
+        }
+        .sideBar {
+            height:320px;
             .sideBarItem {
                 height:25%;
                 line-height: 80px;
@@ -95,11 +107,11 @@
                     border-radius:0 0 6px 6px;
                 }
                 &.chosen {
-                    background-color:#FED45C;
+                    background-color:@themeColor;
                     position: relative;
                     &:after {
                         content: "";
-                        background-color:#FED45C;
+                        background-color:@themeColor;
                         position: absolute;
                         width: 12px;
                         height: 12px;

@@ -210,6 +210,7 @@
 </script>
 
 <style lang="less">
+    @import "../../less/index.less";
     .puzzle-verification {
         width: 292px !important;
         border-radius: 16px;
@@ -301,15 +302,11 @@
                                 height:40px;
                                 line-height: 40px;
                                 text-align: center;
-                                background-color: #FED45C;
                                 border-radius:6px;
                                 font-size:20px;
                                 color:#fefefe;
                                 border: 0;
                                 margin-top: 10px;
-                                &:hover {
-                                    background-color: #FCC93A;
-                                }
                             }
                             .register {
                                 font-size:12px;
@@ -324,7 +321,7 @@
                                 }
                                 span {
                                     cursor: pointer;
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                         }
@@ -336,7 +333,6 @@
                                 transform: translate(0, -20%);
                                 color:#999;
                                 cursor: pointer;
-                                width: 70px;
                                 text-align: center;
                                 height: 20px;
                                 line-height: 20px;
@@ -345,7 +341,7 @@
                                     color: #333;
                                 }
                                 &:hover {
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                         }
@@ -363,7 +359,7 @@
                             border-radius: unset;
                             height:32px;
                             width: 240px;
-                            border-bottom:2px solid #FED45C !important;
+                            border-bottom:2px solid @themeColor !important;
                             font-size:18px;
                             color:rgba(51,51,51,1);
                             padding-left: 5px;

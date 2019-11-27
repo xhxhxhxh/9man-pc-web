@@ -19,7 +19,6 @@ module.exports = {
         publicPath: '/'
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
         // new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
         new htmlWebpackPlugin ({
             template: path.join(__dirname,'./src/index.html'),
@@ -70,7 +69,7 @@ module.exports = {
                         },
                         {
                             loader: 'less-loader', // compiles Less to CSS
-                            options: {modifyVars: {'primary-color': '#FCC93A'}, javascriptEnabled: true},
+                            options: {modifyVars: {'primary-color': '#f85415'}, javascriptEnabled: true},
                         }]
                 })
             },

@@ -211,10 +211,22 @@
             },
 
             // 注册成功后执行的操作
-            afterRegister (info) {
+            async afterRegister (info) {
                 common.setLocalStorage('token', info.token);
                 common.setLocalStorage('userInfo', info.data);
                 common.setLocalStorage('verificationWrongCount', 0);
+                await this.queryChild()
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const result = data.data.data;
+                            this.$store.commit('setKidsInfo', result);
+                            common.setLocalStorage('kidsInfo', result);
+                        }
+                    })
+                    .catch(() => {
+
+                    })
                 this.$store.commit('setIdentity', info.data.identity);
                 this.$store.commit('updateUserInfo');
                 this.$store.commit('updateUsername');
@@ -236,12 +248,18 @@
                     this.verificationShowModal = true
                 }
                 common.setLocalStorage('verificationWrongCount', verificationWrongCount)
-            }
+            },
+
+            // 查询孩子
+            queryChild () {
+                return this.$axios.get(this.rootUrl + '/v1/child/queryChild')
+            },
         }
     }
 </script>
 
 <style lang="less">
+    @import "../../less/index.less";
     .puzzle-verification {
         width: 292px !important;
         border-radius: 16px;
@@ -333,15 +351,11 @@
                                 height:40px;
                                 line-height: 40px;
                                 text-align: center;
-                                background-color: #FED45C;
                                 border-radius:6px;
                                 font-size:20px;
                                 color:#fefefe;
                                 border: 0;
                                 margin-top: 10px;
-                                &:hover {
-                                    background-color: #FCC93A;
-                                }
                             }
                             .login {
                                 font-size:12px;
@@ -351,7 +365,7 @@
                                 text-align: center;
                                 span {
                                     cursor: pointer;
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                         }
@@ -363,7 +377,6 @@
                                 transform: translate(0, -20%);
                                 color:#999;
                                 cursor: pointer;
-                                width: 70px;
                                 text-align: center;
                                 height: 20px;
                                 line-height: 20px;
@@ -372,7 +385,7 @@
                                     color: #333;
                                 }
                                 &:hover {
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                         }
@@ -390,7 +403,7 @@
                             border-radius: unset;
                             height:32px;
                             width: 240px;
-                            border-bottom:2px solid #FED45C !important;
+                            border-bottom:2px solid @themeColor !important;
                             font-size:18px;
                             color:rgba(51,51,51,1);
                             padding-left: 5px;

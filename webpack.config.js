@@ -37,6 +37,11 @@ module.exports = {
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
             },
+            "/datas": {
+                target: 'https://api.9mankid.com/uploads',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true
+            },
         },
     },
     plugins: [
@@ -63,7 +68,7 @@ module.exports = {
                         },
                         {
                             loader: 'less-loader',
-                            options: {modifyVars: {'primary-color': '#FCC93A'}, javascriptEnabled: true,},
+                            options: {modifyVars: {'primary-color': '#f85415'}, javascriptEnabled: true,},
                         }
                     ]
             },

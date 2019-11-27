@@ -71,7 +71,7 @@
                     <iframe :src="iframeSrc"
                             ref="iframe" allow="autoplay"></iframe>
                     <iframe :src="iframeSrcCache" style="display: none"
-                            ref="iframe" allow="autoplay"></iframe>
+                            allow="autoplay"></iframe>
                 </div>
                 <div class="operate">
                     <div class="mode-animate" v-show="mode !== 'picture'">
@@ -316,6 +316,7 @@
         mounted () {
             this.paint()
             this.addAnimationRules()
+            // this.initIframe()
         },
         watch: {
             strokeWidth: function (val) {
@@ -1183,10 +1184,9 @@
                 const _this = this
                 iframe.onload = function () {
                     const body = this.contentWindow.document.body
-                    body.onmousedown = function (e) {
-                        // e.preventDefault()
-                        console.log(123)
-                    }
+                    const gameCanvas = body.querySelector('.gameCanvas')
+                    gameCanvas.width = 680
+                    gameCanvas.height = 419
                 }
             },
 
@@ -1501,13 +1501,13 @@
 
                 let realCurrentIndex = gameListIndex[gameIndex]
                 let realNextIndex = gameListIndex[gameIndex + 1]
-
+                console.log(resourceUrl.replace('start', 'load'))
                 if (realCurrentIndex) {
                     this.iframeSrc = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
                         `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
                 if (realNextIndex) {
-                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url +
+                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url.replace('start', 'load') +
                         `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
                 return

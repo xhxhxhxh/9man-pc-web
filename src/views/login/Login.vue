@@ -100,13 +100,13 @@
         name: "Login",
         data () {
             return {
+                rootUrl: this.$store.state.apiUrl,
                 login: 'telephone',
                 form: this.$form.createForm(this),
                 hideRequiredMark: true,
                 verificationCodeText: '获取验证码',
                 alreadyGetCode: false,
                 timeOut: '',
-                rootUrl: this.$store.state.rootUrl,
                 verificationShowModal: false,
             }
         },
@@ -213,7 +213,7 @@
                     phone: values.telephone,
                     password: md5(values.password).toLowerCase()
                 };
-                this.$axios.post(this.$store.state.apiUrl + '/v1/login/login', params)
+                this.$axios.post(this.rootUrl + '/v1/login/login', params)
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
@@ -241,10 +241,22 @@
             },
 
             // 登录成功后执行的操作
-            afterLogin (info) {
+            async afterLogin (info) {
                 common.setLocalStorage('token', info.token);
                 common.setLocalStorage('userInfo', info.data);
                 common.setLocalStorage('verificationWrongCount', 0);
+                await this.queryChild()
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const result = data.data.data;
+                            this.$store.commit('setKidsInfo', result);
+                            common.setLocalStorage('kidsInfo', result);
+                        }
+                    })
+                    .catch(() => {
+
+                    })
                 this.$store.commit('setIdentity', info.data.identity);
                 this.$store.commit('updateUserInfo');
                 this.$store.commit('updateUsername');
@@ -261,12 +273,18 @@
                 }else {
                     this.$router.push('/personalCenter');
                 }
-            }
+            },
+
+            // 查询孩子
+            queryChild () {
+                return this.$axios.get(this.rootUrl + '/v1/child/queryChild')
+            },
         }
     }
 </script>
 
 <style lang="less">
+    @import "../../less/index.less";
     .puzzle-verification {
         width: 292px !important;
         border-radius: 16px;
@@ -367,15 +385,11 @@
                                 height:40px;
                                 line-height: 40px;
                                 text-align: center;
-                                background-color: #FED45C;
                                 border-radius:6px;
                                 font-size:20px;
                                 color:#fefefe;
                                 border: 0;
                                 margin-top: 10px;
-                                &:hover {
-                                    background-color: #FCC93A;
-                                }
                             }
                             .forget-password {
                                 position: absolute;
@@ -388,7 +402,7 @@
                                 line-height: 20px;
                                 transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
                                 &:hover {
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                             .register {
@@ -401,7 +415,7 @@
                                     cursor: pointer;
                                     transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
                                     &:hover {
-                                        color: #FCC93A;
+                                        color: @themeColor;
                                     }
                                 }
                             }
@@ -414,7 +428,6 @@
                                 transform: translate(0, -20%);
                                 color:#999;
                                 cursor: pointer;
-                                width: 70px;
                                 text-align: center;
                                 height: 20px;
                                 line-height: 20px;
@@ -423,7 +436,7 @@
                                     color: #333;
                                 }
                                 &:hover {
-                                    color: #FCC93A;
+                                    color: @themeColor;
                                 }
                             }
                         }
@@ -443,7 +456,7 @@
                             border-radius: unset;
                             height:32px;
                             width: 240px;
-                            border-bottom:2px solid #FED45C !important;
+                            border-bottom:2px solid @themeColor !important;
                             font-size:18px;
                             color:rgba(51,51,51,1);
                             padding-left: 5px;

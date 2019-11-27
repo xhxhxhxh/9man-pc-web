@@ -1,20 +1,24 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import common from '@/api/common';
-import liveBroadcast from './modules/liveBroadcast'
+import liveBroadcast from './modules/liveBroadcast';
+import kidsInfo from './modules/kidsInfo';
 
 Vue.use(Vuex);
 import studentRouter from '@/router/studentRouter';
 import avatarImg from '@/assets/avatar.png';
 
+const env = process.env.NODE_ENV;
+
 export default new Vuex.Store({
     modules: {
-        liveBroadcast
+        liveBroadcast,
+        kidsInfo
     },
     state: {
-        rootUrl: '', // https://edu.9man.com
-        resourceUrl: '', // https://api.9mankid.com/uploads
-        apiUrl: '', // https://api.9mankid.com/api
+        rootUrl: env === 'production'? 'https://edu.9man.com': '', // https://edu.9man.com
+        resourceUrl: env === 'production'? 'https://api.9mankid.com/uploads': '', // https://api.9mankid.com/uploads
+        apiUrl: env === 'production'? 'https://api.9mankid.com/api': '', // https://api.9mankid.com/api
         identity: '',
         updateInfo: 0,
         updateUsername: 0,

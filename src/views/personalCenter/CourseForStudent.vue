@@ -1,26 +1,30 @@
 <template>
     <div class="course-container">
-        <div class="kid-course-box">
-            <div class="kids">
-                <div :class="{kid: true, selected: item.id === currentKidId}" v-for="item in kidList" :key="item.id">{{item.uname}}</div>
-                <div>添加孩子</div>
-            </div>
-            <div class="kid-info">
-                <div class="f_left">
-                    <img src="./images/avatar.png" alt="">
-                </div>
-                <div class="info">
-                    <div class="title">
-                        <span class="name">{{currentKidInfo && currentKidInfo.uname}}</span>
-                        <span class="star"><img src="./images/star.png" alt=""><span>99</span></span>
-                    </div>
-                    <p><span>出生年月</span>:<span>2011-15-45</span></p>
-                    <p><span>性别</span>:<span>女</span></p>
-                    <a-button>修改资料</a-button>
-                </div>
-            </div>
-        </div>
+<!--        <div class="kid-course-box">-->
+<!--            <div class="kids">-->
+<!--                <div :class="{kid: true, selected: item.id === currentKidId}" v-for="item in kidList" :key="item.id">{{item.uname}}</div>-->
+<!--                <div>添加孩子</div>-->
+<!--            </div>-->
+<!--            <div class="kid-info">-->
+<!--                <div class="f_left">-->
+<!--                    <img src="./images/avatar.png" alt="">-->
+<!--                </div>-->
+<!--                <div class="info">-->
+<!--                    <div class="title">-->
+<!--                        <span class="name">{{currentKidInfo && currentKidInfo.uname}}</span>-->
+<!--                        <span class="star"><img src="./images/star.png" alt=""><span>99</span></span>-->
+<!--                    </div>-->
+<!--                    <p><span>出生年月</span>:<span>2011-15-45</span></p>-->
+<!--                    <p><span>性别</span>:<span>女</span></p>-->
+<!--                    <a-button>修改资料</a-button>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
         <div class="course-box">
+            <h1 class="title">
+                <div class="line"></div>
+                <span>课程</span>
+            </h1>
             <header>
                 <a-button size="large" :class="{chosen: isRecent}"
                           @click="() => {pageNum = 1; isRecent = true; queryCourse()}">近期课程</a-button>
@@ -53,7 +57,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="$router.push(`/liveBroadcastForStudent/${item['room_no']}/${item['teacher_uid']}/${item['courseware_id']}/${currentKidName}`)">
+                                @click="$router.push(`/liveBroadcastForStudent/${item['room_no']}/${userId}/${item['courseware_id']}/${currentKidName}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -77,14 +81,16 @@
 </template>
 
 <script>
-    import common from '@/api/common';
     import moment from 'moment';
+    import common from '@/api/common';
     export default {
         name: "kidCourse",
         data () {
+            const userInfo = common.getLocalStorage('userInfo')
+            const kidsInfo = common.getLocalStorage('kidsInfo')
             return {
-                id: common.getLocalStorage('id'),
                 rootUrl: this.$store.state.apiUrl,
+                userId: userInfo.uid,
                 loading: true,
                 pageNum: 1,
                 pageSize: 10,
@@ -92,7 +98,7 @@
                 kidList: [],
                 totalCount: 0,
                 isRecent: true,
-                currentKidId: '',
+                currentKidId: kidsInfo[0].id,
                 currentKidName: '',
             }
         },
@@ -100,26 +106,10 @@
             this.init()
         },
         computed: {
-            currentKidInfo () {
-                return this.kidList.filter(item => item.id === this.currentKidId)[0]
-            }
+
         },
         methods: {
-            async init () {
-                await this.queryChild()
-                    .then(res => {
-                        let data = res.data;
-                        console.log(data)
-                        if (data.code === 200) {
-                            const result = data.data.data;
-                            this.kidList = result;
-                            this.currentKidId = result[0].id;
-                            this.currentKidName = result[0].uname;
-                        }
-                    })
-                    .catch(() => {
-
-                    })
+            init () {
                 this.queryCourse()
             },
 
@@ -152,11 +142,6 @@
                     })
             },
 
-            // 查询孩子
-            queryChild () {
-                return this.$axios.get( this.rootUrl + '/v1/child/queryChild')
-            },
-
             // 页码改变
             onPageChange (page) {
                 this.pageNum = page;
@@ -176,6 +161,7 @@
 </script>
 
 <style lang="less" scoped>
+    @import "../../less/index.less";
     .course-container {
         .kid-course-box {
             height: 178px;
@@ -189,7 +175,7 @@
                     display: inline-block;
                     width: 135px;
                     height: 45px;
-                    background-color: #FED45C;
+                    background-color: @themeColor;
                     color: #fff;
                     font-size: 16px;
                     border-radius: 6px 6px 0 0;
@@ -231,13 +217,13 @@
                         transform: translate(0, -50%);
                         width:96px;
                         height:28px;
-                        border:1px solid #FED45C;
+                        border:1px solid @themeColor;
                         border-radius:14px;
                         font-size: 14px;
-                        color: #FED45C;
+                        color: @themeColor;
                         &:hover {
                             color: #fff;
-                            background-color: #FED45C;
+                            background-color: @themeColor;
                         }
                     }
                     .title {
@@ -258,7 +244,7 @@
                             span {
                                 margin-left: 6px;
                                 font-size:20px;
-                                color: #FED45C;
+                                color: @themeColor;
                             }
                         }
                     }
@@ -287,6 +273,27 @@
             background:rgba(255,255,255,1);
             border-radius:6px;
             overflow: hidden;
+            > .title {
+                height: 46px;
+                border-bottom: 1px solid #F4F5F7;
+                padding-left: 17px;
+                font-size:16px;
+                font-weight:normal;
+                color:rgba(67,67,67,1);
+                span {
+                    line-height: 45px;
+                    vertical-align: top;
+                }
+                .line {
+                    display: inline-block;
+                    width:4px;
+                    height:25px;
+                    background:@themeColor;
+                    border-radius:2px;
+                    margin: 10px 10px 0 0;
+                    vertical-align: top;
+                }
+            }
             header {
                 height: 80px;
                 line-height: 80px;
@@ -352,8 +359,8 @@
                                     height: 44px;
                                     text-align: center;
                                     font-weight: normal;
-                                    padding-left: 3px;
-                                    padding-right: 3px;
+                                    padding-left: 8px;
+                                    padding-right: 8px;
                                     &:first-of-type {
                                         border-radius:13px 0 0 13px;
                                     }

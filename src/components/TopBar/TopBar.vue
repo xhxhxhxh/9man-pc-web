@@ -1,31 +1,18 @@
 <template>
-    <div class="topBar-container" v-if="hashAddress !== 'liveBroadcastForTeacher' && hashAddress !== 'liveBroadcastForStudent'
-    && hashAddress !== 'login' && hashAddress !== 'resetPassword' && hashAddress !== 'register'">
-        <div class="logo">少儿思维</div>
-        <div class="nav">
-            <a-menu
-                    :defaultSelectedKeys="[hashAddress]"
-                    :selectedKeys="[hashAddress]"
-                    mode="horizontal"
-            >
-                <a-menu-item key="home">
-                    <router-link to="/home" tag="span">首页</router-link>
-                </a-menu-item>
-                <a-menu-item key="course" v-if="$store.state.identity !== '1'">
-                    <router-link to="/personalCenter" tag="span">个人中心</router-link>
-                </a-menu-item>
-            </a-menu>
-        </div>
-        <div class="login">
-            <a-button @click="$router.push('/login')" v-if="$store.state.identity === ''">登 录</a-button>
-            <div class="avatar" v-else>
-                <a-popover placement="bottomRight" overlayClassName="userInfo">
-                    <template slot="content">
-                        <router-link to="/users" tag="p">{{$store.getters.username | normalUrlEncode}}</router-link>
-                        <p @click="logout">退出登录</p>
-                    </template>
-                    <img :src="$store.getters.userInfo | normalUrlEncode" alt="">
-                </a-popover>
+    <div class="topBar-container">
+        <div class="topBar-box">
+            <div class="logo">
+                <img src="./images/logo.png" alt="">
+            </div>
+            <div class="login">
+                <span class="contract">联系方式：15558067572</span>
+                <a-button @click="$router.push('/login')" v-if="$store.state.identity === ''" class="first-button">登 录</a-button>
+                <a-button @click="$router.push('/register')" v-if="$store.state.identity === ''" type="primary">注 册</a-button>
+                <div class="personal-center" v-else>
+                    <span class="hello">{{'你好,' + username}}</span>
+                    <span class="personal" @click="$router.push('/personalCenter')">个人中心</span>
+                    <span class="exit" @click="logout">退出登录</span>
+                </div>
             </div>
         </div>
     </div>
@@ -39,7 +26,6 @@
             const userInfo = common.getLocalStorage('userInfo');
           return {
               token: common.getLocalStorage('token'),
-              hashAddress: this.$route.path.split('/')[1],
               hasLogin: true,
               username: userInfo.uname
           }
@@ -58,9 +44,6 @@
                 } else {
                     this.$store.commit('setIdentity', '')
                 }
-
-                // this.$store.commit('setIdentity', '')
-
             }
         },
         filters: {
@@ -72,7 +55,8 @@
     }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
+    @import "../../less/index.less";
     @media screen and (max-width: 1200px) {
         .topBar-container {
             padding: 0 40px !important;
@@ -105,78 +89,60 @@
 
     .topBar-container {
         width: 100%;
-        height: 60px;
+        height: 70px;
         background: rgba(255,255,255,1);
         box-shadow: 0 5px 9px 0 rgba(136,153,191,0.1);
-        display: flex;
-        justify-content: space-between;
-        padding: 0 79px;
         position: fixed;
         z-index: 999;
         top: 0;
         left: 0;
 
-        > div {
-            display: flex;
-            align-items: center;
+        .topBar-box {
+            width: 1100px;
+            margin: 0 auto;
+            height: 100%;
+            overflow: hidden;
+            line-height: 70px;
         }
         .logo {
-            font-size: 14px;
-            color: #333;
-            font-weight:400;
-        }
-        .nav {
-            .ant-menu {
-                height: 100%;
-                border: 0;
-                .ant-menu-item {
-                    height: 100%;
-                    line-height: 60px;
-                    font-size: 14px;
-                    color: #333;
-                    font-weight:300;
-                    border-bottom: 0 solid #fff;
-                    padding: 0;
-                    margin: 0 50px;
-                }
-                .ant-menu-item:hover {
-                    border-bottom: 6px solid #FCC93A;
-                }
-                .ant-menu-item-selected {
-                    font-weight:bold;
-                    border-bottom: 6px solid #FCC93A;
-                }
+            height: 100%;
+            line-height: 70px;
+            float: left;
+            img {
+                vertical-align: middle;
             }
         }
         .login {
-            width: 60px;
+            float: right;
+            .contract {
+                color: @themeColor;
+                font-size: 14px;
+                margin-right: 27px;
+            }
             button {
-                border:2px solid #F37934;
-                border-radius:8px;
-                color: #F37934;
+                border:1px solid @themeColor;
+                border-radius:17px;
                 box-shadow: unset;
-                width: 62px;
-                height: 30px;
-                font-size: 12px;
-                font-weight:400;
-                &:hover {
-                    background-color: #F37934!important;
+                width: 68px;
+                height: 34px;
+                font-size: 14px;
+                &.first-button {
+                    color: @themeColor;
+                    margin-right: 16px;
                 }
             }
-            button:hover {
-                background-color: rgba(255,227,0,1);
-                color: #fff;
-            }
-            .avatar {
-                width: 30px;
-                height: 30px;
-                border-radius: 50%;
-                margin-left: 15px;
-                cursor: pointer;
-                img {
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
+            .personal-center {
+                display: inline-block;
+                .personal {
+                    color: @themeColor;
+                    margin: 0 10px;
+                    cursor: pointer;
+                }
+                .exit {
+                    cursor: pointer;
+                    &:hover {
+                        color: @themeColor;
+                    }
                 }
             }
         }

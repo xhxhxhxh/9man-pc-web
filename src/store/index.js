@@ -6,7 +6,6 @@ import kidsInfo from './modules/kidsInfo';
 
 Vue.use(Vuex);
 import studentRouter from '@/router/studentRouter';
-import avatarImg from '@/assets/avatar.png';
 
 const env = process.env.NODE_ENV;
 
@@ -60,21 +59,5 @@ export default new Vuex.Store({
             }
         },
 
-        userInfo(state) {
-            const updateInfo = state.updateInfo; // 仅用于触发组件更新
-            const userInfo = common.getLocalStorage('userInfo');
-            if (!userInfo.headimg) {
-                return avatarImg
-            } else {
-                return userInfo.headimg
-            }
-        },
-
-        //更新后的名字
-        username(state) {
-            const updateUsername = state.updateUsername; // 仅用于触发组件更新
-            const userInfo = common.getLocalStorage('userInfo');
-            return userInfo.uname
-        },
     }
 })

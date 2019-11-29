@@ -37,7 +37,7 @@
                 </div>
             </div>
             <div class="submit">
-                <a-button>取消</a-button>
+                <a-button @click="$router.push('/personalCenter')">取消</a-button>
                 <a-button type="primary" @click="updateKidInfo(null)">确认修改</a-button>
             </div>
         </main>
@@ -298,8 +298,8 @@
             uploadAvatar () {
                 this.cutAvatar().then((avatar) => {
                     let data = new FormData();
-                    console.log(avatar)
-                    data.append('file', this.imageTransformFile(avatar), this.avatarName);
+                    const avatarName = this.avatarName? this.avatarName: 'avatar.png'
+                    data.append('file', this.imageTransformFile(avatar), avatarName);
                     this.$axios.post(this.rootUrl + '/v1/child/uploadHeadimg', data)
                         .then(res => {
                             let responseData = res.data;
@@ -353,12 +353,11 @@
                 this.$axios.post(this.rootUrl + '/v1/child/updateChild', params)
                     .then(res => {
                         let data = res.data;
-                        console.log(data)
                         if (data.code === 200) {
                             if (newAvatarSrc) {
                                 this.$message.success('头像更新成功！');
                                 this.$store.commit('setKidAvatar', {id, img: newAvatarSrc});
-                                this.avatarSrc = newAvatarSrc;
+                                this.avatarSrc = this.resourceUrl + newAvatarSrc;
                                 this.cacheAvatar = this.avatarSrc;
                                 this.uploadedAvatar = false;
                                 this.changingAvatar = false;
@@ -430,7 +429,7 @@
                 }
                 //调用
                 const blob = dataURLtoBlob(url);
-                console.log(blobToFile(blob, 'avatar'))
+
                 return blobToFile(blob, 'avatar');
 
             },
@@ -554,8 +553,8 @@
                                 }
                                 &.shake {
                                     .ant-calendar-picker-input {
-                                        border-color: #ffdb63;
-                                        box-shadow: 0 0 0 2px rgba(252, 201, 58, 0.2);
+                                        border-color: @themeColor;
+                                        box-shadow: 0 0 0 2px rgba(248, 84, 21, 0.2);
                                     }
 
                                  }

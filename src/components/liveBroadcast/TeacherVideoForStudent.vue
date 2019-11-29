@@ -63,13 +63,15 @@
 <style lang="less" scoped>
     .teacherVideo-container {
         user-select: none;
-        border-radius: 20px;
+        border-radius: 20px 20px 0 0;
         padding-top: 75%;
         box-sizing: content-box;
         position: absolute;
         left: 0;
         top: 0;
         width: 100%;
+        background-image: url("images/teacherWillBack.png");
+        background-size: cover;
         .video-area {
             position: absolute;
             left: 0;

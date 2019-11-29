@@ -1,7 +1,6 @@
 <template>
     <a-locale-provider :locale="locale">
         <div class="app-container" id="app">
-            <TopBar></TopBar>
             <router-view></router-view>
         </div>
     </a-locale-provider>

@@ -1334,7 +1334,7 @@
             // 发送多媒体操作数据
             sendMediaData (type, isplay, progress) {
                 let params = {}
-                if (progress) {
+                if (progress || progress === 0) {
                     params = {
                         event: 'player_seek_to_value',
                         type: 'control_video_progress',
@@ -1501,7 +1501,6 @@
 
                 let realCurrentIndex = gameListIndex[gameIndex]
                 let realNextIndex = gameListIndex[gameIndex + 1]
-                console.log(resourceUrl.replace('start', 'load'))
                 if (realCurrentIndex) {
                     this.iframeSrc = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
                         `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'

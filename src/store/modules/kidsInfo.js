@@ -6,7 +6,6 @@ const userInfo = {
     },
     mutations: {
        setKidsInfo (state, data) {
-           console.log(data)
            state.kidsInfo = data;
            common.setLocalStorage('kidsInfo', data)
        },

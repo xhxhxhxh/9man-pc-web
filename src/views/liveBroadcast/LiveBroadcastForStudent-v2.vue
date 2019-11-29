@@ -713,7 +713,6 @@
                 const event = document.createEvent("MouseEvents");
                 this.rtcRoom.on('message-receive', (data) => {
                     // if (data.id === this.studentId) return
-                    console.log(data)
                     const type = data.type
                     const e = data.e
                     let scrollLeft = ''

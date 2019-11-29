@@ -6,7 +6,7 @@
                 <span class="name">{{userInfo && userInfo.uname}}</span>
                 <span class="star"><img src="../images/star.png" alt=""><span>99</span></span>
             </div>
-            <a-button @click="$router.push('/personalCenter/updateStudentInfo/' + userInfo.id)">修改资料</a-button>
+            <router-link :to="'/personalCenter/updateStudentInfo/' + userInfo.id" tag="button">修改资料</router-link>
         </div>
     </div>
 </template>
@@ -51,6 +51,7 @@
                 width: 53px;
                 height: 53px;
                 display: block;
+                border-radius: 50%;
             }
             button {
                 width:96px;
@@ -59,6 +60,10 @@
                 border-radius:14px;
                 font-size: 14px;
                 color: @themeColor;
+                cursor: pointer;
+                background-color: #fff;
+                outline: unset;
+                transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
                 &:hover {
                     color: #fff;
                     background-color: @themeColor;

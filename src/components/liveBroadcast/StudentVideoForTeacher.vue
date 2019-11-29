@@ -187,7 +187,6 @@
                     Object.assign(params.data, {peerId: '0'})
                     this.$store.commit('setControlStatus', {id: id, status: 2})
                     this.rtcRoom.changeAIControl(teacherId)
-                    console.log(teacherId)
                 }else if (controlStatus === 2) { // 开启操作
                     Object.assign(params.data, {peerId: id})
                     this.$store.commit('setControlStatus', {id: id, status: 1})

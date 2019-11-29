@@ -99,7 +99,7 @@
                 totalCount: 0,
                 isRecent: true,
                 currentKidId: kidsInfo[0].id,
-                currentKidName: '',
+                currentKidName: kidsInfo[0].uname,
             }
         },
         created () {

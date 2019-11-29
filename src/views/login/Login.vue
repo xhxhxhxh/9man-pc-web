@@ -1,24 +1,28 @@
 <template>
     <div class="login-container">
-        <div class="banner">
-            <div class="login">
-                <header>
-                    <div :class="{selectedItem: login === 'telephone'}" @click="login = 'telephone'"><span>短信登录</span></div>
-                    <div :class="{selectedItem: login === 'account'}" @click="login = 'account'"><span>密码登录</span></div>
-                </header>
-                <main>
-                    <a-form
-                            :form="form"
-                            @submit="handleSubmit"
-                            :hideRequiredMark="hideRequiredMark"
-                    >
-                        <a-form-item>
-                            <div class="icon" >
-                                <img src="./images/phone.png" alt="">
-                            </div>
-                            <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"
-                                     autocomplete="off" placeholder="请输入手机号"
-                                     v-decorator="[
+        <div class="login-area">
+            <div class="title">
+                <img src="../../images/title.png" alt="">
+            </div>
+            <div class="login-box">
+                <div class="login">
+                    <header>
+                        <div :class="{selectedItem: login === 'telephone'}" @click="login = 'telephone'"><span>短信登录</span></div>
+                        <div :class="{selectedItem: login === 'account'}" @click="login = 'account'"><span>密码登录</span></div>
+                    </header>
+                    <main>
+                        <a-form
+                                :form="form"
+                                @submit="handleSubmit"
+                                :hideRequiredMark="hideRequiredMark"
+                        >
+                            <a-form-item>
+                                <div class="icon" >
+                                    <img src="../../images/phone.png" alt="">
+                                </div>
+                                <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"
+                                         autocomplete="off" placeholder="请输入手机号"
+                                         v-decorator="[
                                                             'telephone',
                                                             {
                                                                 rules: [
@@ -27,51 +31,52 @@
                                                                         ]
                                                             }
                                                           ]"
-                            />
-                        </a-form-item>
-                        <a-form-item v-show="login === 'account'">
-                            <div class="icon" >
-                                <img src="./images/password.png" alt="">
-                            </div>
-                            <a-input type="password" placeholder="请输入密码"
-                                     v-decorator="[
+                                />
+                            </a-form-item>
+                            <a-form-item v-show="login === 'account'">
+                                <div class="icon" >
+                                    <img src="../../images/password.png" alt="">
+                                </div>
+                                <a-input type="password" placeholder="请输入密码"
+                                         v-decorator="[
                                                             'password',
                                                             {rules: [
                                                              { required: true, message: '请输入密码' },
                                                             ]}
                                                           ]"
-                            />
-                        </a-form-item>
-                        <a-form-item v-show="login === 'telephone'">
-                            <div class="icon" >
-                                <img src="./images/keyboard.png" alt="">
-                            </div>
-                            <a-input type="number" oninput="if (value.length > 6){value = value.slice(0,6)}" placeholder="请输入验证码"
-                                     v-decorator="[
+                                />
+                            </a-form-item>
+                            <a-form-item v-show="login === 'telephone'">
+                                <div class="icon" >
+                                    <img src="../../images/keyboard.png" alt="">
+                                </div>
+                                <a-input type="number" oninput="if (value.length > 6){value = value.slice(0,6)}" placeholder="请输入验证码"
+                                         v-decorator="[
                                                             'VerificationCode',
                                                             {rules: [
                                                              { required: true, message: '请输入验证码' },
                                                             { pattern: /^\d{6}$/, message: '验证码错误' }
                                                             ]}
                                                           ]"
-                            />
-                            <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCode">{{verificationCodeText}}</span>
-                        </a-form-item>
-                        <a-form-item
-                                :wrapper-col="{ span: 24 }"
-                        >
-                            <span class="forget-password" v-show="login === 'account'" @click="$router.push('/resetPassword')">忘记密码?</span>
-                            <a-button
-                                    type="primary"
-                                    html-type="submit"
-                                    size="large"
+                                />
+                                <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCode">{{verificationCodeText}}</span>
+                            </a-form-item>
+                            <a-form-item
+                                    :wrapper-col="{ span: 24 }"
                             >
-                                登 录
-                            </a-button>
-                            <div class="register"><span @click="$router.push('/register')">没有账号点击注册!</span></div>
-                        </a-form-item>
-                    </a-form>
-                </main>
+                                <span class="forget-password" v-show="login === 'account'" @click="$router.push('/resetPassword')">忘记密码?</span>
+                                <a-button
+                                        type="primary"
+                                        html-type="submit"
+                                        size="large"
+                                >
+                                    登 录
+                                </a-button>
+                                <div class="register"><span @click="$router.push('/register')">没有账号点击注册!</span></div>
+                            </a-form-item>
+                        </a-form>
+                    </main>
+                </div>
             </div>
         </div>
         <a-modal
@@ -325,6 +330,8 @@
         height: 100%;
         min-width: 500px;
         position: relative;
+        background: url("../../images/banner.png") no-repeat center;
+        background-size: cover;
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button{
             -webkit-appearance: none !important;
@@ -332,48 +339,70 @@
         input[type="number"]{
             -moz-appearance:textfield;
         }
-        .banner {
-            height: 100%;
-            background: url("images/banner.png") no-repeat center;
-            background-size: cover;
+        .login-area {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -60%);
             overflow: hidden;
-            .login {
-                width:368px;
-                height:463px;
-                margin: 121px auto 0;
-                background: url("images/login-bgc.png") no-repeat center;
-                background-size: cover;
-                padding-top: 60px;
-                header {
-                    width: 270px;
+            .title {
+                img {
+                    width: 274px;
+                    display: block;
                     margin: 0 auto;
-                    height: 50px;
+                }
+            }
+            .login-box {
+                width:417px;
+                height:488px;
+                background: linear-gradient(0deg,rgba(174,20,255,1) 0%,rgba(59,149,255,1) 100%) no-repeat center;
+                border-radius: 20px;
+                padding: 10px;
+                margin-top: 13px;
+            }
+            .login {
+                height:100%;
+                background-color: #fff;
+                border-radius: 20px;
+                overflow: hidden;
+                header {
+                    width: 240px;
+                    margin: 27px auto 0;
+                    height: 40px;
+                    display: flex;
+                    justify-content: space-between;
                     > div {
-                        width: 50%;
+                        width: 80px;
                         height: 100%;
                         font-size:20px;
-                        color:#D2D2D2;
+                        color:#B5B5B5;
                         text-align: center;
-                        line-height: 50px;
+                        line-height: 40px;
                         cursor: pointer;
-                        float: left;
                         &.selectedItem {
-                            color:#999;
+                            color:#707070;
+                            border-bottom: 1px solid #707070;
                         }
                     }
                 }
                 main {
-                    padding: 20px 45px 0;
+                    padding: 58px 40px 0;
                     form {
                         .ant-form-item {
-                            margin-bottom: 45px;
+                            margin-bottom: 60px;
                             position: relative;
-                            height: 45px;
+                            height: 50px;
+                            background:rgba(238,238,238,1);
+                            border-radius:20px;
+                            &:last-of-type {
+                                background: unset;
+                            }
                             .icon {
                                 display: inline-block;
                                 width: 30px;
                                 height: 28px;
                                 vertical-align: bottom;
+                                margin-left: 20px;
                                 img {
                                     display: block;
                                     vertical-align: bottom;
@@ -382,14 +411,13 @@
                             }
                             button {
                                 width: 100%;
-                                height:40px;
-                                line-height: 40px;
+                                height:50px;
+                                line-height: 50px;
                                 text-align: center;
-                                border-radius:6px;
+                                border-radius:20px;
                                 font-size:20px;
                                 color:#fefefe;
                                 border: 0;
-                                margin-top: 10px;
                             }
                             .forget-password {
                                 position: absolute;
@@ -409,8 +437,8 @@
                                 font-size:12px;
                                 color: #999;
                                 text-align: center;
-                                height: 36px;
-                                line-height: 36px;
+                                height: 32px;
+                                line-height: 32px;
                                 span {
                                     cursor: pointer;
                                     transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
@@ -422,22 +450,23 @@
                         }
                         .ant-form-item:nth-child(3) {
                             .getVerificationCode {
+                                width:84px;
+                                height:36px;
+                                background:rgba(248,84,21,1);
+                                border-radius:18px;
                                 position: absolute;
-                                right: 11px;
+                                right: -11px;
                                 top: 50%;
-                                transform: translate(0, -20%);
-                                color:#999;
+                                transform: translate(0, -33%);
+                                color:#fff;
                                 cursor: pointer;
                                 text-align: center;
-                                height: 20px;
-                                line-height: 20px;
-                                transition: all 0.2s cubic-bezier(0.645, 0.045, 0.355, 1);
+                                line-height: 36px;
+                                font-size: 12px;
                                 &.alreadyGetCode {
                                     color: #333;
                                 }
-                                &:hover {
-                                    color: @themeColor;
-                                }
+
                             }
                         }
                         /*.ant-form-item-with-help {*/
@@ -447,7 +476,7 @@
                             font-size:12px;
                             font-weight:400;
                             color:rgba(255,109,136,1);
-                            margin-top: 4px;
+                            margin-top: 11px;
                             margin-left: 42px;
                         }
                         input {
@@ -456,15 +485,18 @@
                             border-radius: unset;
                             height:32px;
                             width: 240px;
-                            border-bottom:2px solid @themeColor !important;
-                            font-size:18px;
-                            color:rgba(51,51,51,1);
+                            background-color: unset;
+                            font-size:16px;
+                            color:rgba(0, 0, 0, .85);
                             padding-left: 5px;
                             margin-left: 8px;
                             vertical-align: bottom;
+                            &::-webkit-input-placeholder { /* WebKit browsers */
+                                color:#B5B5B5;
+                            }
                             &:-webkit-autofill {
-                                box-shadow: 0 0 0 100px white inset !important;
-                                color:rgba(51,51,51,1) !important;
+                                box-shadow: 0 0 0 100px #EEEEEE inset !important;
+                                color:#B5B5B5 !important;
                             }
                         }
                     }

@@ -319,7 +319,6 @@
                     if (!objectId) {
                         _this.objectActivatedId = ''; // 无选中目标时，设置objectActivatedId为空
                     }
-                    console.log(originPointer);
                     if (shape === 'NORMAL' || shape === 'TEXT') return;
                     _this.sendDataStatus = 'start'; //开始发送数据
                     const start = {

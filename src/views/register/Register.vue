@@ -304,7 +304,7 @@
         height: 100%;
         min-width: 500px;
         position: relative;
-        background: url("../../images/banner.png") no-repeat center;
+        background: url("../../images/banner.jpg") no-repeat center;
         background-size: cover;
         input::-webkit-outer-spin-button,
         input::-webkit-inner-spin-button{

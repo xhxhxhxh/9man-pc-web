@@ -214,7 +214,8 @@
                                 <h3>免费领取价值<span>299元</span>试听课</h3>
                             </div>
                             <div class="receive">
-                                <a-input-search size="large" placeholder="请输入手机号">
+                                <a-input-search size="large" placeholder="请输入手机号" @search="openApplyModal" v-model="phone"
+                                                type="number" oninput="if (value.length > 11){value = value.slice(0,11)}">
                                     <a-button slot="enterButton" type="primary">立即领取</a-button>
                                 </a-input-search>
                             </div>
@@ -290,100 +291,75 @@
                 </div>
             </div>
         </div>
-        <div class="apply" v-show="showApply">
-            <a-button class="button1"><img src="./images/headset.png" alt=""><span>现在试听</span></a-button>
-            <a-button class="button2"><img src="./images/message.png" alt=""><span>联系老师</span></a-button>
-            <a-button class="button3"><img src="./images/download.png" alt=""><span>软件下载</span></a-button>
-        </div>
-<!--        <a-modal-->
-<!--                v-model="apply"-->
-<!--                title="试听报名"-->
-<!--                :centered="centered"-->
-<!--                class="homeModal"-->
-<!--        >-->
-<!--            <template slot="footer">-->
-<!--                <a-button key="submit" type="primary" :loading="loading" @click="handleApply">-->
-<!--                    立即报名-->
-<!--                </a-button>-->
-<!--            </template>-->
-<!--            <a-form-->
-<!--                    :form="form"-->
-<!--                    :hideRequiredMark="hideRequiredMark"-->
-<!--            >-->
-<!--                <a-form-item-->
-<!--                        label="手机号:"-->
-<!--                        :label-col="{ span: 4 }"-->
-<!--                        :wrapper-col="{ span: 19, offset: 1 }"-->
-<!--                        :colon="colon"-->
-<!--                >-->
-<!--                    <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"-->
-<!--                             autocomplete="off"-->
-<!--                             v-decorator="[-->
-<!--                                                'telephone',-->
-<!--                                                {-->
-<!--                                                    rules: [-->
-<!--                                                        { required: true, message: '请输入正确的手机号' },-->
-<!--                                                        { pattern: /^1\d{10}$/, message: '请输入正确的手机号' }-->
-<!--                                                    ]-->
-<!--                                                }-->
-<!--                                            ]"-->
-<!--                    />-->
-<!--                </a-form-item>-->
-<!--                <a-form-item-->
-<!--                        label="验证码:"-->
-<!--                        :label-col="{ span: 4 }"-->
-<!--                        :wrapper-col="{ span: 19, offset: 1 }"-->
-<!--                        :colon="colon"-->
-<!--                >-->
-<!--                    <a-input type="number" oninput="if (value.length > 6){value = value.slice(0,6)}"-->
-<!--                             autocomplete="off" size="large"-->
-<!--                             v-decorator="[-->
-<!--                                             'VerificationCode',-->
-<!--                                             {rules: [-->
-<!--                                              { required: true, message: '请输入验证码' },-->
-<!--                                             { pattern: /^\d{6}$/, message: '验证码错误' }-->
-<!--                                             ]}-->
-<!--                                           ]"-->
-<!--                    />-->
-<!--                    <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCode">{{verificationCodeText}}</span>-->
-<!--                </a-form-item>-->
-<!--                <a-form-item-->
-<!--                        label="姓名:"-->
-<!--                        :label-col="{ span: 4 }"-->
-<!--                        :wrapper-col="{ span: 19, offset: 1 }"-->
-<!--                        :colon="colon"-->
-<!--                >-->
-<!--                    <a-input size="large"-->
-<!--                             autocomplete="off"-->
-<!--                             v-decorator="[-->
-<!--                                                'username',-->
-<!--                                                {-->
-<!--                                                    rules: [-->
-<!--                                                        { required: true, message: '请输入姓名' },-->
-<!--                                                        { min: 2, max: 20, message: '姓名不正确' }-->
-<!--                                                    ]-->
-<!--                                                }-->
-<!--                                            ]"-->
-<!--                    />-->
-<!--                </a-form-item>-->
-<!--                <a-form-item-->
-<!--                        label="密码:"-->
-<!--                        :label-col="{ span: 4 }"-->
-<!--                        :wrapper-col="{ span: 19, offset: 1 }"-->
-<!--                        :colon="colon"-->
-<!--                >-->
-<!--                    <a-input type="password" size="large"-->
-<!--                             v-decorator="[-->
-<!--                                             'password',-->
-<!--                                             {rules: [-->
-<!--                                              { required: true, message: '请输入密码' },-->
-<!--                                             { pattern: /^[0-9a-zA-Z]{6,}$/, message: '长度不能小于6位,不能有特殊字符和空格' }-->
-<!--                                             ]}-->
-<!--                                           ]"-->
-<!--                    />-->
-<!--                </a-form-item>-->
-<!--            </a-form>-->
-<!--        </a-modal>-->
+        <transition name="slide">
+            <div class="apply" v-show="showApply">
+                <a-button class="button1" @click="apply = true"><img src="./images/headset.png" alt=""><span>现在试听</span></a-button>
+                <a-button class="button2"><img src="./images/message.png" alt=""><span>联系老师</span></a-button>
+                <a-button class="button3"><img src="./images/download.png" alt=""><span>软件下载</span></a-button>
+            </div>
+        </transition>
+
+        <a-modal
+                v-model="apply"
+                :centered="centered"
+                class="homeModal"
+                :closable="closable"
+                :maskClosable="closable"
+        >
+            <template slot="footer">
+                <a-button key="submit" type="primary" :loading="loading" @click="handleApply">
+                    领取体验课
+                </a-button>
+            </template>
+            <a-icon type="close-circle" @click="apply = false"/>
+            <h1><span>免费获取价值</span><span class="color">299元</span><span>体验课</span></h1>
+            <a-form
+                    :form="form2"
+                    :hideRequiredMark="hideRequiredMark"
+            >
+                <a-form-item>
+                    <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"
+                             autocomplete="off" placeholder="请输入手机号"
+                             v-decorator="[
+                                                'telephone',
+                                                {
+                                                    rules: [
+                                                        { required: true, message: '请输入手机号' },
+                                                        { pattern: /^1\d{10}$/, message: '请输入正确的手机号' }
+                                                    ]
+                                                }
+                                            ]"
+                    />
+                </a-form-item>
+                <a-form-item>
+                    <a-input type="number" oninput="if (value.length > 6){value = value.slice(0,6)}"
+                             autocomplete="off" size="large" placeholder="请输入验证码"
+                             v-decorator="[
+                                             'VerificationCode',
+                                             {rules: [
+                                              { required: true, message: '请输入验证码' },
+                                             { pattern: /^\d{6}$/, message: '验证码错误' }
+                                             ]}
+                                           ]"
+                    />
+                    <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCodeInModal">{{verificationCodeText}}</span>
+                </a-form-item>
+                <a-form-item>
+                    <a-input size="large" placeholder="请输入孩子姓名"
+                             autocomplete="off"
+                             v-decorator="[
+                                                'username',
+                                                {
+                                                    rules: [
+                                                        { required: true, message: '请输入姓名' },
+                                                        { min: 2, max: 20, message: '姓名不正确' }
+                                                    ]
+                                                }
+                                            ]"
+                    />
+                </a-form-item>
+            </a-form>
+        </a-modal>
     </div>
 </template>
 
@@ -405,20 +381,22 @@
                 verificationCodeText: '获取验证码',
                 alreadyGetCode: false,
                 form: this.$form.createForm(this),
-                colon: false,  //label中的冒号
+                form2: this.$form.createForm(this),
                 timeOut: '',
                 rootUrl: this.$store.state.rootUrl,
                 webp: false,
                 showApply: false,
                 showBottomNav: false,
-                hiddenBottomNav: false,
+                hiddenBottomNav: true,
+                closable: false,
+                phone: ''
             }
         },
         components: {
             TopBar
         },
         created () {
-            // this.webp = webpSupport();
+            this.webp = webpSupport();
         },
         mounted () {
             this.windowOnScroll()
@@ -426,7 +404,7 @@
         methods: {
             //提交报名
             handleApply () {
-                this.form.validateFields((err, values) => {
+                this.form2.validateFields((err, values) => {
                     if (err) return;
                     this.loading = true;
                     const params = {
@@ -435,6 +413,7 @@
                         uname: values.username,
                         password: values.password
                     };
+                    return
                     this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=AddCTEnroll', {params})
                         .then(res => {
                             let data = res.data;
@@ -452,7 +431,7 @@
                 });
             },
 
-            //发送验证码
+            //发送验证码(banner栏)
             sendVerificationCode () {
                 this.form.validateFields(['telephone'], (err, values) => {
                     if (err) return;
@@ -501,25 +480,74 @@
 
             },
 
+            //发送验证码(modal)
+            sendVerificationCodeInModal () {
+                this.form2.validateFields(['telephone'], (err, values) => {
+                    if (err) return;
+                    if (this.alreadyGetCode) return;
+                    const params = {
+                        mobile: values.telephone,
+                        type: 0
+                    };
+                    return
+                    this.$axios.get(this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                        .then(res => {
+                            let data = res.data;
+                            if (data.code === 200) {
+                                //倒计时60s
+                                this.$message.success('验证码发送成功',5);
+                                if (this.timeOut) {
+                                    return
+                                }
+                                let oneMinute = 60;
+                                this.alreadyGetCode = true;
+                                this.verificationCodeText = oneMinute + 's';
+                                oneMinute --;
+                                this.timeOut = setInterval(() => {
+                                    if (oneMinute <= 0) {
+                                        this.alreadyGetCode = false;
+                                        this.verificationCodeText = '获取验证码';
+                                        clearInterval(this.timeOut);
+                                        this.timeOut = false;
+                                    } else {
+                                        this.verificationCodeText = oneMinute + 's';
+                                        oneMinute --;
+                                    }
+
+                                }, 1000);
+                            } else {
+                                this.$message.warning(data.msg,5);
+                            }
+                        })
+                        .catch(err => {
+
+                        })
+
+                });
+
+
+            },
+
             // 监听页面滚动
             windowOnScroll () {
                 const _this = this
                 window.onscroll = function () {
                     const top = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                    console.log(top)
                     if (top >= 600) {
                         if (!_this.showApply) {
                             _this.showApply = true
                         }
+                        if (_this.hiddenBottomNav) {
+                            _this.hiddenBottomNav = false
+                        }
                         if (!_this.showBottomNav) {
                             _this.showBottomNav = true
-
                         }
                     }else {
                         if (_this.showApply) {
                             _this.showApply = false
                         }
-                        if (_this.showBottomNav) {
+                        if (!_this.hiddenBottomNav) {
                             _this.hiddenBottomNav = true
                         }
                         if (_this.showBottomNav) {
@@ -529,12 +557,26 @@
                     }
 
                     if (top >= 4100) {
+                        if (_this.showApply) {
+                            _this.showApply = false
+                        }
+                        if (_this.hiddenBottomNav) {
+                            _this.hiddenBottomNav = false
+                        }
                         if (_this.showBottomNav) {
                             _this.showBottomNav = false
                         }
                     }
 
                 }
+            },
+
+            // 打开报名弹窗
+            openApplyModal () {
+                this.apply = true;
+                this.$nextTick(function () {
+                    this.form2.setFieldsValue({['telephone']: this.phone});
+                })
             }
         }
     }
@@ -545,11 +587,11 @@
     .home-container {
         padding-top: 70px;
         min-width: 1100px;
-        .myFade-enter-active, .myFade-leave-active {
+        .slide-enter-active, .slide-leave-active {
             transition: all .5s;
         }
-        .myFade-enter, .myFade-leave-to {
-            opacity: 0;
+        .slide-enter, .slide-leave-to {
+            transform: translate(100%, 0);
         }
         @keyframes slideIn {
             from {
@@ -925,14 +967,15 @@
                     }
                     &.unfixed {
                         position: fixed;
-                        animation: slideIn .5s ease reverse;
-                        animation-fill-mode: forwards;
+                        transform: translate(0, 174px);
+                        transition: all .5s;
                     }
 
                     .trial-lesson-receive-box {
                         width: 1100px;
                         margin: 0 auto;
                         position: relative;
+                        height: 100%;
                     }
                     .dog {
                         position: absolute;
@@ -947,7 +990,7 @@
                             color: #fff;
                             margin: 0;
                             height: 100%;
-                            line-height: 64px;
+                            line-height: 60px;
                             span {
                                 color: #FFB300;
                                 font-size: 32px;
@@ -957,6 +1000,13 @@
                     .receive {
                         float: right;
                         margin-top: 9px;
+                        input::-webkit-outer-spin-button,
+                        input::-webkit-inner-spin-button{
+                            -webkit-appearance: none !important;
+                        }
+                        input[type="number"]{
+                            -moz-appearance:textfield;
+                        }
                         .ant-input {
                             height: 46px;
                             width: 210px;
@@ -1069,20 +1119,20 @@
         input[type="number"]{
             -moz-appearance:textfield;
         }
-        width:630px !important;
-        height:440px;
-        .ant-form-item {
-            margin-bottom: 33px;
-        }
+        width:458px !important;
+        height:526px !important;
+        padding: 0;
+
         .ant-form-item-with-help {
             margin-bottom: 0;
         }
         .ant-modal-content {
-            border-radius:20px;
+            background: url("./images/modal-bgc.png");
+            box-shadow: unset;
+            height: 100%;
             .ant-modal-header {
-                border-radius:20px 20px 0 0;
                 border: 0;
-                padding-top: 38px;
+                background-color: unset;
                 div {
                     font-size:28px;
                     text-align: center;
@@ -1091,45 +1141,77 @@
                 }
             }
             .ant-modal-body {
-                padding: 0 84px;
-                margin-top: 15px;
-                height: 304px;
-                .ant-form-item-label {
-                   label {
-                       font-size:20px;
-                       color:rgba(102,102,102,1);
-                   }
+                padding-top: 150px;
+                position: relative;
+                .anticon-close-circle {
+                    position: absolute;
+                    right: -15px;
+                    top: 0;
+                    font-size: 30px;
+                    color: #fff;
+                    cursor: pointer;
                 }
+                > h1 {
+                    font-size: 27px;
+                    text-align: center;
+                    font-weight: normal;
+                    margin-bottom: 14px;
+                    .color {
+                        color: @themeColor;
+                    }
+                }
+                > form {
+                    padding: 0 57px;
+                }
+
+                .ant-form-item {
+                    height: 70px;
+                    margin-bottom: 0;
+                    &:last-of-type {
+                        height: 48px;
+                    }
+                }
+
                 .ant-form-item-control {
                     input {
-                        border: 0;
-                        border-bottom: 2px solid #F3F3F3;
-                        font-size:24px;
-                        color:rgba(51,51,51,1);
-                        border-radius: unset;
+                        border: 1px solid #B5B5B5;
+                        border-radius: 20px;
+                        color: rgba(0, 0, 0, .85);
+                        font-size: 14px;
+                        height: 48px;
+                        padding-left: 20px;
+                        line-height: 48px;
                         &:focus {
                             box-shadow: unset;
                         }
+                        &::-webkit-input-placeholder { /* WebKit browsers */
+                            color:#898989;
+                        }
+                        &:-webkit-autofill {
+                            box-shadow: 0 0 0 100px #fff inset !important;
+                            color:#898989 !important;
+                        }
                     }
                     .ant-form-explain {
-                        font-size:16px;
+                        font-size:12px;
                         font-weight:400;
                         color:rgba(255,109,136,1);
-                        margin-top: 9px;
+                        margin-top: 0;
+                        margin-left: 20px;
                     }
                     .getVerificationCode {
-                        width:120px;
-                        height:43px;
-                        line-height: 43px;
-                        background:rgba(252,201,58,1);
-                        border-radius:8px;
+                        user-select: none;
+                        width:100px;
+                        height:34px;
+                        line-height: 34px;
+                        background:@themeColor;
                         position: absolute;
-                        right: 0;
-                        top: -25px;
-                        color:#333;
+                        right: 12px;
+                        top: -7px;
+                        color:#fff;
                         cursor: pointer;
                         text-align: center;
-                        font-size:16px;
+                        border-radius:17px;
                         &.alreadyGetCode {
                             color: #333;
                         }
@@ -1138,15 +1220,15 @@
             }
         }
         .ant-modal-footer {
-            border-top: 0;
-            padding: 0 84px 48px;
-            margin-top: 14px;
+            border: 0;
+            text-align: center;
+            padding-top: 2px;
             button {
-                width: 100%;
-                height:48px;
-                border-radius:24px;
-                font-size:18px;
-                color: #333;
+                width:200px;
+                height:46px;
+                border-radius:20px;
+                font-size:16px;
+                color: #fff;
             }
         }
     }

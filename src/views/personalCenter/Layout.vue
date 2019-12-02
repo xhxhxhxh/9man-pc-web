@@ -9,12 +9,12 @@
             <div class="sideBar-box">
                 <KidInfo></KidInfo>
                 <div class="sideBar">
-                    <div :class="{sideBarItem: true, chosen: hashAddress === item.path}"
-                         @click="$router.push($store.getters.roles[0].path + '/' + item.path)"
+                    <router-link :class="{sideBarItem: true, chosen: hashAddress === item.path}" tag="div"
+                         :to="$store.getters.roles[0].path + '/' + item.path"
                          v-for="(item, index) in $store.getters.roles[0].children" :key="index" v-if="!item.meta.hidden">
                         <img :src="item.meta['icon']" alt="">
                         <span class="text">{{item.meta['title']}}</span>
-                    </div>
+                    </router-link>
                 </div>
             </div>
             <router-view></router-view>
@@ -52,7 +52,7 @@
     @import "../../less/index.less";
     .layout-container {
         height: 100%;
-        padding-top: 100px;
+        padding-top: 90px;
         background-color: #F4F5F7;
         header {
             width: 1100px;
@@ -83,6 +83,7 @@
         }
         .sideBar {
             height:320px;
+            user-select: none;
             .sideBarItem {
                 height:25%;
                 line-height: 80px;

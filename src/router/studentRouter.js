@@ -22,8 +22,8 @@ routerMap.student = [
         children: [
             { path: 'course', component: CourseForStudent, meta: {title: '课程', icon: course} },
             { path: 'salary', component: Salary, meta: {title: '薪酬', icon: salary} },
-            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '账户设置', icon: equipment_inspection} },
-            { path: 'setting', component: Setting, meta: {title: '硬件检测', icon: setting} },
+            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: equipment_inspection} },
+            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: setting} },
             { path: 'updateStudentInfo/:kidId', component: UpdateStudentInfo, meta: {hidden: true} },
         ]
     },
@@ -38,8 +38,8 @@ routerMap.teacher = [
         children: [
             { path: 'course', component: Course, meta: {title: '课程', icon: course} },
             { path: 'salary', component: Salary, meta: {title: '薪酬', icon: salary} },
-            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '账户设置', icon: equipment_inspection} },
-            { path: 'setting', component: Setting, meta: {title: '硬件检测', icon: setting} },
+            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: equipment_inspection} },
+            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: setting} },
         ]
     },
     { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: LiveBroadcastForTeacher },

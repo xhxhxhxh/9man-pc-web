@@ -1459,6 +1459,7 @@
                 const type = courseware.type
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
+                this.gameCache()
                 if (type === 1) { // 视频
                     this.$store.commit('setOperatePermission', false)
                     this.mode = firstLoad? this.mode: 'video'
@@ -1472,9 +1473,8 @@
                     this.$store.commit('setOperatePermission', true)
                     this.mode = firstLoad? this.mode: 'animate'
                     this.disabled = true
-                    // this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
-                this.gameCache()
                 this.sendMediaData(0, false)
                 const params = {
                     type: 'animate_page_change',
@@ -1501,14 +1501,16 @@
 
                 let realCurrentIndex = gameListIndex[gameIndex]
                 let realNextIndex = gameListIndex[gameIndex + 1]
-                if (realCurrentIndex) {
-                    this.iframeSrc = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
+                if (realCurrentIndex === resourceIndex) {
+                    if (realNextIndex) {
+                        this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url.replace('start', 'load') +
+                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    }
+                }else {
+                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url.replace('start', 'load') +
                         `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
-                if (realNextIndex) {
-                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url.replace('start', 'load') +
-                        `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
-                }
+
                 return
                 if (firstLoad) { // 初次加载载入三个动画
                     let realPreviousIndex = gameListIndex[gameIndex - 1]

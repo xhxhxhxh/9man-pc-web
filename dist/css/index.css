@@ -23,12 +23,34 @@ from {
     bottom: -174px;
 }
 }
+@media (max-width: 1280px) {
+.home-container .scroll-top {
+    bottom: 100px !important;
+}
+}
+.home-container .scroll-top {
+  width: 64px;
+  height: 64px;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  line-height: 64px;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 999;
+  cursor: pointer;
+  text-align: center;
+}
+.home-container .scroll-top img {
+  vertical-align: middle;
+}
 .home-container .apply {
   width: 160px;
   height: 220px;
   position: fixed;
   right: 0;
-  bottom: 80px;
+  bottom: 50%;
+  -webkit-transform: translate(0, 50%);
+  transform: translate(0, 50%);
   z-index: 999;
 }
 .home-container .apply button {
@@ -407,6 +429,23 @@ from {
   left: 50%;
   -webkit-transform: translate(-50%, 0);
   transform: translate(-50%, 0);
+}
+@media (max-width: 1280px) {
+.home-container .home-body .carefully-selected .trial-lesson-receive {
+    position: fixed !important;
+}
+.home-container .home-body .carefully-selected .trial-lesson-receive.fixed {
+    -webkit-animation: unset !important;
+    animation: unset !important;
+}
+.home-container .home-body .carefully-selected .trial-lesson-receive.unfixed {
+    -webkit-transform: unset !important;
+    transform: unset !important;
+}
+.home-container .home-body .carefully-selected .trial-lesson-receive .trial-lesson-receive-box {
+    min-width: 900px !important;
+    width: 100% !important;
+}
 }
 .home-container .home-body .carefully-selected .trial-lesson-receive {
   width: 100%;
@@ -2104,11 +2143,25 @@ body {
 
 .layout-container[data-v-6b58a266] {
   height: 100%;
-  padding-top: 90px;
   background-color: #F4F5F7;
 }
+.layout-container .layout-top[data-v-6b58a266] {
+  height: 50px;
+  background-color: #f85415;
+  overflow: hidden;
+  margin-bottom: 37px;
+}
+.layout-container .layout-top .logo[data-v-6b58a266] {
+  width: 1200px;
+  margin: 0 auto;
+}
+.layout-container .layout-top .logo img[data-v-6b58a266] {
+  display: block;
+  margin-top: 3px;
+  cursor: pointer;
+}
 .layout-container header[data-v-6b58a266] {
-  width: 1100px;
+  width: 1200px;
   margin: 0 auto 35px;
   background-color: #fff;
   height: 44px;
@@ -2116,26 +2169,26 @@ body {
 }
 .layout-container header .message[data-v-6b58a266] {
   height: 100%;
-  padding: 10px 30px;
+  padding: 10px 55px;
 }
 .layout-container header .message > div[data-v-6b58a266] {
   height: 100%;
   line-height: 24px;
   display: inline-block;
-  font-size: 12px;
+  font-size: 14px;
   color: #000;
 }
 .layout-container main[data-v-6b58a266] {
-  width: 1100px;
+  width: 1200px;
   margin: 0 auto;
 }
 .layout-container .sideBar-box[data-v-6b58a266] {
   float: left;
-  width: 157px;
+  width: 190px;
   margin-right: 30px;
 }
 .layout-container .sideBar[data-v-6b58a266] {
-  height: 320px;
+  height: 400px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
@@ -2143,12 +2196,12 @@ body {
 }
 .layout-container .sideBar .sideBarItem[data-v-6b58a266] {
   height: 25%;
-  line-height: 80px;
-  background-color: #312C2C;
-  font-size: 16px;
-  color: #fff;
+  line-height: 100px;
+  background-color: #fff;
+  font-size: 18px;
+  color: #312C2C;
   cursor: pointer;
-  padding: 0 28px;
+  padding: 0 43px;
   display: -webkit-box;
   display: -webkit-flex;
   display: -moz-box;
@@ -2167,10 +2220,13 @@ body {
 }
 .layout-container .sideBar .sideBarItem .text[data-v-6b58a266] {
   display: inline-block;
-  width: 65px;
+  width: 72px;
   text-align: justify;
   -moz-text-align-last: justify;
   text-align-last: justify;
+}
+.layout-container .sideBar .sideBarItem i[data-v-6b58a266] {
+  font-size: 21px;
 }
 .layout-container .sideBar .sideBarItem[data-v-6b58a266]:first-of-type {
   border-radius: 6px 6px 0 0;
@@ -2181,6 +2237,7 @@ body {
 .layout-container .sideBar .sideBarItem.chosen[data-v-6b58a266] {
   background-color: #f85415;
   position: relative;
+  color: #fff;
 }
 .layout-container .sideBar .sideBarItem.chosen[data-v-6b58a266]:after {
   content: "";
@@ -2195,7 +2252,7 @@ body {
 }
 
 .kid-info-container[data-v-e9ce529e] {
-  height: 150px;
+  height: 180px;
   padding: 15px 20px;
   background: #ffffff;
   border-radius: 6px;
@@ -2235,10 +2292,10 @@ body {
 }
 .kid-info-container .kid-info button[data-v-e9ce529e] {
   width: 96px;
-  height: 28px;
+  height: 34px;
   border: 1px solid #f85415;
   border-radius: 14px;
-  font-size: 14px;
+  font-size: 16px;
   color: #f85415;
   cursor: pointer;
   background-color: #fff;
@@ -2264,7 +2321,7 @@ body {
   justify-content: space-between;
 }
 .kid-info-container .kid-info .title .name[data-v-e9ce529e] {
-  font-size: 14px;
+  font-size: 16px;
   color: #312C2C;
   overflow: hidden;
   white-space: nowrap;
@@ -2288,7 +2345,7 @@ body {
 }
 .kid-info-container .kid-info .title .star span[data-v-e9ce529e] {
   margin-left: 6px;
-  font-size: 14px;
+  font-size: 16px;
   color: #312C2C;
 }
 
@@ -2297,17 +2354,39 @@ body {
   background: #ffffff;
   border-radius: 6px;
 }
+.course-container .course-box > .title[data-v-4a6db33e] {
+  height: 60px;
+  border-bottom: 1px solid #F4F5F7;
+  padding-left: 17px;
+  font-size: 18px;
+  font-weight: normal;
+  color: #434343;
+  margin-bottom: 0;
+}
+.course-container .course-box > .title span[data-v-4a6db33e] {
+  line-height: 60px;
+  vertical-align: top;
+}
+.course-container .course-box > .title .line[data-v-4a6db33e] {
+  display: inline-block;
+  width: 4px;
+  height: 30px;
+  background: #f85415;
+  border-radius: 2px;
+  margin: 15px 10px 0 0;
+  vertical-align: top;
+}
 .course-container .course-box header[data-v-4a6db33e] {
-  height: 80px;
-  line-height: 80px;
-  padding-left: 23px;
+  height: 100px;
+  line-height: 100px;
+  padding-left: 50px;
 }
 .course-container .course-box header button[data-v-4a6db33e] {
   width: 133px;
   height: 44px;
   border: 1px solid #FF6A04;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 18px;
   color: #FF6A04;
   margin-right: 22px;
 }
@@ -2321,8 +2400,8 @@ body {
 }
 .course-container .course-box main[data-v-4a6db33e] {
   background-color: #fff;
-  padding: 0 8px 24px;
-  min-height: 400px;
+  padding: 0 30px 24px;
+  min-height: 540px;
   position: relative;
 }
 .course-container .course-box main .spin[data-v-4a6db33e] {
@@ -2378,13 +2457,13 @@ body {
   background-color: #F4F5F7;
 }
 .course-container .course-box main .course-list table thead tr th[data-v-4a6db33e] {
-  font-size: 14px;
+  font-size: 16px;
   color: #434343;
   height: 44px;
   text-align: center;
   font-weight: normal;
-  padding-left: 3px;
-  padding-right: 3px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .course-container .course-box main .course-list table thead tr th[data-v-4a6db33e]:first-of-type {
   border-radius: 13px 0 0 13px;
@@ -2396,6 +2475,7 @@ body {
   cursor: pointer;
 }
 .course-container .course-box main .course-list table tbody tr td[data-v-4a6db33e] {
+  font-size: 16px;
   height: 40px;
   line-height: 40px;
   text-align: center;
@@ -2411,6 +2491,7 @@ body {
   margin-top: 24px;
   display: inline-block;
   float: right;
+  font-size: 16px;
 }
 
 .course-container .kid-course-box[data-v-bfbe6fe0] {
@@ -2543,37 +2624,38 @@ body {
   overflow: hidden;
 }
 .course-container .course-box > .title[data-v-bfbe6fe0] {
-  height: 46px;
+  height: 60px;
   border-bottom: 1px solid #F4F5F7;
   padding-left: 17px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: normal;
   color: #434343;
+  margin-bottom: 0;
 }
 .course-container .course-box > .title span[data-v-bfbe6fe0] {
-  line-height: 45px;
+  line-height: 60px;
   vertical-align: top;
 }
 .course-container .course-box > .title .line[data-v-bfbe6fe0] {
   display: inline-block;
   width: 4px;
-  height: 25px;
+  height: 30px;
   background: #f85415;
   border-radius: 2px;
-  margin: 10px 10px 0 0;
+  margin: 15px 10px 0 0;
   vertical-align: top;
 }
 .course-container .course-box header[data-v-bfbe6fe0] {
-  height: 80px;
-  line-height: 80px;
-  padding-left: 23px;
+  height: 100px;
+  line-height: 100px;
+  padding-left: 50px;
 }
 .course-container .course-box header button[data-v-bfbe6fe0] {
   width: 133px;
   height: 44px;
   border: 1px solid #FF6A04;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: 18px;
   color: #FF6A04;
   margin-right: 22px;
 }
@@ -2587,9 +2669,9 @@ body {
 }
 .course-container .course-box main[data-v-bfbe6fe0] {
   background-color: #fff;
-  padding: 0 8px 24px;
-  min-height: 400px;
+  padding: 0 30px 24px;
   position: relative;
+  min-height: 540px;
 }
 .course-container .course-box main .spin[data-v-bfbe6fe0] {
   position: absolute;
@@ -2644,13 +2726,13 @@ body {
   background-color: #F4F5F7;
 }
 .course-container .course-box main .course-list table thead tr th[data-v-bfbe6fe0] {
-  font-size: 14px;
+  font-size: 16px;
   color: #434343;
   height: 44px;
   text-align: center;
   font-weight: normal;
-  padding-left: 8px;
-  padding-right: 8px;
+  padding-left: 15px;
+  padding-right: 15px;
 }
 .course-container .course-box main .course-list table thead tr th[data-v-bfbe6fe0]:first-of-type {
   border-radius: 13px 0 0 13px;
@@ -2662,6 +2744,7 @@ body {
   cursor: pointer;
 }
 .course-container .course-box main .course-list table tbody tr td[data-v-bfbe6fe0] {
+  font-size: 16px;
   height: 40px;
   line-height: 40px;
   text-align: center;
@@ -2677,6 +2760,7 @@ body {
   margin-top: 24px;
   display: inline-block;
   float: right;
+  font-size: 16px;
 }
 
 .update-student-info-container {
@@ -2685,30 +2769,31 @@ body {
   overflow: hidden;
 }
 .update-student-info-container .title {
-  height: 46px;
+  height: 60px;
   border-bottom: 1px solid #F4F5F7;
   padding-left: 17px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: normal;
   color: #434343;
   margin-bottom: 0;
 }
 .update-student-info-container .title span {
-  line-height: 45px;
+  line-height: 60px;
   vertical-align: top;
 }
 .update-student-info-container .title .line {
   display: inline-block;
   width: 4px;
-  height: 25px;
+  height: 30px;
   background: #f85415;
   border-radius: 2px;
-  margin: 10px 10px 0 0;
+  margin: 15px 10px 0 0;
   vertical-align: top;
 }
 .update-student-info-container main {
   height: 434px;
   overflow: hidden;
+  min-height: 640px;
 }
 .update-student-info-container main .update-info {
   display: -webkit-box;
@@ -3009,35 +3094,36 @@ body {
   overflow: hidden;
 }
 .setting-container .setting-box > .title {
-  height: 46px;
+  height: 60px;
   border-bottom: 1px solid #F4F5F7;
   padding: 0 23px 0 17px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: normal;
   color: #434343;
+  margin-bottom: 0;
 }
 .setting-container .setting-box > .title span {
-  line-height: 45px;
+  line-height: 60px;
   vertical-align: top;
 }
 .setting-container .setting-box > .title .line {
   display: inline-block;
   width: 4px;
-  height: 25px;
+  height: 30px;
   background: #f85415;
   border-radius: 2px;
-  margin: 10px 10px 0 0;
+  margin: 15px 10px 0 0;
   vertical-align: top;
 }
 .setting-container .setting-box > .title .logout {
-  font-size: 14px;
+  font-size: 16px;
   color: #f85415;
   float: right;
   cursor: pointer;
 }
 .setting-container .setting-box main {
   background-color: #fff;
-  min-height: 400px;
+  min-height: 640px;
   position: relative;
   padding: 26px 32px;
 }

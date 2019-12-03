@@ -274,36 +274,37 @@
             border-radius:6px;
             overflow: hidden;
             > .title {
-                height: 46px;
+                height: 60px;
                 border-bottom: 1px solid #F4F5F7;
                 padding-left: 17px;
-                font-size:16px;
+                font-size:18px;
                 font-weight:normal;
                 color:rgba(67,67,67,1);
+                margin-bottom: 0;
                 span {
-                    line-height: 45px;
+                    line-height: 60px;
                     vertical-align: top;
                 }
                 .line {
                     display: inline-block;
                     width:4px;
-                    height:25px;
+                    height:30px;
                     background:@themeColor;
                     border-radius:2px;
-                    margin: 10px 10px 0 0;
+                    margin: 15px 10px 0 0;
                     vertical-align: top;
                 }
             }
             header {
-                height: 80px;
-                line-height: 80px;
-                padding-left: 23px;
+                height: 100px;
+                line-height: 100px;
+                padding-left: 50px;
                 button {
                     width:133px;
                     height:44px;
                     border:1px solid #FF6A04;
                     border-radius:10px;
-                    font-size: 16px;
+                    font-size: 18px;
                     color: #FF6A04;
                     margin-right: 22px;
                     &:hover {
@@ -318,9 +319,9 @@
             }
             main {
                 background-color: #fff;
-                padding: 0 8px 24px;
-                min-height: 400px;
+                padding: 0 30px 24px;
                 position: relative;
+                min-height: 540px;
                 .spin {
                     position: absolute;
                     left: 50%;
@@ -354,13 +355,13 @@
                             tr {
                                 background-color: #F4F5F7;
                                 th {
-                                    font-size:14px;
+                                    font-size:16px;
                                     color: #434343;
                                     height: 44px;
                                     text-align: center;
                                     font-weight: normal;
-                                    padding-left: 8px;
-                                    padding-right: 8px;
+                                    padding-left: 15px;
+                                    padding-right: 15px;
                                     &:first-of-type {
                                         border-radius:13px 0 0 13px;
                                     }
@@ -374,6 +375,7 @@
                             tr {
                                 cursor: pointer;
                                 td {
+                                    font-size:16px;
                                     height: 40px;
                                     line-height: 40px;
                                     text-align: center;
@@ -395,6 +397,7 @@
                     margin-top: 24px;
                     display: inline-block;
                     float: right;
+                    font-size:16px;
                 }
             }
         }

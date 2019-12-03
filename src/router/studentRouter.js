@@ -8,11 +8,6 @@ import Setting from '@/views/personalCenter/Setting';
 import LiveBroadcastForTeacher from '@/views/liveBroadcast/LiveBroadcastForTeacher-v2';
 import LiveBroadcastForStudent from '@/views/liveBroadcast/liveBroadcastForStudent-v2';
 
-import course from '@/views/personalCenter/images/course.png';
-import salary from '@/views/personalCenter/images/salary.png';
-import equipment_inspection from '@/views/personalCenter/images/equipment_inspection.png';
-import setting from '@/views/personalCenter/images/setting.png';
-
 const routerMap = {};
 routerMap.student = [
     {
@@ -20,10 +15,10 @@ routerMap.student = [
         component: Layout,
         redirect: '/personalCenter/course',
         children: [
-            { path: 'course', component: CourseForStudent, meta: {title: '课程', icon: course} },
-            { path: 'salary', component: Salary, meta: {title: '薪酬', icon: salary} },
-            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: equipment_inspection} },
-            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: setting} },
+            { path: 'course', component: CourseForStudent, meta: {title: '课程', icon: 'iconkecheng'} },
+            { path: 'salary', component: Salary, meta: {title: '订单', icon: 'iconorder'} },
+            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: 'icontixingshezhix'} },
+            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: 'iconruqinjianceintrusiondetection'} },
             { path: 'updateStudentInfo/:kidId', component: UpdateStudentInfo, meta: {hidden: true} },
         ]
     },
@@ -36,10 +31,10 @@ routerMap.teacher = [
         component: Layout,
         redirect: '/personalCenter/course',
         children: [
-            { path: 'course', component: Course, meta: {title: '课程', icon: course} },
-            { path: 'salary', component: Salary, meta: {title: '薪酬', icon: salary} },
-            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: equipment_inspection} },
-            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: setting} },
+            { path: 'course', component: Course, meta: {title: '课程', icon: 'iconkecheng'} },
+            { path: 'salary', component: Salary, meta: {title: '薪酬', icon: 'iconmoney'} },
+            { path: 'setting', component: Setting, meta: {title: '账户设置', icon: 'icontixingshezhix'} },
+            { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: 'iconruqinjianceintrusiondetection'} },
         ]
     },
     { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: LiveBroadcastForTeacher },

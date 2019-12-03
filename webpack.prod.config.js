@@ -2,8 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin'); //抽离css
-const extractCSS = new ExtractTextWebpackPlugin({filename: 'css/awesome.css',allChunks: true});
 const extractLESS = new ExtractTextWebpackPlugin({filename: 'css/reset.css',allChunks: true});
+const extractCSS = new ExtractTextWebpackPlugin({filename: 'css/awesome.css',allChunks: true});
 const extractLESSOfVue = new ExtractTextWebpackPlugin({filename: 'css/index.css',allChunks: true});
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const PrerenderSPAPlugin = require('prerender-spa-plugin');//spa工具
@@ -32,8 +32,8 @@ module.exports = {
         // new ExtractTextWebpackPlugin({ //3、 在plugins中配置属性
         //     filename: 'css/9manChild.min.css' // 配置提取出来的css名称
         // })
-        extractCSS,
         extractLESS,
+        extractCSS,
         extractLESSOfVue,
         //spa渲染
         new PrerenderSPAPlugin({

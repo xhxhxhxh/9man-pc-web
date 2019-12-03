@@ -202,27 +202,28 @@
             border-radius:6px;
             overflow: hidden;
             > .title {
-                height: 46px;
+                height: 60px;
                 border-bottom: 1px solid #F4F5F7;
                 padding: 0 23px 0 17px;
-                font-size:16px;
+                font-size:18px;
                 font-weight:normal;
                 color:rgba(67,67,67,1);
+                margin-bottom: 0;
                 span {
-                    line-height: 45px;
+                    line-height: 60px;
                     vertical-align: top;
                 }
                 .line {
                     display: inline-block;
                     width:4px;
-                    height:25px;
+                    height:30px;
                     background:@themeColor;
                     border-radius:2px;
-                    margin: 10px 10px 0 0;
+                    margin: 15px 10px 0 0;
                     vertical-align: top;
                 }
                 .logout {
-                    font-size: 14px;
+                    font-size: 16px;
                     color: @themeColor;
                     float: right;
                     cursor: pointer;
@@ -230,7 +231,7 @@
             }
             main {
                 background-color: #fff;
-                min-height: 400px;
+                min-height: 640px;
                 position: relative;
                 padding: 26px 32px;
                 .info-box {

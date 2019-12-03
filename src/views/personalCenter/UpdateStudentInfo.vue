@@ -454,30 +454,31 @@
         border-radius:6px;
         overflow: hidden;
         .title {
-            height: 46px;
+            height: 60px;
             border-bottom: 1px solid #F4F5F7;
             padding-left: 17px;
-            font-size:16px;
+            font-size:18px;
             font-weight:normal;
             color:rgba(67,67,67,1);
             margin-bottom: 0;
             span {
-                line-height: 45px;
+                line-height: 60px;
                 vertical-align: top;
             }
             .line {
                 display: inline-block;
                 width:4px;
-                height:25px;
+                height:30px;
                 background:@themeColor;
                 border-radius:2px;
-                margin: 10px 10px 0 0;
+                margin: 15px 10px 0 0;
                 vertical-align: top;
             }
         }
         main {
             height: 434px;
             overflow: hidden;
+            min-height: 640px;
             .update-info {
                 display: flex;
                 justify-content: center;

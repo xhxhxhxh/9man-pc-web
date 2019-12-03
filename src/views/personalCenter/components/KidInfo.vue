@@ -35,7 +35,7 @@
 <style lang="less" scoped>
     @import "../../../less/index.less";
     .kid-info-container {
-        height:150px;
+        height:180px;
         padding: 15px 20px;
         background:rgba(255,255,255,1);
         border-radius:6px;
@@ -55,10 +55,10 @@
             }
             button {
                 width:96px;
-                height:28px;
+                height:34px;
                 border:1px solid @themeColor;
                 border-radius:14px;
-                font-size: 14px;
+                font-size: 16px;
                 color: @themeColor;
                 cursor: pointer;
                 background-color: #fff;
@@ -74,7 +74,7 @@
                 display: flex;
                 justify-content: space-between;
                 .name {
-                    font-size:14px;
+                    font-size:16px;
                     color:#312C2C;
                     overflow: hidden;
                     white-space: nowrap;
@@ -89,7 +89,7 @@
                     }
                     span {
                         margin-left: 6px;
-                        font-size:14px;
+                        font-size:16px;
                         color: #312C2C;
                     }
                 }

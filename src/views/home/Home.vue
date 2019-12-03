@@ -292,12 +292,15 @@
             </div>
         </div>
         <transition name="slide">
-            <div class="apply" v-show="showApply">
+            <div class="apply">
                 <a-button class="button1" @click="apply = true"><img src="./images/headset.png" alt=""><span>现在试听</span></a-button>
                 <a-button class="button2"><img src="./images/message.png" alt=""><span>联系老师</span></a-button>
                 <a-button class="button3"><img src="./images/download.png" alt=""><span>软件下载</span></a-button>
             </div>
         </transition>
+        <div class="scroll-top" v-show="toTop" @click="smoothScroll">
+            <img src="./images/totop.png" alt="">
+        </div>
 
         <a-modal
                 v-model="apply"
@@ -385,9 +388,10 @@
                 timeOut: '',
                 rootUrl: this.$store.state.rootUrl,
                 webp: false,
-                showApply: false,
-                showBottomNav: false,
+                showApply: false, // 显示右侧导航
+                showBottomNav: false, // 显示底部导航
                 hiddenBottomNav: true,
+                toTop: false, // 显示回到顶部
                 closable: false,
                 phone: ''
             }
@@ -543,6 +547,9 @@
                         if (!_this.showBottomNav) {
                             _this.showBottomNav = true
                         }
+                        if (!_this.toTop) {
+                            _this.toTop = true
+                        }
                     }else {
                         if (_this.showApply) {
                             _this.showApply = false
@@ -552,6 +559,9 @@
                         }
                         if (_this.showBottomNav) {
                             _this.showBottomNav = false
+                        }
+                        if (_this.toTop) {
+                            _this.toTop = false
                         }
 
                     }
@@ -577,6 +587,18 @@
                 this.$nextTick(function () {
                     this.form2.setFieldsValue({['telephone']: this.phone});
                 })
+            },
+
+            // 回到顶部
+            smoothScroll(){
+                const top = document.documentElement.scrollTop;
+                const timer = setInterval(function(){
+                    const speed = Math.floor(-top / 80);
+                    document.documentElement.scrollTop += speed;
+                    if(document.documentElement.scrollTop <= 0){
+                        clearInterval(timer);
+                    }
+                },5)
             }
         }
     }
@@ -598,12 +620,33 @@
                 bottom: -174px;
             }
         }
+        @media (max-width: 1280px) {
+            .scroll-top {
+                bottom: 100px !important;
+            }
+        }
+        .scroll-top {
+            width: 64px;
+            height: 64px;
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            line-height: 64px;
+            background-color: rgba(0, 0, 0, .6);
+            z-index: 999;
+            cursor: pointer;
+            text-align: center;
+            img {
+                vertical-align: middle;
+            }
+        }
         .apply {
             width:160px;
             height:220px;
             position: fixed;
             right: 0;
-            bottom: 80px;
+            bottom: 50%;
+            transform: translate(0, 50%);
             z-index: 999;
             button {
                 width: 100%;
@@ -617,9 +660,6 @@
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
-                img {
-
-                }
                 &.button1 {
                     background-color: #FEB05C;
                 }
@@ -951,6 +991,21 @@
                         top: 0;
                         left: 50%;
                         transform: translate(-50%, 0);
+                    }
+                }
+                @media (max-width: 1280px) {
+                    .trial-lesson-receive {
+                        position: fixed !important;
+                        &.fixed {
+                            animation: unset !important;
+                        }
+                        &.unfixed {
+                            transform: unset !important;
+                        }
+                        .trial-lesson-receive-box {
+                            min-width: 900px !important;
+                            width: 100% !important;
+                        }
                     }
                 }
                 .trial-lesson-receive {

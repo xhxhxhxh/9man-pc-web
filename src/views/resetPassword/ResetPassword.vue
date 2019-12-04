@@ -99,7 +99,7 @@
 <script>
     import md5 from 'blueimp-md5';
     import common from '@/api/common';
-    import PuzzleVerification from 'vue-puzzle-verification';
+    import PuzzleVerification from '@/js/puzzleVerification.min';
     export default {
         name: "Login",
         data () {

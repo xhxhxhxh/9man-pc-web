@@ -1,7 +1,7 @@
 <template>
     <div class="teacherVideo-container">
         <div class="video-area">
-            <video autoplay width="308" height="202" loop type="video/mp4" ref="video"></video>
+            <video autoplay width="308" height="202" loop type="video/mp4" ref="video" muted></video>
             <span class="name">{{teacherName}}</span>
         </div>
         <div class="operate-area">

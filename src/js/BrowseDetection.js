@@ -11,7 +11,7 @@ try {
 function getBrowserInfo() {
     var Sys = {};
     var ua = navigator.userAgent.toLowerCase();
-    var re = /(msie|firefox|chrome|opera|version).*?([\d.]+)/;
+    var re = /(msie|firefox|chrome|opera|version|trident|edge).*?([\d.]+)/;
     var m = ua.match(re);
     Sys.browser = m[1].replace(/version/, "'safari");
     Sys.ver = m[2];
@@ -37,6 +37,8 @@ switch (browserInfo.browser) {
         break;
     case 'edge':
         version <= 11 ? browser = false : browser = true;
+    case 'trident':
+        version <= 6 ? browser = false : browser = true;
         break;
 }
 var close = document.getElementById('close');

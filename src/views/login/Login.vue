@@ -98,7 +98,7 @@
 <script>
     import md5 from 'blueimp-md5';
     import common from '@/api/common';
-    import PuzzleVerification from 'vue-puzzle-verification';
+    import PuzzleVerification from '@/js/puzzleVerification.min';
     import {constantRouterMap, mode} from '@/router/routerList';
     import VueRouter from 'vue-router'
     export default {

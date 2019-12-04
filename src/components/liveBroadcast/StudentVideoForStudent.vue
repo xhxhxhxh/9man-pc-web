@@ -2,7 +2,7 @@
     <div class="studentVideo-container">
         <div class="video-area" :id="'video' + id">
             <span class="name">{{studentName}}</span>
-            <video autoplay loop type="video/*" ref="video" v-show="!showPicture"></video>
+            <video autoplay loop type="video/*" ref="video" v-show="!showPicture" :muted="identity === 'self'"></video>
         </div>
         <div class="status-area">
             <div class="status-bar" v-if="showStudentStatus">

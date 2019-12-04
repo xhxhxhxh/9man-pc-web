@@ -12,8 +12,6 @@ import './css/base.css';
 import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
     TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio } from 'ant-design-vue';
 
-
-
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = false;
 Vue.prototype.$axios= axios;

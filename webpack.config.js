@@ -6,7 +6,7 @@ const htmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     mode: 'development',
     devtool: 'module-source-map',
-    entry: path.join(__dirname,'./src/index.js'),
+    entry: ["babel-polyfill", path.join(__dirname,'./src/index.js')],
     output: {
         path: path.join(__dirname,'./dist'),
         filename: 'bundle.js',

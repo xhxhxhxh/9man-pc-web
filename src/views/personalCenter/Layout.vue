@@ -32,7 +32,7 @@
     import { Icon } from 'ant-design-vue';
 
     const IconFont = Icon.createFromIconfontCN({
-        scriptUrl: '//at.alicdn.com/t/font_1543360_gvoesus2nya.js',
+        scriptUrl: 'https://at.alicdn.com/t/font_1543360_gvoesus2nya.js',
     });
 
     export default {

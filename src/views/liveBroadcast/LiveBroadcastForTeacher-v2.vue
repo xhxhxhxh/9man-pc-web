@@ -227,9 +227,6 @@
                 roomId: '',
                 teacherName: '',
                 // -----------playarea基础数据---------------
-                iframeSrcPrevious: '', // 上一个iframe src
-                iframeSrcCurrent: '', // 当前iframe src
-                iframeSrcNext: '', // 下一个iframe src
                 iframeSrc: '',
                 iframeSrcCache: '',
                 disabled: true, // 控制播放器滑块
@@ -1510,44 +1507,6 @@
                 }else {
                     this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url.replace('start', 'load') +
                         `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
-                }
-
-                return
-                if (firstLoad) { // 初次加载载入三个动画
-                    let realPreviousIndex = gameListIndex[gameIndex - 1]
-                    let realCurrentIndex = gameListIndex[gameIndex]
-                    let realNextIndex = gameListIndex[gameIndex + 1]
-
-                    if (!realPreviousIndex) {
-                        realPreviousIndex = gameListIndex[gameListIndex.length - 1]
-                    }
-                    if (!realNextIndex) {
-                        realNextIndex = gameListIndex[0]
-                    }
-
-                    this.realPreviousIndex = realPreviousIndex
-                    this.realCurrentIndex = realCurrentIndex
-                    this.realNextIndex = realNextIndex
-
-                    if (realCurrentIndex) {
-                        this.iframeSrcCurrent = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url +
-                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
-                    }
-                    if (realNextIndex) {
-                        this.iframeSrcNext = resourceUrl + '/' + this.coursewareResource[realNextIndex].url +
-                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
-                    }
-                    if (realPreviousIndex) {
-                        this.iframeSrcPrevious = resourceUrl + '/' + this.coursewareResource[realPreviousIndex].url +
-                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
-                    }
-                } else { // 非初次时
-                    const willIndex = gameListIndex[gameIndex]
-                    if (willIndex === this.realCurrentIndex) {
-                        return // 未进行课件跳转时
-                    } else if (willIndex === this.realNextIndex) {
-
-                    }
                 }
             },
 

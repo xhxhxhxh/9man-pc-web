@@ -145,9 +145,9 @@
             // 前往直播页
             goLiveBroadcast (address) {
                 let routeData = this.$router.resolve({
-                    name: "libeBroadcast",
+                    name: "liveBroadcast",
                 });
-                window.open(routeData.href + address, '_blank');
+                window.open(routeData.href + address, 'liveBroadcast');
             },
 
             // 页码改变

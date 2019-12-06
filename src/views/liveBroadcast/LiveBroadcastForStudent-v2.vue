@@ -171,7 +171,7 @@
                 // -----------rtcRoom数据---------------
                 studentId: '', // 学生id
                 studentName: '',
-                teacherId: '2GW8Z7DO',
+                teacherId: '',
                 teacherName: '',
                 peerIdList: [], // 所有学生的ID
                 rtcRoom: null,
@@ -272,7 +272,7 @@
                 const userParams = {name: this.$route.params.name, headUrl: '', role: 2}
                 this.studentId = peerId
                 this.roomId = roomId
-                const teacherId = this.teacherId
+                const teacherId = this.teacherId = this.$route.params.teacherId
                 this.studentName = userParams.name
 
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
@@ -303,7 +303,7 @@
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
-                    if (id === peerId) {
+                    if (id === peerId || id === teacherId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
                             if (peerId !== teacherId && peerId !== this.studentId) {
@@ -370,8 +370,9 @@
                     title: '确定要退出房间吗?',
                     content: '',
                     centered: true,
-                    onOk() {
+                    onOk:() => {
                         rtcRoom.leaveRoom();
+                        window.close();
                     },
                     onCancel() {},
                 });
@@ -691,10 +692,12 @@
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 if (type === 1) { // 视频
-                    const video = this.$refs['video-play']
-                    video.src = resourceUrl + '/' + url
                     this.mode = firstLoad? this.mode: 'video'
-                    video.pause();
+                    this.$nextTick(function () {
+                        const video = this.$refs['video-play']
+                        video.src = resourceUrl + '/' + url
+                        video.pause();
+                    })
                 }else if (type === 2) { // 动画
                     this.mode = firstLoad? this.mode: 'animate'
                     this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.studentId

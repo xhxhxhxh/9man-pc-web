@@ -40,7 +40,7 @@
                                          v-decorator="[
                                                             'VerificationCode',
                                                             {rules: [
-
+                                                            { required: true, message: '请输入验证码' },
                                                             { pattern: /^\d{6}$/, message: '验证码错误' }
                                                             ]}
                                                           ]"
@@ -94,6 +94,7 @@
                 @cancel="verificationShowModal = false"
                 class="puzzle-verification"
                 style="top: 200px;"
+                :maskClosable="maskClosable"
         >
             <PuzzleVerification
                     :onSuccess="handleSuccess"
@@ -101,7 +102,7 @@
             />
             <span class="close" @click="verificationShowModal = false"><a-icon type="close-circle" /></span>
         </a-modal>
-
+        <VerificationCodeWarningModal :visible="warningModal" :close="closeWarningModal"></VerificationCodeWarningModal>
     </div>
 </template>
 
@@ -110,7 +111,8 @@
     import common from '@/api/common';
     import PuzzleVerification from '@/js/puzzleVerification.min';
     import {constantRouterMap, mode} from '@/router/routerList';
-    import VueRouter from 'vue-router'
+    import VueRouter from 'vue-router';
+    import VerificationCodeWarningModal from '@/components/VerificationCodeWarningModal/VerificationCodeWarningModal';
     export default {
         name: "Login",
         data () {
@@ -122,10 +124,14 @@
                 timeOut: '',
                 rootUrl: this.$store.state.apiUrl,
                 verificationShowModal: false,
+                maskClosable: false,
+                permission: true,
+                warningModal: false,
             }
         },
         components: {
-            PuzzleVerification
+            PuzzleVerification,
+            VerificationCodeWarningModal
         },
         created () {
 
@@ -143,6 +149,7 @@
 
             handleSuccess () {
                 this.verificationShowModal = false;
+                this.permission = true;
                 common.setLocalStorage('verificationWrongCount', 0);
             },
 
@@ -150,36 +157,36 @@
             sendVerificationCode () {
                 this.form.validateFields(['telephone'], (err, values) => {
                     if (err) return;
-                    if (this.alreadyGetCode) return;
-                    return
+                    if (this.alreadyGetCode || this.timeOut) return;
+                    this.setVerificationWrongCount();
+                    if (!this.permission) return;
                     const params = {
-                        mobile: values.telephone,
-                        type: 0
+                        phone: values.telephone,
                     };
-                    this.$axios.get( this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                    this.$axios.post( this.rootUrl + '/v1/message/sendSMSCode', params)
                         .then(res => {
                             let data = res.data;
                             if (data.code === 200) {
                                 //倒计时60s
-                                if (this.timeOut) {
-                                    return
-                                }
                                 let oneMinute = 60;
+                                this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                 this.alreadyGetCode = true;
-                                this.verificationCodeText = oneMinute + 's';
-                                oneMinute --;
                                 this.timeOut = setInterval(() => {
                                     if (oneMinute <= 0) {
                                         this.alreadyGetCode = false;
-                                        this.verificationCodeText = '获取验证码';
+                                        this.verificationCodeText = '重新获取';
                                         clearInterval(this.timeOut);
                                         this.timeOut = false;
                                     } else {
-                                        this.verificationCodeText = `重新发送(${oneMinute})`;
                                         oneMinute --;
+                                        this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                     }
 
                                 }, 1000);
+                            }else if (data.code === 403) {
+                                this.warningModal = true;
+                            }else {
+                                this.$message.warning(data.msg, 5);
                             }
                         })
                         .catch(() => {
@@ -191,9 +198,13 @@
 
             //注册
             register (values) {
+                if (!this.permission) {
+                    return this.setVerificationWrongCount()
+                };
                 const params = {
                     phone: values.telephone,
                     password: md5(values.password).toLowerCase(),
+                    code: values.VerificationCode,
                     uname: values.name,
                     platform: 'web'
                 };
@@ -206,6 +217,7 @@
                             this.$message.success('注册成功',5);
                         }else {
                             this.$message.warning(data.msg,5);
+                            this.setVerificationWrongCount()
                         }
                     })
                     .catch(() => {
@@ -249,7 +261,8 @@
                 let verificationWrongCount = common.getLocalStorage('verificationWrongCount') || 0;
                 verificationWrongCount ++;
                 if (verificationWrongCount >= 4) {
-                    this.verificationShowModal = true
+                    this.verificationShowModal = true;
+                    this.permission = false;
                 }
                 common.setLocalStorage('verificationWrongCount', verificationWrongCount)
             },
@@ -258,6 +271,11 @@
             queryChild () {
                 return this.$axios.get(this.rootUrl + '/v1/child/queryChild')
             },
+
+            // 关闭验证码警告框
+            closeWarningModal () {
+                this.warningModal = false;
+            }
         }
     }
 </script>
@@ -410,7 +428,8 @@
                                 line-height: 36px;
                                 font-size: 12px;
                                 &.alreadyGetCode {
-                                    color: #333;
+                                    color: #fff;
+                                    background-color: #b5b5b5;
                                 }
 
                             }

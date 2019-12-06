@@ -55,6 +55,7 @@
                                          v-decorator="[
                                                             'password',
                                                             {rules: [
+                                                            { min: 6, message: '密码长度不能小于6位' },
                                                              { required: true, message: '请输入新密码' },
                                                             ]}
                                                           ]"
@@ -85,6 +86,7 @@
                 @cancel="verificationShowModal = false"
                 class="puzzle-verification"
                 style="top: 200px;"
+                :maskClosable="maskClosable"
         >
             <PuzzleVerification
                     :onSuccess="handleSuccess"
@@ -92,6 +94,7 @@
             />
             <span class="close" @click="verificationShowModal = false"><a-icon type="close-circle" /></span>
         </a-modal>
+        <VerificationCodeWarningModal :visible="warningModal" :close="closeWarningModal"></VerificationCodeWarningModal>
 
     </div>
 </template>
@@ -100,6 +103,9 @@
     import md5 from 'blueimp-md5';
     import common from '@/api/common';
     import PuzzleVerification from '@/js/puzzleVerification.min';
+    import {constantRouterMap, mode} from '@/router/routerList';
+    import VueRouter from 'vue-router';
+    import VerificationCodeWarningModal from '@/components/VerificationCodeWarningModal/VerificationCodeWarningModal';
     export default {
         name: "Login",
         data () {
@@ -111,10 +117,14 @@
                 timeOut: '',
                 rootUrl: this.$store.state.apiUrl,
                 verificationShowModal: false,
+                maskClosable: false,
+                permission: true,
+                warningModal: false,
             }
         },
         components: {
-            PuzzleVerification
+            PuzzleVerification,
+            VerificationCodeWarningModal
         },
         created () {
 
@@ -132,6 +142,7 @@
 
             handleSuccess () {
                 this.verificationShowModal = false;
+                this.permission = true;
                 common.setLocalStorage('verificationWrongCount', 0);
             },
 
@@ -139,36 +150,36 @@
             sendVerificationCode () {
                 this.form.validateFields(['telephone'], (err, values) => {
                     if (err) return;
-                    if (this.alreadyGetCode) return;
-                    return
+                    if (this.alreadyGetCode || this.timeOut) return;
+                    this.setVerificationWrongCount();
+                    if (!this.permission) return;
                     const params = {
-                        mobile: values.telephone,
-                        type: 0
+                        phone: values.telephone,
                     };
-                    this.$axios.get( this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                    this.$axios.post( this.rootUrl + '/v1/message/sendSMSCode', params)
                         .then(res => {
                             let data = res.data;
                             if (data.code === 200) {
                                 //倒计时60s
-                                if (this.timeOut) {
-                                    return
-                                }
                                 let oneMinute = 60;
+                                this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                 this.alreadyGetCode = true;
-                                this.verificationCodeText = oneMinute + 's';
-                                oneMinute --;
                                 this.timeOut = setInterval(() => {
                                     if (oneMinute <= 0) {
                                         this.alreadyGetCode = false;
-                                        this.verificationCodeText = '获取验证码';
+                                        this.verificationCodeText = '重新获取';
                                         clearInterval(this.timeOut);
                                         this.timeOut = false;
                                     } else {
-                                        this.verificationCodeText = `重新发送(${oneMinute})`;
                                         oneMinute --;
+                                        this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                     }
 
                                 }, 1000);
+                            }else if (data.code === 403) {
+                                this.warningModal = true;
+                            }else {
+                                this.$message.warning(data.msg, 5);
                             }
                         })
                         .catch(() => {
@@ -180,19 +191,45 @@
 
             //重置密码
             resetPassword (values) {
-                return
+                if (!this.permission) {
+                    return this.setVerificationWrongCount()
+                };
+                const params = {
+                    phone: values.telephone,
+                    password: md5(values.password).toLowerCase(),
+                    code: values.VerificationCode
+                };
+                this.$axios.post(this.$store.state.apiUrl + '/v1/login/updatePassword', params)
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            this.$message.success('密码重置成功',5);
+                            this.loginByPassword(values)
+                        }else {
+                            this.$message.warning(data.msg,5);
+                            this.setVerificationWrongCount()
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+
+            },
+
+            //密码登录
+            loginByPassword (values) {
                 const params = {
                     phone: values.telephone,
                     password: md5(values.password).toLowerCase()
                 };
-                this.$axios.post(this.$store.state.apiUrl + '/v1/resetPassword/resetPassword', params)
+                this.$axios.post(this.rootUrl + '/v1/login/login', params)
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
                             const info = data.data
-                            this.$message.success('密码重置成功',5);
-                        }else {
-                            this.$message.warning(data.msg,5);
+                            this.afterLogin(info)
+                        }else if (data.code === 403 || data.code === 404){
+                            this.$message.warning('用户名或密码错误',5);
                         }
                     })
                     .catch(() => {
@@ -206,9 +243,55 @@
                 let verificationWrongCount = common.getLocalStorage('verificationWrongCount') || 0;
                 verificationWrongCount ++;
                 if (verificationWrongCount >= 4) {
-                    this.verificationShowModal = true
+                    this.verificationShowModal = true;
+                    this.permission = false;
                 }
                 common.setLocalStorage('verificationWrongCount', verificationWrongCount)
+            },
+
+            // 登录成功后执行的操作
+            async afterLogin (info) {
+                common.setLocalStorage('token', info.token);
+                common.setLocalStorage('userInfo', info.data);
+                common.setLocalStorage('verificationWrongCount', 0);
+                await this.queryChild()
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const result = data.data.data;
+                            this.$store.commit('setKidsInfo', result);
+                            common.setLocalStorage('kidsInfo', result);
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+                this.$store.commit('setIdentity', info.data.identity);
+                this.$store.commit('updateUserInfo');
+                this.$store.commit('updateUsername');
+                const router = new VueRouter ({
+                    mode,
+                    routes: constantRouterMap,
+                });
+                this.$router.matcher = router.matcher; // 重置路由
+                const roles = this.$store.getters.roles;
+                this.$router.addRoutes(roles);
+                const fromRoute = this.$route.query.from;
+                if (fromRoute) {
+                    this.$router.push(fromRoute);
+                }else {
+                    this.$router.push('/personalCenter');
+                }
+            },
+
+            // 查询孩子
+            queryChild () {
+                return this.$axios.get(this.rootUrl + '/v1/child/queryChild')
+            },
+
+            // 关闭验证码警告框
+            closeWarningModal () {
+                this.warningModal = false;
             }
         }
     }
@@ -367,7 +450,8 @@
                                 line-height: 36px;
                                 font-size: 12px;
                                 &.alreadyGetCode {
-                                    color: #333;
+                                    color: #fff;
+                                    background-color: #b5b5b5;
                                 }
 
                             }

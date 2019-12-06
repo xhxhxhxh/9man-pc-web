@@ -57,7 +57,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="$router.push(`/liveBroadcastForStudent/${item['room_no']}/${userId}/${item['courseware_id']}/${currentKidName}`)">
+                                @click="goLiveBroadcast(`liveBroadcastForStudent/${item['room_no']}/${item['teacher_uid']}/${userId}/${item['courseware_id']}/${currentKidName}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -140,6 +140,14 @@
                     .catch(() => {
 
                     })
+            },
+
+            // 前往直播页
+            goLiveBroadcast (address) {
+                let routeData = this.$router.resolve({
+                    name: "libeBroadcast",
+                });
+                window.open(routeData.href + address, '_blank');
             },
 
             // 页码改变

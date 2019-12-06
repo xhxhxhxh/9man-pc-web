@@ -11,7 +11,7 @@
                     <img :src="userInfo.headimg? resourceUrl + userInfo.headimg: defaultAvatar" alt="">
                     <div class="info">
                         <p class="phone">账号:&nbsp;&nbsp;&nbsp;{{userInfo.phone}}</p>
-                        <p class="password"><span>密码:&nbsp;&nbsp;&nbsp;</span><a-button @click="showModal = true">修改密码</a-button></p>
+                        <p class="password"><span>密码:&nbsp;&nbsp;&nbsp;</span><a-button @click="openModifyPasswordModal">修改密码</a-button></p>
                     </div>
                 </div>
             </main>
@@ -38,7 +38,7 @@
             >
                 <a-form-item>
                     <a-input size="large" type="number" oninput="if (value.length > 11){value = value.slice(0,11)}"
-                             autocomplete="off" placeholder="请输入手机号"
+                             autocomplete="off" placeholder="请输入手机号" disabled
                              v-decorator="[
                                                 'telephone',
                                                 {
@@ -64,7 +64,7 @@
                     <span :class="{getVerificationCode: true, alreadyGetCode}" @click="sendVerificationCode">{{verificationCodeText}}</span>
                 </a-form-item>
                 <a-form-item>
-                    <a-input size="large" placeholder="请输入孩子密码"
+                    <a-input size="large" placeholder="请输入新密码" type="password"
                              autocomplete="off"
                              v-decorator="[
                                                 'password',
@@ -79,12 +79,28 @@
                 </a-form-item>
             </a-form>
         </a-modal>
+        <a-modal
+                :visible="verificationShowModal"
+                @cancel="verificationShowModal = false"
+                class="puzzle-verification"
+                style="top: 200px;"
+                :maskClosable="closable"
+        >
+            <PuzzleVerification
+                    :onSuccess="handleSuccess"
+                    blockType="puzzle"
+            />
+            <span class="close" @click="verificationShowModal = false"><a-icon type="close-circle" /></span>
+        </a-modal>
+        <VerificationCodeWarningModal :visible="warningModal" :close="closeWarningModal"></VerificationCodeWarningModal>
     </div>
 </template>
 
 <script>
     import defaultAvatar from './images/avatar.png';
     import common from '@/api/common';
+    import VerificationCodeWarningModal from '@/components/VerificationCodeWarningModal/VerificationCodeWarningModal';
+    import PuzzleVerification from '@/js/puzzleVerification.min';
     export default {
         name: "Setting",
         data () {
@@ -102,32 +118,51 @@
                 alreadyGetCode: false,
                 timeOut: '',
                 rootUrl: this.$store.state.rootUrl,
+                warningModal: false,
+                verificationShowModal: false,
+                permission: true,
             }
         },
+        components:{
+            VerificationCodeWarningModal,
+            PuzzleVerification
+        },
         methods:{
+            // 打开修改密码弹窗
+            openModifyPasswordModal () {
+                this.showModal = true;
+                this.$nextTick(function () {
+                    this.form.setFieldsValue({['telephone']: this.userInfo.phone})
+                })
+            },
+
             //修改密码
             resetPassword () {
                 this.form.validateFields((err, values) => {
                     if (err) return;
+                    if (!this.permission) {
+                        return this.setVerificationWrongCount()
+                    };
                     this.loading = true;
                     const params = {
-                        mobile: values.telephone,
+                        phone: values.telephone,
                         code: values.VerificationCode,
                         password: values.password
                     };
-                    return
-                    this.$axios.get(this.rootUrl + '/indexapp.php?c=CTUser&a=AddCTEnroll', {params})
+                    this.$axios.post(this.$store.state.apiUrl + '/v1/login/updatePassword', params)
                         .then(res => {
                             let data = res.data;
-                            if (data.code == 200) {
-                                this.$message.success('报名成功',5);
-                                this.apply = false;
-                            } else {
-                                this.$message.warning(data.msg,5);
-                            }
                             this.loading = false;
+                            if (data.code === 200) {
+                                this.$message.success('密码重置成功',5);
+                                this.showModal = false;
+                                this.form.resetFields(['VerificationCode', 'password'])
+                            }else {
+                                this.$message.warning(data.msg,5);
+                                this.setVerificationWrongCount()
+                            }
                         })
-                        .catch(err => {
+                        .catch(() => {
                             this.loading = false;
                         })
                 });
@@ -137,43 +172,39 @@
             sendVerificationCode () {
                 this.form.validateFields(['telephone'], (err, values) => {
                     if (err) return;
-                    if (this.alreadyGetCode) return;
+                    if (this.alreadyGetCode || this.timeOut) return;
+                    this.setVerificationWrongCount();
+                    if (!this.permission) return;
                     const params = {
-                        mobile: values.telephone,
-                        type: 0
+                        phone: values.telephone,
                     };
-                    this.showGetCodeInput = true;
-                    return
-                    this.$axios.get(this.rootUrl + '/indexapp.php?c=sendMessage&a=sendSms', {params})
+                    this.$axios.post( this.rootUrl + '/v1/message/sendSMSCode', params)
                         .then(res => {
                             let data = res.data;
                             if (data.code === 200) {
                                 //倒计时60s
-                                this.$message.success('验证码发送成功',5);
-                                if (this.timeOut) {
-                                    return
-                                }
                                 let oneMinute = 60;
+                                this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                 this.alreadyGetCode = true;
-                                this.verificationCodeText = oneMinute + 's';
-                                oneMinute --;
                                 this.timeOut = setInterval(() => {
                                     if (oneMinute <= 0) {
                                         this.alreadyGetCode = false;
-                                        this.verificationCodeText = '获取验证码';
+                                        this.verificationCodeText = '重新获取';
                                         clearInterval(this.timeOut);
                                         this.timeOut = false;
                                     } else {
-                                        this.verificationCodeText = oneMinute + 's';
                                         oneMinute --;
+                                        this.verificationCodeText = `重新获取(${oneMinute}s)`;
                                     }
 
                                 }, 1000);
-                            } else {
-                                this.$message.warning(data.msg,5);
+                            }else if (data.code === 403) {
+                                this.warningModal = true;
+                            }else {
+                                this.$message.warning(data.msg, 5);
                             }
                         })
-                        .catch(err => {
+                        .catch(() => {
 
                         })
 
@@ -188,6 +219,28 @@
                 } else {
                     this.$store.commit('setIdentity', '')
                 }
+            },
+
+            // 设置验证错误次数
+            setVerificationWrongCount () {
+                let verificationWrongCount = common.getLocalStorage('verificationWrongCount') || 0;
+                verificationWrongCount ++;
+                if (verificationWrongCount >= 4) {
+                    this.verificationShowModal = true;
+                    this.permission = false;
+                }
+                common.setLocalStorage('verificationWrongCount', verificationWrongCount)
+            },
+
+            handleSuccess () {
+                this.verificationShowModal = false;
+                this.permission = true;
+                common.setLocalStorage('verificationWrongCount', 0);
+            },
+
+            // 关闭验证码警告框
+            closeWarningModal () {
+                this.warningModal = false;
             }
         }
 
@@ -196,6 +249,42 @@
 
 <style lang="less">
     @import "../../less/index.less";
+    .puzzle-verification {
+        width: 292px !important;
+        border-radius: 16px;
+        overflow: hidden;
+        padding-bottom: 0;
+        .ant-modal-content {
+            .ant-modal-close {
+                display: none;
+            }
+            .ant-modal-body {
+                padding: 0;
+                .close {
+                    display: inline-block;
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                    position: absolute;
+                    right: 16px;
+                    top: 23px;
+                    z-index: 999;
+                    background-color: #fff;
+                    line-height: 20px;
+                    text-align: center;
+                    &:hover {
+                        color: #f5222d;
+                    }
+                }
+                .puzzle-container {
+                    display: inline-block !important;
+                }
+            }
+            .ant-modal-footer {
+                display: none;
+            }
+        }
+    }
     .setting-container {
         .setting-box {
             background:rgba(255,255,255,1);
@@ -368,7 +457,7 @@
                         cursor: pointer;
                         line-height: 1.5;
                         &.alreadyGetCode {
-                            color: #333;
+                            color: #999;
                         }
                     }
                 }

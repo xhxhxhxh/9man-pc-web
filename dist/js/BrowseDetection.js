@@ -41,11 +41,11 @@ switch (browserInfo.browser) {
         version <= 6 ? browser = false : browser = true;
         break;
 }
-var close = document.getElementById('close');
-var killIe = document.getElementById('kill-ie');
+const closeIE = document.getElementById('close');
+const killIe = document.getElementById('kill-ie');
 // console.log(browserInfo.browser,browser,version)
 // console.log(killIe);
-close.onclick = function () {
+closeIE.onclick = function () {
     killIe.style.display = 'none';
 };
 if (!browser) {

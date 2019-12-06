@@ -37,7 +37,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="$router.push(`/liveBroadcastForTeacher/${item['room_no']}/${userId}/${item['courseware_id']}/${item['teacher_name']}`)">
+                                @click="goLiveBroadcast(`liveBroadcastForTeacher/${item['room_no']}/${userId}/${item['courseware_id']}/${item['teacher_name']}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -137,6 +137,14 @@
             onPageChange (page) {
                 this.pageNum = page;
                 this.queryCourse()
+            },
+
+            // 前往直播页
+            goLiveBroadcast (address) {
+                let routeData = this.$router.resolve({
+                    name: "libeBroadcast",
+                });
+                window.open(routeData.href + address, '_blank');
             },
 
             // 格式化日期

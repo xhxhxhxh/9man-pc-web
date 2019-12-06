@@ -541,8 +541,9 @@
                     title: '确定要退出房间吗?',
                     content: '',
                     centered: true,
-                    onOk() {
+                    onOk:() => {
                         rtcRoom.leaveRoom();
+                        window.close();
                     },
                     onCancel() {},
                 });

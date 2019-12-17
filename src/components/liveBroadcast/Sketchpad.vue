@@ -98,7 +98,7 @@
                 }
                 const controlStatus = liveBroadcastDataCurrent.controlStatus[id]
                 const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
-                const studentNum = this.peerIdList.length
+                // const studentNum = this.peerIdList.length
 
                 const currentOperateUser = controlOpenStatus[0]
                 if (currentOperateUser && currentOperateUser !== id) {

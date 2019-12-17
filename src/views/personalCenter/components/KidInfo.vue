@@ -1,5 +1,5 @@
 <template>
-    <div class="kid-info-container" v-if="$store.state.identity === 2">
+    <div class="kid-info-container" v-if="$store.state.identity === 2 || $store.state.identity === 4">
         <div class="kid-info">
             <img :src="userInfo.headimg? resourceUrl + userInfo.headimg: defaultAvatar" alt="">
             <div class="title">

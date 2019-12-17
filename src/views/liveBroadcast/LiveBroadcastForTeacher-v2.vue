@@ -257,10 +257,6 @@
                 gameListIndex: [], // 存放游戏次序的数组
                 gameIndex: 0,
                 resourceIndex: 0, // 课件播放序号
-                realPreviousIndex: 0, // 记录初次载入课件的三个游戏序号
-                realCurrentIndex: 0,
-                realNextIndex: 0,
-
             }
         },
         components: {
@@ -487,14 +483,12 @@
                         } else if (userControlStatus === 2) {
                             Object.assign(params.data, {peerId: '0'})
                         }
-                        rtcRoom.notifyMessage(params)
+                        rtcRoom.notifyMessage(params, '__all')
                     } else {
                         Object.assign(params.data, {peerId: '0'})
-                        rtcRoom.notifyMessage(params)
+                        rtcRoom.notifyMessage(params, '__all')
                         this.$store.commit('setControlStatus', {id: id, status: 2})
                     }
-
-                    this.synchronize(id) // 同步数据到移动端
 
                     // 处理学生上台状态
                     const stageStatus = liveBroadcastData.stageStatus
@@ -502,19 +496,21 @@
                     const studentOnStageType = stageStatus? stageStatus.videoType: ''
                     if (studentOnStageId && studentOnStageId === id) {
                         if (studentOnStageType === 'small') {
-                            this.onStage(studentOnStageId)
+                            this.onStage(studentOnStageId, true)
                         }else if (studentOnStageType === 'big') {
-                            this.onStageForBig(studentOnStageId)
+                            this.onStageForBig(studentOnStageId, true)
                         }
                     }
+
+                    this.synchronize(id) // 同步数据到移动端
                 });
 
                 // 学生页面加载完成后，发送同步数据
-                rtcRoom.on('message-notify-receive', (peerId, data) => {
-                    if (data.type === 'pageDone') {
-                        this.synchronize(peerId) // 同步状态
-                    }
-                })
+                // rtcRoom.on('message-notify-receive', (peerId, data) => {
+                //     if (data.type === 'pageDone') {
+                //         this.synchronize(peerId) // 同步状态
+                //     }
+                // })
 
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
@@ -560,6 +556,8 @@
 
             // 当学生连接时同步状态
             synchronize(userId) {
+                const studentOnStageType = this.studentOnStageType
+                const id = this.dragVideoId
                 const params = {
                     type: 'synchronize',
                     values: {
@@ -582,16 +580,18 @@
                             page: this.resourceIndex,
                             type: this.mode === 'picture'? 1: 0
                         },
+                        stagePeer: id,
+                        isBig: studentOnStageType === 'big',
+                        isplay: !(studentOnStageType === '')
                     }
                 }
                 this.rtcRoom.notifyMessage(params, userId)
-                const studentOnStageType = this.studentOnStageType
-                const id = this.dragVideoId
-                if (studentOnStageType === 'small') {
-                    this.sendStageStatus('onStage-small', id)
-                }else if (studentOnStageType === 'big') {
-                    this.sendStageStatus('onStage-big', id)
-                }
+
+                // if (studentOnStageType === 'small') {
+                //     this.sendStageStatus('onStage-small', id)
+                // }else if (studentOnStageType === 'big') {
+                //     this.sendStageStatus('onStage-big', id)
+                // }
             },
 
             // 获取课件信息
@@ -1080,7 +1080,7 @@
             },
 
             // 学生上台（小窗）
-            onStage(id) {
+            onStage(id, noSend) {
                 this.dragVideoId = id
                 this.dragVideoIdCache = id
                 this.studentOnStageType = 'small'
@@ -1091,11 +1091,13 @@
                 targetStyle.top = 22 + playArea.offsetTop + 'px'
                 targetStyle.left = 22 + playArea.offsetLeft + 'px'
                 target.classList.add('small-video')
-                this.sendStageStatus('onStage-small', id)
+                if (!noSend) {
+                    this.sendStageStatus('onStage-small', id)
+                }
             },
 
             // 学生上台（大窗）
-            onStageForBig(id) {
+            onStageForBig(id, noSend) {
                 this.dragVideoId = id
                 this.dragVideoIdCache = id
                 this.studentOnStageType = 'big'
@@ -1106,7 +1108,9 @@
                 targetStyle.top = 22 + playArea.offsetTop + 'px'
                 targetStyle.left = 22 + playArea.offsetLeft + 'px'
                 target.classList.add('big-video')
-                this.sendStageStatus('onStage-big', id)
+                if (!noSend) {
+                    this.sendStageStatus('onStage-big', id)
+                }
             },
 
             // 学生上台后发送socket状态
@@ -1491,7 +1495,7 @@
             },
 
             // 缓存游戏
-            gameCache (firstLoad) {
+            gameCache () {
                 const resourceUrl = this.$store.state.resourceUrl
                 const resourceIndex = this.resourceIndex
                 const gameListIndex = this.gameListIndex

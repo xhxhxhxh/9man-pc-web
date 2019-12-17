@@ -343,6 +343,9 @@
                 top: 10px;
                 left: 10px;
                 z-index: 2;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
         }
 

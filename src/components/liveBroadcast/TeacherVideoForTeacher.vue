@@ -193,6 +193,9 @@
                 position:absolute;
                 top: 10px;
                 left: 10px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
         }
         .operate-area {

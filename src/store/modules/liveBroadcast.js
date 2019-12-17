@@ -162,27 +162,30 @@ const liveBroadcast = {
             const controlOpenObj = this.getters.controlAllStatus
             const params = {
                 type: 'controlStudentOperate',
-                event: 'single_operations',
+                event: 'all_operations',
                 data: {
                     sync: {
-                        page: state.coursewarePage,
-                        type: state.mode === 'picture'? 1: 0
+                        page: state.liveBroadcastData.coursewarePage,
+                        type: state.liveBroadcastData.mode === 'picture'? 1: 0
                     }
                 }
             }
+            console.log(state.liveBroadcastData.coursewarePage)
             const controlCloseObj = state.liveBroadcastDataCurrent.controlStatus
             if (controlOpenObj) { // 全体禁止操作
-                Object.assign(params.data, {peerId: '0'})
+                Object.assign(params.data, {peerId: '0', isOperations: false})
                 for (let id in controlCloseObj) {
                     state.liveBroadcastData.controlStatus[id] = 2
                     state.liveBroadcastDataCurrent.controlStatus[id] = 2
                 }
+                state.rtcRoom.changeAISyncStatus(true);
             } else { // 全体操作
-                Object.assign(params.data, {peerId: 'all'})
+                Object.assign(params.data, {peerId: 'all', isOperations: true})
                 for (let id in controlCloseObj) {
                     state.liveBroadcastData.controlStatus[id] = 1
                     state.liveBroadcastDataCurrent.controlStatus[id] = 1
                 }
+                state.rtcRoom.changeAISyncStatus(false);
             }
             state.rtcRoom.sendMessage(params)
             this.commit('writeLiveBroadcastDataToLocalStorage')

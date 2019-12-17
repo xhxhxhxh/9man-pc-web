@@ -2122,6 +2122,9 @@ body>textarea{position:fixed!important}.tui-image-editor-container{marign:0;padd
   position: absolute;
   top: 10px;
   left: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .teacherVideo-container .status-area[data-v-95fea93c] {
   width: 50%;
@@ -2252,6 +2255,9 @@ body>textarea{position:fixed!important}.tui-image-editor-container{marign:0;padd
   top: 10px;
   left: 10px;
   z-index: 2;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .studentVideo-container .status-area[data-v-195fbc69] {
   width: 50%;
@@ -4463,6 +4469,9 @@ body > textarea {
   position: absolute;
   top: 10px;
   left: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .teacherVideo-container .operate-area[data-v-e8ce6cee] {
   margin-left: 20px;
@@ -4690,6 +4699,9 @@ body > textarea {
   top: 10px;
   left: 10px;
   z-index: 2;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 .studentVideo-container .status-area[data-v-20104ae0] {
   width: 100%;

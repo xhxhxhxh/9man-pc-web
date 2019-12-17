@@ -47,6 +47,8 @@
                 <div class="wrapper" v-show="!controlStudentOperate"></div>
                 <div class="animate-area" v-show="mode === 'animate'" ref="animateArea">
                     <iframe :src="iframeSrc" ref="iframe" allow="autoplay"></iframe>
+                    <iframe :src="iframeSrcCache" style="display: none"
+                            allow="autoplay"></iframe>
                 </div>
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
                     <video src="" ref="video-play" preload="auto" @ended="videoEnded"></video>
@@ -184,6 +186,7 @@
                 studentOnStageTypeIsBig: false, // 学生是否处于大屏上台状态
                 // -----------playarea基础数据---------------
                 iframeSrc: '',
+                iframeSrcCache: '',
                 showPicture: false, // 控制视频平铺
                 controlStudentOperate: false, // 控制学生操作
                 wrapperZIndex: 99, // 缓存学生操作
@@ -198,6 +201,7 @@
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 resourceIndex: 0, // 课件播放序号
+                gameListIndex: [], // 存放游戏次序的数组
             }
         },
         components: {
@@ -275,34 +279,58 @@
                 const teacherId = this.teacherId = this.$route.params.teacherId
                 this.studentName = userParams.name
 
-                rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
-                // this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
-                this.rtcRoom = rtcRoom
-
                 // 同步状态
                 rtcRoom.on('message-notify-receive', (peerId, data) => {
-                    if (data.type === 'synchronize') { // 状态同步
-                        const result = data.values
-                        for (let key in result) {
-                            this[key] = result[key]
+                    console.log(data)
+                    const type = data.type
+                    if (!type) { // type不存在时为移动端数据
+                        const event = data.event;
+                        if (event === 'live_sync') {
+                            let data2 = data.data;
+                            data2.id = data2.operationPeer;
+                            this.resourceIndex = data2.sync.page;
+                            this.handelControlStudentOperate(data);
+                            this.changeAnimate(true);
                         }
-                        this.drawByShape();
-                        this.changeAnimate(true)
-                    }else if (data.type === 'controlStudentOperate') { // 控制学生操作
-                        const id = data.data.peerId
+                    } else {
+                        if (type === 'synchronize') { // 状态同步
+                            const result = data.values
+                            for (let key in result) {
+                                this[key] = result[key]
+                            }
+                            this.drawByShape();
+                            this.changeAnimate(true);
+                        }else if (type === 'controlStudentOperate') { // 控制学生操作
+                            this.handelControlStudentOperate(data)
+                        }
+                    }
 
-                        if (id === this.studentId) {
-                            this.controlStudentOperate = true
-                        }else {
-                            this.controlStudentOperate = false
-                            this.wrapperZIndex = 99
+                    const event = data.event;
+                    if (event === 'live_sync') { // 处理大小窗
+                        let data2 = data.data;
+                        if (data2.isplay) {
+                            data2.id = data2.stagePeer;
+                            if (data2.id !== '0') {
+                                data2.name = this.studentNameObj[data2.id]
+                            }
+                            if (data2.isBig) {
+                                this.onStageBig(data2)
+                            }else {
+                                this.onStageSmall(data2)
+                            }
                         }
                     }
                 })
 
+                rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
+                // this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
+                this.rtcRoom = rtcRoom
+
+
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
+
                     if (id === peerId || id === teacherId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
@@ -396,6 +424,13 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.coursewareResource = data.data.data.resource
+                            const gameListIndex = []
+                            this.coursewareResource.forEach((item, index) => {
+                                if (item.type === 2) {
+                                    gameListIndex.push(index)
+                                }
+                            })
+                            this.gameListIndex = gameListIndex
                             this.changeAnimate(true) // 载入课件
                         } else {
 
@@ -691,6 +726,7 @@
                 const type = courseware.type
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
+                this.gameCache()
                 if (type === 1) { // 视频
                     this.mode = firstLoad? this.mode: 'video'
                     this.$nextTick(function () {
@@ -706,6 +742,53 @@
                 }
             },
 
+            // 缓存游戏
+            gameCache () {
+                const resourceUrl = this.$store.state.resourceUrl
+                const resourceIndex = this.resourceIndex
+                const gameListIndex = this.gameListIndex
+                const gameIndex = this.searchInsert(gameListIndex, resourceIndex)
+
+                let realCurrentIndex = gameListIndex[gameIndex]
+                let realNextIndex = gameListIndex[gameIndex + 1]
+                if (realCurrentIndex === resourceIndex) {
+                    if (realNextIndex) {
+                        this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realNextIndex].url.replace('start', 'load') +
+                            `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                    }
+                }else {
+                    this.iframeSrcCache = resourceUrl + '/' + this.coursewareResource[realCurrentIndex].url.replace('start', 'load') +
+                        `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
+                }
+            },
+
+            // 查找当前课件所在游戏列表的位置
+            searchInsert(nums, target) {
+                let right = nums.length - 1;
+                let left = 0;
+
+                if (target > nums[right]) {
+                    return 0;
+                }
+
+                if (target <= nums[left]) {
+                    return 0;
+                }
+
+                while (left <= right) {
+                    let middle = Math.floor((left + right) / 2);
+                    if (middle === left) return left + 1;
+                    if (target > nums[middle]) {
+                        left = middle;
+                    } else if (target < nums[middle]) {
+                        right = middle;
+                    } else {
+                        return middle;
+                    }
+                }
+
+            },
+
             //接收画图数据，建立连接
             getDrawData () {
                 const upperCanvas = document.querySelector('.upper-canvas');
@@ -716,8 +799,12 @@
                 const event = document.createEvent("MouseEvents");
                 this.rtcRoom.on('message-receive', (data) => {
                     // if (data.id === this.studentId) return
+                    if (!data.type) { // 转换移动端数据格式
+                        data = this.dataTransform(data)
+                    }
                     const type = data.type
                     const e = data.e
+                    console.log(data)
                     let scrollLeft = ''
                     let scrollTop = ''
                     let canvasScale = 1 // 双端canvas的比例
@@ -784,62 +871,13 @@
                     }else if (type === 'cancelPictureCovered') { // 取消视频铺满
                         this.showPicture = false
                     }else if (data.type === 'controlStudentOperate') { // 控制学生操作
-                        const id = data.data.peerId
-
-                        if (id === this.studentId || id === 'all') {
-                            this.controlStudentOperate = true
-                        }else {
-                            this.controlStudentOperate = false
-                            this.wrapperZIndex = 99
-                        }
+                        this.handelControlStudentOperate(data)
                     }else if (type === 'changeMode') { // 切换模式
                         this.mode = data.mode
                     }else if (type === 'onStage-small') {// 学生上台 小屏
-                        const id = data.id
-                        const name = data.name
-                        this.studentOutStage(id)
-                        this.studentOnStage = true
-                        if (id === this.studentId) { // 上台学生是自己时
-                            const targetDom = document.querySelector('.video-students #video' + id)
-                            targetDom.classList.add('onStage')
-                        } else {
-                            this.otherStudentOnStage = true
-                            this.studentOnStageId = id
-                            this.studentOnStageName = name
-                        }
+                        this.onStageSmall(data)
                     }else if (type === 'onStage-big') { // 学生上台 大屏
-                        const id = data.id
-                        const name = data.name
-                        this.studentOutStage(id)
-                        this.studentOnStage = false
-                        this.studentOnStageTypeIsBig = true
-
-                        const screenWidth = window.innerWidth;
-                        const playAreaWidth = this.playAreaWidth
-                        let videoBigWidth = playAreaWidth / 1.622 / 0.75
-
-                        if (id === this.studentId) {
-                            const targetDom = document.querySelector('.video-students #video' + id)
-                            const targetWidth = targetDom.offsetWidth
-                            const targetHeight = targetDom.offsetHeight
-
-                            targetDom.classList.add('onStage-big')
-                            targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
-                            ${-targetHeight - 78}px)`
-                        }else {
-                            const targetDom = document.querySelector('.student-on-stage-box .video-area')
-                            const targetDom2 = document.querySelector('.video-students .video-area')
-                            const targetWidth = targetDom2.offsetWidth
-                            targetDom.classList.add('onStage-big')
-
-                            targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
-                            22px)`
-                        }
-                        if (id !== this.studentId) {
-                            this.otherStudentOnStage = true
-                            this.studentOnStageId = id
-                            this.studentOnStageName = name
-                        }
+                        this.onStageBig(data)
                     }else if (type === 'outStage') { // 学生下台
                         const id = data.id
                         this.studentOutStage(id)
@@ -865,12 +903,75 @@
                 });
             },
 
+            // 控制学生操作
+            handelControlStudentOperate (data) {
+                const id = data.data.peerId
+
+                if (id === this.studentId || id === 'all') {
+                    this.controlStudentOperate = true
+                }else {
+                    this.controlStudentOperate = false
+                    this.wrapperZIndex = 99
+                }
+            },
+
+            // 学生小窗上台
+            onStageSmall (data) {
+                const id = data.id
+                const name = data.name
+                this.studentOutStage(id)
+                this.studentOnStage = true
+                if (id === this.studentId) { // 上台学生是自己时
+                    const targetDom = document.querySelector('.video-students #video' + id)
+                    targetDom.classList.add('onStage')
+                } else {
+                    this.otherStudentOnStage = true
+                    this.studentOnStageId = id
+                    this.studentOnStageName = name
+                }
+            },
+
+            // 学生大窗上台
+            onStageBig (data) {
+                const id = data.id
+                const name = data.name
+                this.studentOutStage(id)
+                this.studentOnStage = false
+                this.studentOnStageTypeIsBig = true
+
+                const playAreaWidth = this.playAreaWidth
+                let videoBigWidth = playAreaWidth / 1.622 / 0.75
+
+                if (id === this.studentId) {
+                    const targetDom = document.querySelector('.video-students #video' + id)
+                    const targetWidth = targetDom.offsetWidth
+                    const targetHeight = targetDom.offsetHeight
+
+                    targetDom.classList.add('onStage-big')
+                    targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
+                            ${-targetHeight - 78}px)`
+                }else {
+                    const targetDom = document.querySelector('.student-on-stage-box .video-area')
+                    const targetDom2 = document.querySelector('.video-students .video-area')
+                    const targetWidth = targetDom2.offsetWidth
+                    targetDom.classList.add('onStage-big')
+
+                    targetDom.style.transform = `translate(${targetWidth + 72 + (playAreaWidth - videoBigWidth) / 2}px,
+                            22px)`
+                }
+                if (id !== this.studentId) {
+                    this.otherStudentOnStage = true
+                    this.studentOnStageId = id
+                    this.studentOnStageName = name
+                }
+            },
+
             // 学生下台
             studentOutStage(id) {
                 this.studentOnStage = false
                 this.studentOnStageTypeIsBig = false
                 if (id === this.studentId) {
-                    const targetDom = document.querySelector('.video-students #video' + id)
+                    const targetDom = document.querySelector('.video-students #video' + this.studentId)
                     targetDom.style.transform = `translate(0, 0)`
                     targetDom.classList.remove('onStage', 'onStage-big')
                 }else {
@@ -897,6 +998,44 @@
                 }
                 this.rtcRoom.sendMessage(params, this.teacherId)
             },
+
+            // 将移动设备传来的数据转换成自己的格式
+            dataTransform(data) {
+                const event = data.event
+                switch (event) {
+                    case 'show_content_change':
+                        data.type = 'animate_page_change';
+                        data.page = data.data.sync.page;
+                        break;
+                    case 'single_video':
+                        const isBig = data.data.isBig;
+                        if (!isBig) {
+                            data.type = 'onStage-small'
+                        }else if(isBig) {
+                            data.type = 'onStage-big'
+                        }
+                        data.id = data.data.peerId;
+                        if (data.id === '0') {
+                            data.type = 'outStage';
+                            data.id = this.studentOnStageId || this.studentId;
+                        }else {
+                            data.name = this.studentNameObj[data.id]
+                        }
+                        break;
+                    case 'single_operations':
+                        data.type = 'controlStudentOperate';
+                        break;
+                    case 'player_seek_to_value':
+                        data.type = 'control_video_progress';
+                        data.progress = data.data.value;
+                        break;
+                    case 'media_controll':
+                        data.type = 'control_video_play';
+                        data.isplay = data.data.isplay;
+                        break;
+                }
+                return data
+            }
 
         }
     }

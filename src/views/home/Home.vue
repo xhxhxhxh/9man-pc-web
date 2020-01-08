@@ -287,7 +287,7 @@
             </main>
             <div class="website-info">
                 <div class="website-info-box">
-                    <p>杭州九漫信息技术有限公司版权所有-浙ICP备09095240号-3</p>
+                    <p>杭州九漫信息技术有限公司版权所有-<a href="http://beian.miit.gov.cn" target="_blank">浙ICP备09095240号</a>-3</p>
                 </div>
             </div>
         </div>
@@ -995,13 +995,6 @@
                 }
                 @media (max-width: 1280px) {
                     .trial-lesson-receive {
-                        position: fixed !important;
-                        &.fixed {
-                            animation: unset !important;
-                        }
-                        &.unfixed {
-                            transform: unset !important;
-                        }
                         .trial-lesson-receive-box {
                             min-width: 900px !important;
                             width: 100% !important;
@@ -1161,6 +1154,12 @@
                         color: #ccc;
                         margin: 0;
                         line-height: 86px;
+                        a {
+                            color: #ccc;
+                            &:hover {
+                                text-decoration: underline;
+                            }
+                        }
                     }
                 }
             }

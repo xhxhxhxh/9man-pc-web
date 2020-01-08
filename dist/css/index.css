@@ -431,17 +431,6 @@ from {
   transform: translate(-50%, 0);
 }
 @media (max-width: 1280px) {
-.home-container .home-body .carefully-selected .trial-lesson-receive {
-    position: fixed !important;
-}
-.home-container .home-body .carefully-selected .trial-lesson-receive.fixed {
-    -webkit-animation: unset !important;
-    animation: unset !important;
-}
-.home-container .home-body .carefully-selected .trial-lesson-receive.unfixed {
-    -webkit-transform: unset !important;
-    transform: unset !important;
-}
 .home-container .home-body .carefully-selected .trial-lesson-receive .trial-lesson-receive-box {
     min-width: 900px !important;
     width: 100% !important;
@@ -598,6 +587,12 @@ from {
   color: #ccc;
   margin: 0;
   line-height: 86px;
+}
+.home-container .home-foot .website-info .website-info-box p a {
+  color: #ccc;
+}
+.home-container .home-foot .website-info .website-info-box p a:hover {
+  text-decoration: underline;
 }
 .homeModal {
   width: 458px !important;

@@ -5,6 +5,7 @@ import UpdateStudentInfo from '@/views/personalCenter/UpdateStudentInfo';
 import Salary from '@/views/personalCenter/Salary';
 import EquipmentInspection from '@/views/personalCenter/EquipmentInspection';
 import Setting from '@/views/personalCenter/Setting';
+import Live from '@/views/live/Live';
 
 const routerMap = {};
 routerMap.student = [
@@ -21,6 +22,7 @@ routerMap.student = [
         ]
     },
     { path: '/liveBroadcastForStudent/:roomId/:teacherId/:studentId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/liveBroadcastForStudent-v2') },
+    { path: '/live/:roomId/:teacherId/:studentId/:coursewareId/:name', component: Live },
     {path: '*', redirect: '/404'}
 ];
 routerMap.teacher = [
@@ -36,6 +38,7 @@ routerMap.teacher = [
         ]
     },
     { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/LiveBroadcastForTeacher-v2') },
+    { path: '/live/:roomId/:teacherId/:coursewareId/:name', component: Live },
     {path: '*', redirect: '/404'}
 ];
 export default routerMap

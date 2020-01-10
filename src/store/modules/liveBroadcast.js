@@ -17,7 +17,8 @@ const liveBroadcast = {
         },
         teacherId: '',
         studentId: '',
-        operatePermission: true // 允许学生操作权限
+        operatePermission: true, // 允许学生操作权限
+        allOperation: false
     },
     mutations: {
         // 设置rtcRoom
@@ -28,6 +29,11 @@ const liveBroadcast = {
         // 设置老师id
         setTeacherId (state, id) {
             state.teacherId = id
+        },
+
+        // 设置全部状态
+        setAllOperationStatus (state, status) {
+            state.allOperation = status
         },
 
         // 设置学生上台状态
@@ -158,7 +164,6 @@ const liveBroadcast = {
 
         // 全体操作
         updateControlStatusAll(state) {
-            return
             const controlOpenObj = this.getters.controlAllStatus
             const params = {
                 type: 'controlStudentOperate',
@@ -170,7 +175,6 @@ const liveBroadcast = {
                     }
                 }
             }
-            console.log(state.liveBroadcastData.coursewarePage)
             const controlCloseObj = state.liveBroadcastDataCurrent.controlStatus
             if (controlOpenObj) { // 全体禁止操作
                 Object.assign(params.data, {peerId: '0', isOperations: false})

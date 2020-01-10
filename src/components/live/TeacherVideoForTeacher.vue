@@ -1,10 +1,24 @@
 <template>
     <div class="teacherVideo-container">
-        <div class="video-area">
-            <video autoplay width="308" height="202" loop type="video/mp4" ref="video" muted></video>
-            <span class="name">{{teacherName}}</span>
+        <div class="video-area" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
+            <video autoplay loop type="video/mp4" ref="video" muted></video>
+            <div :class="{'operate-area': true, show: showOperateArea}">
+                <div @click="setAllOperationStatus(!allOperation)"
+                     :class="{controlAll: allOperation, 'operate-item': true}">
+                    <img :src="controlImg" alt="">
+                    <span>{{allOperation? '取消授权': '全部授权'}}</span>
+                </div>
+                <div class="operate-item">
+                    <img :src="stageImg" alt="">
+                    <span>全部上台</span>
+                </div>
+                <div class="operate-item">
+                    <img :src="starImg" alt="">
+                    <span>全部奖励</span>
+                </div>
+            </div>
         </div>
-        <div class="operate-area">
+<!--        <div class="operate-area">-->
 <!--            <button @click="() => {$emit('pictureCovered')}" :class="{disable: studentsNum}"><img src="./images/cover.png" alt="">视频铺满</button>-->
 <!--            <button :class="{muteAll: !$store.getters.updateAudioStatus, mute: true}"-->
 <!--                    @click="$store.commit('updateAudioStatusAll')">-->
@@ -14,20 +28,25 @@
 <!--                    @click="$store.commit('updateControlStatusAll')" >-->
 <!--                <img :src="controlSrc" alt="">{{controlText}}-->
 <!--            </button>-->
-        </div>
+<!--        </div>-->
+        <div class="teacher_name">{{teacherName}}</div>
     </div>
 </template>
 
 <script>
-    import muteImg from './images/onStage.png'
+    import stageImg from './images/onStage.png'
     import controlImg from './images/control.png'
-    import cancelControlImg from './images/star.png'
+    import starImg from './images/star.png'
 
     export default {
         name: "TeacherVideo",
         data () {
             return {
-
+                stageImg,
+                controlImg,
+                starImg,
+                showOperateArea: false,
+                allOperation: false, // 全部授权状态
             }
         },
         props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream'],
@@ -84,113 +103,83 @@
             }
         },
         methods: {
-
-
-
+            setAllOperationStatus (status) {
+                this.allOperation = status;
+                this.$store.commit('setAllOperationStatus',status)
+            }
         }
     }
 </script>
 
 <style lang="less" scoped>
+    @import "../../less/index";
     .teacherVideo-container {
+        height: 540rem/@baseFontSize;
+        border-radius:10rem/@baseFontSize 10rem/@baseFontSize 0 0;
         .video-area {
-            float: left;
-            width: 308px;
-            height: 202px;
-            border-radius: 20px;
+            width: 100%;
+            height: 439rem/@baseFontSize;
+            border-radius:10rem/@baseFontSize 10rem/@baseFontSize 0 0;
             overflow: hidden;
             position: relative;
             video {
                 width: 100%;
                 height: 100%;
             }
-            .name {
-                display: inline-block;
-                text-align: center;
-                width: 61px;
-                height: 20px;
-                color: #fff;
-                font-size: 13px;
-                background-color: rgba(0,0,0,.3);
-                border-radius: 10px;
-                position:absolute;
-                top: 10px;
-                left: 10px;
-                overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-            }
-        }
-        .operate-area {
-            margin-left: 20px;
-            float: left;
-            height: 202px;
-            width: 150px;
-            display: flex;
-            justify-content: space-between;
-            flex-direction: column;
-            button {
-                width:100%;
-                height:48px;
-                border-radius:10px;
-                font-size: 21px;
-                color: #fff;
-                border: 0;
-                cursor: pointer;
-                outline: unset;
-                &.mute {
-                    &.muteAll {
-                        background: #fff;
-                        color: #FF6A04;
-                    }
+            .operate-area {
+                height: 100rem/@baseFontSize;
+                width: 465rem/@baseFontSize;
+                position: absolute;
+                left: 50%;
+                bottom: 0;
+                transform: translate(-50%, 150%);
+                transition: all .3s ease;
+                display: flex;
+                justify-content: space-between;
+                &.show {
+                    transform: translate(-50%, 0);
                 }
-                &.control {
+                .operate-item {
+                    width: 90rem/@baseFontSize;
+                    height: 90rem/@baseFontSize;
+                    cursor: pointer;
+                    background:rgba(27,27,27,0.3);
+                    border:1rem/@baseFontSize solid rgba(255,255,255,1);
+                    border-radius:10rem/@baseFontSize;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-evenly;
+                    align-items: center;
+                    user-select: none;
+                    img {
+                        display: block;
+                        width: 31rem/@baseFontSize;
+                        height: 31rem/@baseFontSize;
+                    }
+                    span {
+                        font-size:14rem/@baseFontSize;
+                        color:rgba(255,255,255,1);
+                    }
+                    &:last-of-type {
+                        transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+                        &:hover {
+                            background:rgba(248,87,21,1);
+                        }
+                    }
                     &.controlAll {
-                        background: #fff;
-                        color: #FF6A04;
-                    }
-                }
-                &.disable {
-                    background: #CDCDCD !important;
-                    cursor: unset;
-                }
-                img {
-                    width: 21px;
-                    height: 21px;
-                    margin-right: 10px;
-                }
-            }
-        }
-        @media (max-width: 1550px){
-            .operate-area {
-                margin-left: 10px;
-                width: 120px;
-                button {
-                    font-size: 18px;
-                    img {
-                        width: 18px;
-                        height: 18px;
+                        background:rgba(248,87,21,1);
                     }
                 }
             }
         }
-        @media (max-width: 1410px){
-            .operate-area {
-                margin-left: 5px;
-                width: 70px;
-                button {
-                    font-size: 14px;
-                    img {
-                        display: none;
-                    }
-                }
-            }
-        }
-        @media (max-width: 1250px){
-            .operate-area {
-                margin-left: 5px;
-                width: 60px;
-            }
+        .teacher_name {
+            height: 101rem/@baseFontSize;
+            background-color: #fff;
+            font-size:28rem/@baseFontSize;
+            line-height: 101rem/@baseFontSize;
+            color:rgba(27,27,27,1);
+            text-align: center;
+            border-radius:0 0 10rem/@baseFontSize 10rem/@baseFontSize;
         }
     }
 </style>

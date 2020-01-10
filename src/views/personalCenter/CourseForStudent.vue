@@ -129,7 +129,7 @@
                     Object.assign(params, {recent: 1})
                 }
 
-                this.$axios.get( this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
+                this.$axios.get(this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {

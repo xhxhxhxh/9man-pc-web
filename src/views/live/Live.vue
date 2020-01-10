@@ -11,17 +11,19 @@
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
                     <video src="" ref="video-play" preload="auto" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
                 </div>
-                <div class="draw-area" v-show="showDrawArea">
+                <div class="draw-area">
                     <div id="tui-image-editor" ref="drawArea"></div>
                 </div>
+                <div class="wrapper" v-show="shape === 'NORMAL'" ref="wrapper"></div>
                 <div class="operate-area">
-                    <div :class="{default: true, active: !showDrawArea}" @click="changeDrawStatus(false)">
+                    <div :class="{default: true, active: shape === 'NORMAL'}" @click="changeDrawStatus('NORMAL')">
                         <icon-font type="iconuf00db"/>
                     </div>
-                    <div class="pen" :class="{default: true, active: showDrawArea}" @click="changeDrawStatus(true)">
+                    <div class="pen" :class="{default: true, active: shape === 'FREE_DRAWING'}" @click="changeDrawStatus('FREE_DRAWING')">
                         <icon-font type="iconpen"/>
                     </div>
-                    <div class="delete" @click="eraser">
+                    <div class="delete" :class="{default: true, active: shape === 'DELETE', drawObjectActive: drawObjectActive && shape === 'DELETE'}"
+                         @click="changeDrawStatus('DELETE')">
                         <icon-font type="iconsystem-deleteb" />
                     </div>
                     <div class="previous-page" @click="changeAnimate($event, 0)">
@@ -59,7 +61,9 @@
                 </div>
             </div>
             <div class="main-bottom">
-                <div class="students-area"></div>
+                <div class="students-area">
+                    <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]" v-for="id in peerIdList" :key="id"></StudentVideo>
+                </div>
             </div>
         </main>
     </div>
@@ -75,7 +79,8 @@
     import RTCRoom from '@/lib/RTCRoomSDK/RTCRoomManager';
 
     // 导入直播组件
-    import TeacherVideo from '@/components/live/TeacherVideoForTeacher'
+    import TeacherVideo from '@/components/live/TeacherVideoForTeacher';
+    import StudentVideo from '@/components/live/StudentVideoForTeacher'
 
     const IconFont = Icon.createFromIconfontCN({
         scriptUrl: '//at.alicdn.com/t/font_1543360_6pq73ac4jna.js',
@@ -101,7 +106,6 @@
                 // -----------基础数据---------------
                 mode: 'game', // 游戏模式:game, 视频模式:video
                 showPlayArea: false, // 控制播放器控件显示
-                showDrawArea: false, // 画板的显示与隐藏
                 mikeStatus: true, // 开启麦克风
                 videoAreaWidth: '33%', // 播放区域宽度
                 studentVideoScale: 1, // 学生区域缩放倍数
@@ -117,9 +121,10 @@
                 progressBar: 0, // 视频进度条
                 //-----------画板数据---------------
                 imageEditor: null,
-                shape: 'FREE_DRAWING',
+                shape: 'NORMAL', // NORMAL时可操作游戏 FREE_DRAWING画板 DELETE删除
                 strokeWidth: 11,  //线宽
                 strokeColor: '#2E3E50', //线的颜色
+                drawObjectActive: false,
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
@@ -135,7 +140,8 @@
         },
         components: {
             IconFont,
-            TeacherVideo
+            TeacherVideo,
+            StudentVideo
         },
         created() {
             this.init();
@@ -143,6 +149,7 @@
         mounted() {
             this.controlPlayArea();
             this.initDrawingBoard();
+            this.sendEventToIframe();
         },
         methods: {
             // 初始化
@@ -165,9 +172,10 @@
 
             // 动态改变rem值
             resize () {
-                const baseScreenWidth = 1920;
+                const baseScreenWidth = 2213;
                 const baseFontSize = 100;
                 const screenWidth = window.innerWidth;
+                console.log(window.innerHeight)
                 const baseDrawingBoardWidth = 1271;
                 const baseDrawingBoardHeight = 783;
                 document.documentElement.style.fontSize = screenWidth / baseScreenWidth * baseFontSize + 'px';
@@ -235,7 +243,7 @@
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
-                // this.peerIdList = ['2', '3']
+                this.peerIdList = ['2', '3', '4', '5']
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -438,8 +446,9 @@
                 const canvas = document.querySelector('#tui-image-editor');
                 const upperCanvas = document.querySelector('.upper-canvas');
 
+
                 //鼠标点击事件
-                instance.on('mousedown', function(event, originPointer) {
+                canvas.onmousedown = function(event) {
                     const e = {
                         screenX: event.screenX,
                         screenY: event.screenY,
@@ -494,6 +503,14 @@
                     };
                     //鼠标抬起事件
                     document.onmouseup = function (event) {
+                        // 判断是否有选择对象
+                        const objectId = instance.activeObjectId;
+                        if (!objectId && _this.drawObjectActive) {
+                            _this.drawObjectActive = false;
+                        } else if (objectId &&  !_this.drawObjectActive) {
+                            _this.drawObjectActive = true;
+                        }
+
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
@@ -514,14 +531,60 @@
                         _this.drawByShape();
                         canvas.onmousemove = null;
                         document.onmouseup = null;
-
-                        // 因修改此插件源码中fabric的mouseup触发对象，因此加了个模拟鼠标事件，以防止鼠标移除画布时的bug
-                        const newEvent = document.createEvent("MouseEvents");
-                        newEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
-                            e.clientX, e.clientY, false, false, false, false, 0, null);
-                        upperCanvas.dispatchEvent(newEvent);
                     }
-                });
+                };
+            },
+
+            // 当处于课件操作状态时，将wrapper中的事件传发到iframe
+            sendEventToIframe () {
+                const wrapper = this.$refs.wrapper;
+                const iframe = this.$refs.iframe;
+                const _this = this;
+
+                //鼠标点击事件
+                wrapper.onmousedown = function(event) {
+                    if (_this.mode !== 'game') return;
+                    let gameCanvas = iframe.contentWindow.document.querySelector('#gameCanvas');
+                    const e = {
+                        screenX: event.screenX,
+                        screenY: event.screenY,
+                        clientX: event.layerX,
+                        clientY: event.layerY,
+                    }
+
+                    const mouseEvent = document.createEvent("MouseEvents");
+                    mouseEvent.initMouseEvent("mousedown", true, true, document.defaultView, 0, e.screenX, e.screenY,
+                        e.clientX , e.clientY, false, false, false, false, 0, null);
+                    gameCanvas.dispatchEvent(mouseEvent);
+
+                    //鼠标移动事件
+                    wrapper.onmousemove = function (event) {
+                        const e = {
+                            screenX: event.screenX,
+                            screenY: event.screenY,
+                            clientX: event.layerX,
+                            clientY: event.layerY,
+                        }
+                        mouseEvent.initMouseEvent("mousemove", true, true, document.defaultView, 0, e.screenX, e.screenY,
+                            e.clientX , e.clientY, false, false, false, false, 0, null);
+                        gameCanvas.dispatchEvent(mouseEvent);
+                    };
+
+                    //鼠标抬起事件
+                    wrapper.onmouseup = function (event) {
+                        const e = {
+                            screenX: event.screenX,
+                            screenY: event.screenY,
+                            clientX: event.layerX,
+                            clientY: event.layerY,
+                        }
+                        mouseEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
+                            e.clientX , e.clientY, false, false, false, false, 0, null);
+                        gameCanvas.dispatchEvent(mouseEvent);
+                        wrapper.onmousemove = null;
+                        wrapper.onmouseup = null;
+                    }
+                };
             },
 
             //根据shape绘制图形
@@ -545,7 +608,6 @@
             stopDrawing () {
                 const imageEditor = this.imageEditor;
                 imageEditor.stopDrawingMode();
-                this.shape = 'NORMAL';
                 imageEditor.changeCursor('default');
                 // const params = {
                 //     type: 'stopDrawing'
@@ -560,6 +622,7 @@
                     this.stopDrawing();
                 }
                 imageEditor.removeActiveObject();
+                this.drawObjectActive = false
 
                 // 发送删除图形请求
                 // const params = {
@@ -573,6 +636,9 @@
             clearAll () {
                 const imageEditor = this.imageEditor;
                 imageEditor.clearObjects();
+                this.drawObjectActive = false;
+                imageEditor._graphics._canvas.deactivateAll();
+                imageEditor._graphics._canvas.renderAll();
 
                 // 发送清除图形请求
                 // const params = {
@@ -590,12 +656,13 @@
 
             // 显示隐藏画板
             changeDrawStatus(status) {
-                this.showDrawArea = status;
-                if (status) {
-                    this.shape = 'FREE_DRAWING';
+                this.shape = status;
+                if (status === 'FREE_DRAWING') {
                     this.drawByShape();
-                } else {
+                } else if (status === 'NORMAL') {
                     this.stopDrawing();
+                } else if (status === 'DELETE') {
+                    this.eraser();
                 }
             },
 
@@ -690,6 +757,7 @@
 
             // 切换动画
             changeAnimate (e, direction, firstLoad) {
+                this.changeDrawStatus('NORMAL');
                 const length = this.coursewareResource.length - 1
                 let index = this.resourceIndex
                 if (direction === 2) { // 动画前进
@@ -812,7 +880,7 @@
     @import "../../less/index";
     .live-container {
         background:rgba(248,209,194,1);
-        padding: 20rem/@baseFontSize;
+        padding: 20rem/@baseFontSize 140rem/@baseFontSize;
         main {
             overflow: hidden;
             .main-left {
@@ -910,15 +978,21 @@
                         border-radius: 50%;
                         transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
                         position: relative;
-                        &:nth-of-type(1), &:nth-of-type(2) {
+                        &:nth-of-type(1), &:nth-of-type(2), &:nth-of-type(3) {
                             &:hover, &.active {
                                 background-color: #F85715;
                                 i {
                                     color: #fff;
                                 }
                             }
+                            &.drawObjectActive {
+                                background-color: unset;
+                                i {
+                                    color: #F85715;
+                                }
+                            }
                         }
-                        &:nth-of-type(n + 3) {
+                        &:nth-of-type(n + 4) {
                             &:hover i{
                                 color: #F85715;
                             }
@@ -935,6 +1009,15 @@
                             font-size: 28rem/@baseFontSize;
                         }
                     }
+                }
+                .wrapper {
+                    width: 100%;
+                    height: 100%;
+                    border-radius:10rem/@baseFontSize;
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    z-index: 99;
                 }
                 .play-area {
                     position: absolute;
@@ -1018,7 +1101,22 @@
                             background-size: cover;
                             background-color: unset;
                             color:rgba(255,255,255,1);
-                            margin-bottom: 65rem/@baseFontSize;
+                            margin-bottom: 40rem/@baseFontSize;
+                        }
+                    }
+                }
+            }
+            .main-bottom {
+                width: 100%;
+                height: 240rem/@baseFontSize;
+                margin-top: 17rem/@baseFontSize;
+                float: left;
+                .students-area {
+                    display: flex;
+                    > div {
+                        margin-right: 120rem/@baseFontSize;
+                        &:last-of-type {
+                            margin-right: 0;
                         }
                     }
                 }

@@ -115,7 +115,7 @@
                     Object.assign(params, {child_id: childId})
                 }
 
-                this.$axios.get( this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
+                this.$axios.get(this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {

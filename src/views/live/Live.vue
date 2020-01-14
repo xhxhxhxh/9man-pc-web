@@ -175,7 +175,6 @@
                 const baseScreenWidth = 2213;
                 const baseFontSize = 100;
                 const screenWidth = window.innerWidth;
-                console.log(window.innerHeight)
                 const baseDrawingBoardWidth = 1271;
                 const baseDrawingBoardHeight = 783;
                 document.documentElement.style.fontSize = screenWidth / baseScreenWidth * baseFontSize + 'px';
@@ -281,33 +280,53 @@
                             rtcRoom.closeAudio(id)
                         }
                     } else {
-                        rtcRoom.closeAudio(id)
-                        this.$store.commit('setAudioStatus', {id: id, status: 2})
+                        rtcRoom.openAudio(id)
+                        this.$store.commit('setAudioStatus', {id: id, status: 1})
                     }
 
                     // 处理操作状态
                     const userControlStatus = liveBroadcastData.controlStatus[id]
+                    const allOperation = liveBroadcastData.liveBroadcastData
                     const params = {
                         type: 'controlStudentOperate',
                         event: 'single_operations',
                         data: {
                             sync: {
                                 page: this.resourceIndex,
-                                type: this.mode === 'draw'? 1: 0
+                                type: this.mode === 'video'? 1: 0
                             }
                         }
                     }
-                    if (userControlStatus) {
-                        if (userControlStatus === 1) {
-                            Object.assign(params.data, {peerId: id})
-                        } else if (userControlStatus === 2) {
-                            Object.assign(params.data, {peerId: '0'})
+                    if (allOperation) { // 当处于全部授权状态时
+                        this.$store.commit('setControlStatus', {id: id, status: 1})
+                        const params = {
+                            event: 'all_operations',
+                            data: {
+                                sync: {
+                                    page: this.resourceIndex,
+                                    type: this.mode === 'video'? 1: 0
+                                },
+                                operations: true
+                            }
                         }
-                        rtcRoom.notifyMessage(params, '__all')
-                    } else {
-                        Object.assign(params.data, {peerId: '0'})
-                        rtcRoom.notifyMessage(params, '__all')
+                        rtcRoom.notifyMessage(params, id)
+                    } else if (!this.$store.state.liveBroadcast.operatePermission) { // 当不允许授权学生时
                         this.$store.commit('setControlStatus', {id: id, status: 2})
+                        Object.assign(params.data, {peerId: ''})
+                        rtcRoom.notifyMessage(params, id)
+                    }else {
+                        if (userControlStatus) {
+                            if (userControlStatus === 1) {
+                                Object.assign(params.data, {peerId: id})
+                            } else if (userControlStatus === 2) {
+                                Object.assign(params.data, {peerId: ''})
+                            }
+                            rtcRoom.notifyMessage(params, '__all')
+                        } else {
+                            Object.assign(params.data, {peerId: ''})
+                            rtcRoom.notifyMessage(params, '__all')
+                            this.$store.commit('setControlStatus', {id: id, status: 2})
+                        }
                     }
 
                     // 处理学生上台状态
@@ -356,6 +375,29 @@
                     this.mode = mode
                 }
                 this.resourceIndex = liveBroadcastData.coursewarePage? liveBroadcastData.coursewarePage: 0
+            },
+
+            // 离开房间
+            leaveRoom () {
+                const rtcRoom = this.rtcRoom
+                this.$confirm({
+                    title: '确定要退出房间吗?',
+                    content: '',
+                    centered: true,
+                    onOk:() => {
+                        rtcRoom.leaveRoom();
+                        window.close();
+                    },
+                    onCancel() {},
+                });
+            },
+
+            // 老师离开房间 取消全部授权
+            allUsersCancelOperate () {
+                const allOperation = this.$store.state.liveBroadcast.liveBroadcastData.allOperation
+                if (allOperation) {
+                    this.$store.commit('setAllOperationStatus',false)
+                }
             },
 
             // 当学生连接时同步状态

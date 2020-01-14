@@ -1,9 +1,9 @@
 import common from "@/api/common";
 
-const liveBroadcast = {
+const live = {
     state: {
         rtcRoom: null,
-        liveBroadcastData: { // 本地状态缓存
+        liveData: { // 本地状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
             stageStatus: {id: '', videoType: ''}, // 学生上台状态
@@ -12,7 +12,7 @@ const liveBroadcast = {
             allOperation: false
         },
         peerIdList: [], // 当前在线学生id
-        liveBroadcastDataCurrent: { // 当前在线学生的状态缓存
+        liveDataCurrent: { // 当前在线学生的状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
         },
@@ -34,25 +34,25 @@ const liveBroadcast = {
 
         // 设置全部授权状态
         setAllOperationStatus (state, status) {
-            state.liveBroadcastData.allOperation = status
+            state.liveData.allOperation = status
             this.commit('updateControlStatusAll', status)
         },
 
         // 设置学生上台状态
         setStageStatus (state, data) {
-            state.liveBroadcastData.stageStatus = data
+            state.liveData.stageStatus = data
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // 设置mode
         setMode (state, value) {
-            state.liveBroadcastData.mode = value
+            state.liveData.mode = value
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // 设置课件页数
         setCoursewarePage (state, page) {
-            state.liveBroadcastData.coursewarePage = page
+            state.liveData.coursewarePage = page
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
@@ -65,8 +65,8 @@ const liveBroadcast = {
         setPeerIdList (state, data) {
             state.peerIdList = data
             const peerIdList = state.peerIdList
-            const audioStatusInLocalStorage = state.liveBroadcastData.audioStatus
-            const controlStatusInLocalStorage = state.liveBroadcastData.controlStatus
+            const audioStatusInLocalStorage = state.liveData.audioStatus
+            const controlStatusInLocalStorage = state.liveData.controlStatus
             const audioStatusInCurrent = {}
             const controlStatusInCurrent = {}
             peerIdList.forEach(id => {
@@ -81,37 +81,37 @@ const liveBroadcast = {
                     controlStatusInCurrent[id] = 2
                 }
             })
-            state.liveBroadcastDataCurrent.audioStatus = audioStatusInCurrent
-            state.liveBroadcastDataCurrent.controlStatus = controlStatusInCurrent
+            state.liveDataCurrent.audioStatus = audioStatusInCurrent
+            state.liveDataCurrent.controlStatus = controlStatusInCurrent
         },
 
         // 设置audioStatus
         setAudioStatus(state, data) {
-            const audioStatus = {...state.liveBroadcastData.audioStatus};
-            const audioStatusInCurrent = {...state.liveBroadcastDataCurrent.audioStatus};
+            const audioStatus = {...state.liveData.audioStatus};
+            const audioStatusInCurrent = {...state.liveDataCurrent.audioStatus};
             const id = data.id;
             const status = data.status;
             audioStatus[id] = status
             audioStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.audioStatus = {...audioStatusInCurrent}
-            state.liveBroadcastData.audioStatus = {...audioStatus}
-            // state.liveBroadcastDataCurrent.audioStatus[id] = status
-            // state.liveBroadcastData.audioStatus[id] = status
+            state.liveDataCurrent.audioStatus = {...audioStatusInCurrent}
+            state.liveData.audioStatus = {...audioStatus}
+            // state.liveDataCurrent.audioStatus[id] = status
+            // state.liveData.audioStatus[id] = status
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // controlStatus
         setControlStatus(state, data) {
-            const controlStatus = {...state.liveBroadcastData.controlStatus};
-            const controlStatusInCurrent = {...state.liveBroadcastDataCurrent.controlStatus};
+            const controlStatus = {...state.liveData.controlStatus};
+            const controlStatusInCurrent = {...state.liveDataCurrent.controlStatus};
             const id = data.id;
             const status = data.status;
             controlStatus[id] = status
             controlStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.controlStatus = {...controlStatusInCurrent}
-            state.liveBroadcastData.controlStatus = {...controlStatus}
-            // state.liveBroadcastData.controlStatus[id] = status
-            // state.liveBroadcastDataCurrent.controlStatus[id] = status
+            state.liveDataCurrent.controlStatus = {...controlStatusInCurrent}
+            state.liveData.controlStatus = {...controlStatus}
+            // state.liveData.controlStatus[id] = status
+            // state.liveDataCurrent.controlStatus[id] = status
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
@@ -119,13 +119,13 @@ const liveBroadcast = {
         readLiveBroadcastDataFromLocalStorage(state) {
             const localStorage = common.getLocalStorage('9manLiveBroadcast')
             if (localStorage) {
-                state.liveBroadcastData = localStorage
+                state.liveData = localStorage
             }
         },
 
         // 写入本地存储
         writeLiveBroadcastDataToLocalStorage(state) {
-            common.setLocalStorage('9manLiveBroadcast', state.liveBroadcastData)
+            common.setLocalStorage('9manLiveBroadcast', state.liveData)
         },
 
         // 全体静音
@@ -134,16 +134,16 @@ const liveBroadcast = {
             if (audioOpenObj) { // 全部静音
                 audioOpenObj.forEach(id => {
                     state.rtcRoom.closeAudio(id);
-                    state.liveBroadcastData.audioStatus[id] = 2
-                    state.liveBroadcastDataCurrent.audioStatus[id] = 2
+                    state.liveData.audioStatus[id] = 2
+                    state.liveDataCurrent.audioStatus[id] = 2
                 })
                 this.commit('writeLiveBroadcastDataToLocalStorage')
             } else { // 取消静音
-                const audioCloseObj = state.liveBroadcastDataCurrent.audioStatus
+                const audioCloseObj = state.liveDataCurrent.audioStatus
                 for (let id in audioCloseObj) {
                     state.rtcRoom.openAudio(id);
-                    state.liveBroadcastData.audioStatus[id] = 1
-                    state.liveBroadcastDataCurrent.audioStatus[id] = 1
+                    state.liveData.audioStatus[id] = 1
+                    state.liveDataCurrent.audioStatus[id] = 1
                 }
                 this.commit('writeLiveBroadcastDataToLocalStorage')
             }
@@ -155,14 +155,14 @@ const liveBroadcast = {
                 event: 'all_operations',
                 data: {
                     sync: {
-                        page: state.liveBroadcastData.coursewarePage,
-                        type: state.liveBroadcastData.mode === 'video'? 1: 0
+                        page: state.liveData.coursewarePage,
+                        type: state.liveData.mode === 'video'? 1: 0
                     },
                     operations: status
                 }
             }
-            const controlCloseCurrentObj = state.liveBroadcastDataCurrent.controlStatus
-            const controlCloseObj = state.liveBroadcastData.controlStatus
+            const controlCloseCurrentObj = state.liveDataCurrent.controlStatus
+            const controlCloseObj = state.liveData.controlStatus
 
             if (!status) { // 全体禁止操作
                 for (let id in controlCloseObj) { // 全部禁止时需将连接过本教室的所有学生禁止
@@ -184,7 +184,7 @@ const liveBroadcast = {
     getters: {
         // 更新audioStatus
         updateAudioStatus(state) {
-            const audioStatus = state.liveBroadcastDataCurrent.audioStatus;
+            const audioStatus = state.liveDataCurrent.audioStatus;
             let totalCount = 0
             let num = 0
             let audioOpenArr = []
@@ -204,7 +204,7 @@ const liveBroadcast = {
 
         // ControlStatus
         updateControlStatus(state) {
-            const controlStatus = state.liveBroadcastDataCurrent.controlStatus;
+            const controlStatus = state.liveDataCurrent.controlStatus;
             let totalCount = 0
             let num = 0
             let controlOpenArr = []
@@ -224,7 +224,7 @@ const liveBroadcast = {
 
         // 是否为全部操作状态
         controlAllStatus(state) {
-            const controlStatus = state.liveBroadcastDataCurrent.controlStatus;
+            const controlStatus = state.liveDataCurrent.controlStatus;
             let totalCount = 0
             let num = 0
             let controlOpenArr = []
@@ -244,4 +244,4 @@ const liveBroadcast = {
     }
 }
 
-export default liveBroadcast
+export default live

@@ -87,7 +87,7 @@
         name: "kidCourse",
         data () {
             const userInfo = common.getLocalStorage('userInfo')
-            const kidsInfo = common.getLocalStorage('kidsInfo')
+            // const kidsInfo = common.getLocalStorage('kidsInfo')
             return {
                 rootUrl: this.$store.state.apiUrl,
                 userId: userInfo.uid,
@@ -99,8 +99,8 @@
                 kidList: [],
                 totalCount: 0,
                 isRecent: true,
-                currentKidId: kidsInfo[0].id,
-                currentKidName: kidsInfo[0].uname,
+                // currentKidId: kidsInfo[0].id,
+                // currentKidName: kidsInfo[0].uname,
             }
         },
         created () {
@@ -122,7 +122,7 @@
                     identity,
                     pageno: this.pageNum,
                     pagesize: this.pageSize,
-                    child_id: this.currentKidId
+                    // child_id: this.currentKidId
                 };
 
                 if (this.isRecent) {

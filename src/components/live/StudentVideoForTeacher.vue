@@ -23,7 +23,7 @@
     import muteImg from './images/mute_black.png'
     import cancelMuteImg from './images/mute.png'
     import controlImg from './images/operate_black.png'
-    import cancelControlImg from './images/operate_black.png'
+    import cancelControlImg from './images/operate.png'
     import star from './images/award.png'
     import cancelStar from './images/award_black.png'
 
@@ -53,9 +53,9 @@
             },
             controlSrc () {
                 if (this.$store.state.liveBroadcast.liveBroadcastData.controlStatus[this.id] === 1) {
-                    return controlImg
-                } else {
                     return cancelControlImg
+                } else {
+                    return controlImg
                 }
             },
         },
@@ -71,28 +71,26 @@
         },
 
         methods: {
-
             // 控制学生操作
             controlStudentOperate() {
                 const {operatePermission, liveBroadcastDataCurrent, teacherId, liveBroadcastData} = this.$store.state.liveBroadcast
-                const mode = liveBroadcastData.mode
-                if (!operatePermission && mode !== 'picture') return
+                const {allOperation, coursewarePage, mode} = liveBroadcastData
+                if (!operatePermission) return
+                if (allOperation) return
                 const id = this.id
                 const params = {
-                    type: 'controlStudentOperate',
                     event: 'single_operations',
                     data: {
                         sync: {
-                            page: liveBroadcastData.coursewarePage,
-                            type: liveBroadcastData.mode === 'picture'? 1: 0
+                            page: coursewarePage,
+                            type: mode === 'video'? 1: 0
                         }
                     }
                 }
                 const controlStatus = liveBroadcastDataCurrent.controlStatus[id]
                 const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
-                const studentNum = this.peerIdList.length
-
                 const currentOperateUser = controlOpenStatus[0]
+
                 if (currentOperateUser && currentOperateUser !== id) {
                     Object.assign(params.data, {peerId: id})
                     this.$store.commit('setControlStatus', {id: currentOperateUser, status: 2})
@@ -102,27 +100,8 @@
                     return
                 }
 
-                // if (controlOpenStatus) { // 注释以取消 原切换操作需先取消正获得操作权限学生的权限
-                //     const controlOpenStatusCache = [...controlOpenStatus] // 拷贝一个controlOpenStatus
-                //     if (controlStatus === 1) { // 禁止操作
-                //         // 当controlOpenStatusCache存在这个id时，将其从中剔除
-                //         const index = controlOpenStatusCache.indexOf(id)
-                //         if (index !== -1) {
-                //             controlOpenStatusCache.splice(index, 1)
-                //         }
-                //     }else if (controlStatus === 2) { // 开启操作
-                //         // 当controlOpenStatusCache存在这个id时，将其添加进去
-                //         const index = controlOpenStatusCache.indexOf(id)
-                //         if (index === -1) {
-                //             controlOpenStatusCache.push(id)
-                //         }
-                //     }
-                //     // 当controlOpenStatusCache更新后的长度在1和studentNum之间时操作无效
-                //     const lengthOfControlOpenStatusCache = controlOpenStatusCache.length
-                //     if (lengthOfControlOpenStatusCache > 1 && lengthOfControlOpenStatusCache < studentNum) return
-                // }
                 if (controlStatus === 1) { // 禁止操作
-                    Object.assign(params.data, {peerId: '0'})
+                    Object.assign(params.data, {peerId: ''})
                     this.$store.commit('setControlStatus', {id: id, status: 2})
                     this.rtcRoom.changeAIControl(teacherId)
                 }else if (controlStatus === 2) { // 开启操作

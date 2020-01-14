@@ -12,7 +12,7 @@
         </header>
         <main>
             <div class="sideBar-box">
-                <KidInfo></KidInfo>
+<!--                <KidInfo></KidInfo>-->
                 <div class="sideBar">
                     <router-link :class="{sideBarItem: true, chosen: hashAddress === item.path}" tag="div"
                          :to="$store.getters.roles[0].path + '/' + item.path"
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-    import KidInfo from './components/KidInfo';
+    // import KidInfo from './components/KidInfo';
     import { Icon } from 'ant-design-vue';
 
     const IconFont = Icon.createFromIconfontCN({
@@ -43,7 +43,7 @@
             }
         },
         components: {
-            KidInfo,
+            // KidInfo,
             IconFont
         },
         computed: {

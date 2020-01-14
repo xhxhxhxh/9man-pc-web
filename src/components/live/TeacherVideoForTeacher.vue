@@ -46,7 +46,6 @@
                 controlImg,
                 starImg,
                 showOperateArea: false,
-                allOperation: false, // 全部授权状态
             }
         },
         props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream'],
@@ -100,11 +99,14 @@
                 }else {
                     return false
                 }
+            },
+            // 全部授权状态
+            allOperation () {
+                return this.$store.state.liveBroadcast.liveBroadcastData.allOperation
             }
         },
         methods: {
             setAllOperationStatus (status) {
-                this.allOperation = status;
                 this.$store.commit('setAllOperationStatus',status)
             }
         }

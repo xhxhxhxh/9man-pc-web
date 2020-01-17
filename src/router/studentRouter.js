@@ -5,7 +5,8 @@ import UpdateStudentInfo from '@/views/personalCenter/UpdateStudentInfo';
 import Salary from '@/views/personalCenter/Salary';
 import EquipmentInspection from '@/views/personalCenter/EquipmentInspection';
 import Setting from '@/views/personalCenter/Setting';
-import Live from '@/views/live/Live';
+import TeacherLive from '@/views/live/LiveForTeacher';
+import StudentLive from '@/views/live/LiveForStudent';
 
 const routerMap = {};
 routerMap.student = [
@@ -21,9 +22,9 @@ routerMap.student = [
             { path: 'updateStudentInfo/:kidId', component: UpdateStudentInfo, meta: {hidden: true} },
         ]
     },
-    { path: '/liveBroadcastForStudent/:roomId/:teacherId/:studentId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/liveBroadcastForStudent-v2') },
-    { path: '/live/:roomId/:teacherId/:studentId/:coursewareId/:name', component: Live },
-    {path: '*', redirect: '/404'}
+    // { path: '/liveBroadcastForStudent/:roomId/:teacherId/:studentId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/liveBroadcastForStudent-v2') },
+    { path: '/liveForTeacher/:roomId/:teacherId/:studentId/:coursewareId/:classname', component: TeacherLive },
+    { path: '*', redirect: '/404'}
 ];
 routerMap.teacher = [
     {
@@ -37,8 +38,9 @@ routerMap.teacher = [
             { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: 'iconruqinjianceintrusiondetection'} },
         ]
     },
-    { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/LiveBroadcastForTeacher-v2') },
-    { path: '/live/:roomId/:teacherId/:coursewareId/:name', component: Live },
-    {path: '*', redirect: '/404'}
+    // { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/LiveBroadcastForTeacher-v2') },
+    { path: '/liveForTeacher/:roomId/:teacherId/:coursewareId/:classname', component: TeacherLive },
+    { path: '/liveForStudent/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: StudentLive },
+    { path: '*', redirect: '/404'}
 ];
 export default routerMap

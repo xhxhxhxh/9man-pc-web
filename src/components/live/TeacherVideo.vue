@@ -2,15 +2,16 @@
     <div class="teacherVideo-container">
         <div class="video-area" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
             <video autoplay loop type="video/mp4" ref="video" muted></video>
-            <div :class="{'operate-area': true, show: showOperateArea}">
+            <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                 <div @click="setAllOperationStatus(!allOperation)"
                      :class="{controlAll: allOperation, 'operate-item': true}">
                     <img :src="controlImg" alt="">
                     <span>{{allOperation? '取消授权': '全部授权'}}</span>
                 </div>
-                <div class="operate-item">
+                <div @click="setAllStageStatus()"
+                     :class="{controlAll: $store.getters.stageAllStatus, 'operate-item': true}">
                     <img :src="stageImg" alt="">
-                    <span>全部上台</span>
+                    <span>{{$store.getters.stageAllStatus? '取消上台': '全部上台'}}</span>
                 </div>
                 <div class="operate-item">
                     <img :src="starImg" alt="">
@@ -18,17 +19,6 @@
                 </div>
             </div>
         </div>
-<!--        <div class="operate-area">-->
-<!--            <button @click="() => {$emit('pictureCovered')}" :class="{disable: studentsNum}"><img src="./images/cover.png" alt="">视频铺满</button>-->
-<!--            <button :class="{muteAll: !$store.getters.updateAudioStatus, mute: true}"-->
-<!--                    @click="$store.commit('updateAudioStatusAll')">-->
-<!--                <img :src="muteSrc" alt="">{{muteText}}-->
-<!--            </button>-->
-<!--            <button :class="{controlAll: $store.getters.controlAllStatus, control: true}"-->
-<!--                    @click="$store.commit('updateControlStatusAll')" >-->
-<!--                <img :src="controlSrc" alt="">{{controlText}}-->
-<!--            </button>-->
-<!--        </div>-->
         <div class="teacher_name">{{teacherName}}</div>
     </div>
 </template>
@@ -46,9 +36,10 @@
                 controlImg,
                 starImg,
                 showOperateArea: false,
+                allStage: false
             }
         },
-        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream'],
+        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role'],
         created () {
 
         },
@@ -63,34 +54,6 @@
             }
         },
         computed: {
-            muteSrc () {
-                if (this.$store.getters.updateAudioStatus) {
-                    return muteImg
-                }else {
-                    return cancelMuteImg
-                }
-            },
-            muteText () {
-                if (this.$store.getters.updateAudioStatus) {
-                    return '全部静音'
-                }else {
-                    return '取消静音'
-                }
-            },
-            controlSrc () {
-                if (!this.$store.getters.controlAllStatus) {
-                    return controlImg
-                }else {
-                    return cancelControlImg
-                }
-            },
-            controlText () {
-                if (!this.$store.getters.controlAllStatus) {
-                    return '全部操作'
-                }else {
-                    return '取消操作'
-                }
-            },
             // 房间内学生数
             studentsNum () {
                 const studentsNum = this.peerIdList.length
@@ -107,7 +70,40 @@
         },
         methods: {
             setAllOperationStatus (status) {
+                if (status && !this.$store.state.liveBroadcast.operatePermission) {
+                    return this.$message.warning('动画模式下无法开启全部授权', 5);
+                }
+
+                // 学生下台
+                const videoBoxArr = document.querySelectorAll('.video-box')
+                videoBoxArr.forEach(videoBox => {
+                    videoBox.className = 'video-box'
+                    videoBox.children[0].style.top = ''
+                    videoBox.children[0].style.left = ''
+                })
+
+                this.$store.commit('updateStageStatusAll', false)
                 this.$store.commit('setAllOperationStatus',status)
+            },
+
+            setAllStageStatus () {
+                if (this.$store.getters.updateControlStatus) {
+                    return this.$message.warning('前先关闭学生授权', 5);
+                }
+                const videoBoxArr = document.querySelectorAll('.video-box')
+                const stageAllStatus = this.$store.getters.stageAllStatus
+
+                videoBoxArr.forEach(videoBox => {
+                    if (stageAllStatus) { // 取消所有学生上台
+                        videoBox.className = 'video-box'
+                        videoBox.children[0].style.top = ''
+                        videoBox.children[0].style.left = ''
+                    } else {
+                        videoBox.classList.add('onStage')
+                    }
+                })
+
+                this.$store.commit('updateStageStatusAll', !this.$store.getters.stageAllStatus)
             }
         }
     }

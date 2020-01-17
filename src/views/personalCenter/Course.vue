@@ -37,7 +37,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="goLiveBroadcast(`live/${roomId}/${userId}/${item['courseware_no']}/${item['teacher_name']}`)">
+                                @click="goLiveBroadcast(`liveForTeacher/${roomId}/${userId}/${item['courseware_no']}/${item['class_name']}`)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>

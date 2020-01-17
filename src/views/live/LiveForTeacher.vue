@@ -12,10 +12,10 @@
                     <video src="" ref="video-play" preload="auto" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
                 </div>
                 <div class="draw-area">
-                    <div id="tui-image-editor" ref="drawArea"></div>
+                    <div id="tui-image-editor" ref="drawArea" :class="{mouseStyle: shape === 'FREE_DRAWING'}"></div>
                 </div>
                 <div class="wrapper" v-show="shape === 'NORMAL'" ref="wrapper"></div>
-                <div class="operate-area">
+                <div :class="{'operate-area': true, hidden: stageStatus.length > 0}" @mousemove="e => e.stopPropagation()">
                     <div :class="{default: true, active: shape === 'NORMAL'}" @click="changeDrawStatus('NORMAL')">
                         <icon-font type="iconuf00db"/>
                     </div>
@@ -44,7 +44,8 @@
                     </div>
                 </div>
                 <transition name="play-area-slide">
-                    <div class="play-area" v-show="showPlayArea && mode === 'video'">
+                    <div class="play-area" v-show="(showPlayArea && mode === 'video' && stageStatus.length <= 0) || showPlayAreaAlways"
+                         @mouseenter="showPlayAreaAlways = true" @mouseleave="showPlayAreaAlways = false">
                         <span class="play" @click="videoPlay" ref="play"></span>
                         <a-slider id="test" @change="videoPause" ref="slider"
                                   v-model="progressBar" @afterChange="changeVideoProgress"/>
@@ -57,12 +58,14 @@
                         <button>离开教室</button>
                         <button>开始上课</button>
                     </div>
-                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" :stream="streamObj[teacherId]"></TeacherVideo>
+                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
+                                  :stream="streamObj[teacherId]"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
                 <div class="students-area">
-                    <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]" v-for="id in peerIdList" :key="id"></StudentVideo>
+                    <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
+                                  v-for="id in peerIdList" :key="id" role="teacher"></StudentVideo>
                 </div>
             </div>
         </main>
@@ -71,7 +74,8 @@
 
 <script>
     import { Icon } from 'ant-design-vue';
-    var ImageEditor = require('tui-image-editor');
+    import moment from 'moment';
+    var ImageEditor = require('tui-image-editor/dist/tui-image-editor.min');
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
 
@@ -79,8 +83,8 @@
     import RTCRoom from '@/lib/RTCRoomSDK/RTCRoomManager';
 
     // 导入直播组件
-    import TeacherVideo from '@/components/live/TeacherVideoForTeacher';
-    import StudentVideo from '@/components/live/StudentVideoForTeacher'
+    import TeacherVideo from '@/components/live/TeacherVideo';
+    import StudentVideo from '@/components/live/StudentVideo'
 
     const IconFont = Icon.createFromIconfontCN({
         scriptUrl: '//at.alicdn.com/t/font_1543360_6pq73ac4jna.js',
@@ -106,9 +110,7 @@
                 // -----------基础数据---------------
                 mode: 'game', // 游戏模式:game, 视频模式:video
                 showPlayArea: false, // 控制播放器控件显示
-                mikeStatus: true, // 开启麦克风
-                videoAreaWidth: '33%', // 播放区域宽度
-                studentVideoScale: 1, // 学生区域缩放倍数
+                showPlayAreaAlways: false, // 当鼠标进入空间区则一直显示
                 firstLoad: true,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
@@ -122,9 +124,11 @@
                 //-----------画板数据---------------
                 imageEditor: null,
                 shape: 'NORMAL', // NORMAL时可操作游戏 FREE_DRAWING画板 DELETE删除
-                strokeWidth: 11,  //线宽
-                strokeColor: '#2E3E50', //线的颜色
+                strokeWidth: 6,  //线宽
+                strokeColor: '#ff0000', //线的颜色
                 drawObjectActive: false,
+                drawParams: {}, // 存放线条数据
+                drawTimeout: null, // 开启发送数据计时
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
@@ -132,6 +136,7 @@
                 teacherId: '', // 老师id
                 roomId: '',
                 teacherName: '',
+                className: '',
                 streamObj: {}, // 视频流
                 // -----------右侧工具栏数据---------------
                 firstPageTip: false,
@@ -142,6 +147,103 @@
             IconFont,
             TeacherVideo,
             StudentVideo
+        },
+        computed: {
+            // 监听学生上台状态
+            stageStatus () {
+                return this.$store.state.liveBroadcast.stageStatusSortByStage
+            }
+        },
+        watch: {
+            // 根据上台学生数确认上台布局
+            stageStatus: function (stageStatusArr) {
+                const stageStatusArrLength = stageStatusArr.length
+                const translateLeft = 393 + 120 // 未上台时学生视频的左偏移单位距离
+
+                if (stageStatusArrLength >= 1) { // 退出画板, 暂停视频
+                    this.changeDrawStatus('NORMAL')
+                    const video = this.$refs['video-play']
+                    const play = this.$refs['play']
+                    if (!video.paused) {
+                        video.pause();
+                        play.classList.remove('pause')
+                        this.sendMediaData(0, false)
+                    }
+                }
+
+                if (stageStatusArrLength === 1) {
+                    const studentDomObj = document.querySelector('#studentVideo' + stageStatusArr[0])
+                    const indexOfStudent = this.peerIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
+                    const translateTop = 783 + 17
+                    const scale = 1044 / 320
+                    studentDomObj.classList.add('oneStudentOnStage')
+                    studentDomObj.classList.remove('moreStudentOnStage')
+                    // studentDomObj.style.transform = `translate3d(${(-translateLeft * indexOfstudent + 113) / 100}rem, ${-translateTop / 100}rem, 0) scale(${scale})` // 113为距课件左边界113rem 会出现抖动问题故弃之
+                    studentDomObj.style.left = `${(-translateLeft * indexOfStudent + 113) / 100}rem`
+                    studentDomObj.style.top = `${-translateTop / 100}rem`
+                } else if (stageStatusArrLength > 1) {
+                    stageStatusArr.forEach(id => {
+                        const studentDomObj = document.querySelector('#studentVideo' + id)
+                        studentDomObj.classList.add('moreStudentOnStage')
+                    })
+                }
+
+                // 双人上台尺寸
+                if (stageStatusArrLength === 2) {
+                    const top = 783 + 17 - 196
+                    const firstLeft = 115
+                    const secondLeft = 115 + 520
+                    const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
+                    const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
+                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
+                    studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
+                    studentDomObj2.style.top = studentDomObj1.style.top = `${-top / 100}rem`
+                    studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
+                }
+
+                // 三人上台尺寸
+                if (stageStatusArrLength === 3) {
+                    const firstTop = 783 + 17 - 1
+                    const secondTop = firstTop - 390
+                    const firstLeft = 115 + 520 / 2
+                    const secondLeft = 115
+                    const thirdLeft = 115 + 520
+                    const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
+                    const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
+                    const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
+                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
+                    studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
+                    studentDomObj1.style.top = `${-firstTop / 100}rem`
+                    studentDomObj2.style.top = studentDomObj3.style.top = `${-secondTop / 100}rem`
+                    studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
+                    studentDomObj3.style.left = `${(-translateLeft * indexOfThirdStudent + thirdLeft) / 100}rem`
+                }
+
+                // 四人上台尺寸
+                if (stageStatusArrLength === 4) {
+                    const firstTop = 783 + 17 - 1
+                    const secondTop = firstTop - 390
+                    const firstLeft = 115
+                    const secondLeft = 115 + 520
+                    const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
+                    const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
+                    const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
+                    const studentDomObj4 = document.querySelector('#studentVideo' + stageStatusArr[3])
+                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
+                    const indexOfFourthStudent = this.peerIdList.indexOf(stageStatusArr[3])
+                    studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
+                    studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
+                    studentDomObj3.style.left = `${(-translateLeft * indexOfThirdStudent + firstLeft) / 100}rem`
+                    studentDomObj4.style.left = `${(-translateLeft * indexOfFourthStudent + secondLeft) / 100}rem`
+                    studentDomObj1.style.top = studentDomObj2.style.top = `${-firstTop / 100}rem`
+                    studentDomObj3.style.top = studentDomObj4.style.top = `${-secondTop / 100}rem`
+                }
+            }
         },
         created() {
             this.init();
@@ -178,8 +280,10 @@
                 const baseDrawingBoardWidth = 1271;
                 const baseDrawingBoardHeight = 783;
                 document.documentElement.style.fontSize = screenWidth / baseScreenWidth * baseFontSize + 'px';
+                this.strokeWidth = parseInt(screenWidth / baseScreenWidth * 6)
                 window.onresize =  () => {
                     const screenWidth = window.innerWidth;
+                    this.strokeWidth = parseInt(screenWidth / baseScreenWidth * 6)
                     document.documentElement.style.fontSize = screenWidth / baseScreenWidth * baseFontSize + 'px';
                     this.imageEditor.resizeCanvasDimension({
                         width: screenWidth / baseScreenWidth * baseDrawingBoardWidth,
@@ -238,11 +342,11 @@
                 this.teacherId = teacherPeerId
                 this.roomId = roomId
                 this.$store.commit('setTeacherId', teacherPeerId)
-                this.teacherName = userParams.name
+                this.className = userParams.classname
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
-                this.peerIdList = ['2', '3', '4', '5']
+                // this.peerIdList = ['a', 'b', 'c', 'd']
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -254,6 +358,8 @@
                             if (peerId !== teacherPeerId) {
                                 this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
+                            }else {
+                                this.teacherName = item.name
                             }
                         })
                     }
@@ -285,18 +391,7 @@
                     }
 
                     // 处理操作状态
-                    const userControlStatus = liveBroadcastData.controlStatus[id]
                     const allOperation = liveBroadcastData.liveBroadcastData
-                    const params = {
-                        type: 'controlStudentOperate',
-                        event: 'single_operations',
-                        data: {
-                            sync: {
-                                page: this.resourceIndex,
-                                type: this.mode === 'video'? 1: 0
-                            }
-                        }
-                    }
                     if (allOperation) { // 当处于全部授权状态时
                         this.$store.commit('setControlStatus', {id: id, status: 1})
                         const params = {
@@ -310,38 +405,8 @@
                             }
                         }
                         rtcRoom.notifyMessage(params, id)
-                    } else if (!this.$store.state.liveBroadcast.operatePermission) { // 当不允许授权学生时
-                        this.$store.commit('setControlStatus', {id: id, status: 2})
-                        Object.assign(params.data, {peerId: ''})
-                        rtcRoom.notifyMessage(params, id)
-                    }else {
-                        if (userControlStatus) {
-                            if (userControlStatus === 1) {
-                                Object.assign(params.data, {peerId: id})
-                            } else if (userControlStatus === 2) {
-                                Object.assign(params.data, {peerId: ''})
-                            }
-                            rtcRoom.notifyMessage(params, '__all')
-                        } else {
-                            Object.assign(params.data, {peerId: ''})
-                            rtcRoom.notifyMessage(params, '__all')
-                            this.$store.commit('setControlStatus', {id: id, status: 2})
-                        }
                     }
-
-                    // 处理学生上台状态
-                    const stageStatus = liveBroadcastData.stageStatus
-                    const studentOnStageId = stageStatus? stageStatus.id: ''
-                    const studentOnStageType = stageStatus? stageStatus.videoType: ''
-                    // if (studentOnStageId && studentOnStageId === id) {
-                    //     if (studentOnStageType === 'small') {
-                    //         this.onStage(studentOnStageId, true)
-                    //     }else if (studentOnStageType === 'big') {
-                    //         this.onStageForBig(studentOnStageId, true)
-                    //     }
-                    // }
-
-                    // this.synchronize(id) // 同步数据到移动端
+                    this.synchronize(id)
                 });
 
                 // 用户离开时更新peerIdList
@@ -357,9 +422,13 @@
                 });
 
                 rtcRoom.on('media-receive', (peerId, stream) => {
-                    console.log('peerId:' + peerId)
                     this.$set(this.streamObj, peerId, stream)
                 })
+
+                // 用户关闭页面
+                window.onbeforeunload = () => {
+                    rtcRoom.leaveRoom();
+                }
 
                 this.rtcRoom = rtcRoom
                 this.$store.commit('setRtcRoom', rtcRoom)
@@ -402,33 +471,18 @@
 
             // 当学生连接时同步状态
             synchronize(userId) {
-                const studentOnStageType = this.studentOnStageType
-                const id = this.dragVideoId
                 const params = {
-                    type: 'synchronize',
-                    values: {
-                        strokeWidth: this.strokeWidth,
-                        strokeColor: this.strokeColor,
-                        fill: this.fill,
-                        mode: this.mode,
-                        showPicture: !this.showPicture,
-                        shape: this.shape,
-                        drawingShape: this.drawingShape,
-                        resourceIndex: this.resourceIndex
-                    },
                     event: 'live_sync',
                     data: {
-                        type: this.mode === 'picture'? 1: 0,
+                        type: this.mode === 'video'? 1: 0,
                         time: 240,
-                        "animate_page": this.resourceIndex,
-                        "multiMedia_page": 0,
+                        animate_page: this.resourceIndex,
+                        multiMedia_page: 0,
                         sync: {
                             page: this.resourceIndex,
-                            type: this.mode === 'picture'? 1: 0
+                            type: this.mode === 'video'? 1: 0
                         },
-                        stagePeer: id,
-                        isBig: studentOnStageType === 'big',
-                        isplay: !(studentOnStageType === '')
+
                     }
                 }
                 this.rtcRoom.notifyMessage(params, userId)
@@ -480,7 +534,8 @@
                     cssMaxHeight: drawingBoardHeight,
                     selectionStyle: {
                         cornerSize: 20,
-                        rotatingPointOffset: 70
+                        rotatingPointOffset: 70,
+                        borderColor: '#000',
                     }
                 });
                 this.imageEditor = instance;
@@ -488,90 +543,107 @@
                 const canvas = document.querySelector('#tui-image-editor');
                 const upperCanvas = document.querySelector('.upper-canvas');
 
-
                 //鼠标点击事件
                 canvas.onmousedown = function(event) {
-                    const e = {
-                        screenX: event.screenX,
-                        screenY: event.screenY,
-                        clientX: event.layerX,
-                        clientY: event.layerY,
+                    let startPoint = [event.layerX, event.layerY]
+                    if (_this.shape === 'FREE_DRAWING') {
+                        // 计算lineId
+                        const objects = instance._graphics._objects
+                        const objectsIdArr = Object.keys(objects)
+                        const num = (Array(7).join('0') + objectsIdArr.length).slice(-7)
+                        const lineId = moment().format('HHmmssSSS') + num
+
+                        _this.drawParams = {
+                            event: 'add_line',
+                            data: {
+                                sync:{
+                                    page: this.resourceIndex,
+                                    type: this.mode === 'video'? 1: 0
+                                },
+                                lineId,
+                                shape: 'curve',
+                                hbsize: [canvas.offsetWidth, canvas.offsetHeight],
+                                line: _this.strokeWidth,
+                                color: _this.strokeColor,
+                                pointlist: [startPoint],
+                            }
+                        }
+                        _this.drawByShape();
+                        _this.sendDrawData();
+
+                        //鼠标移动事件
+                        canvas.onmousemove = function (event) {
+                            _this.drawParams.data.pointlist.push([event.layerX, event.layerY])
+                            _this.sendDrawData()
+                        };
                     }
 
-                    // let startPoint = [originPointer.x, originPointer.y]
-                    // const mobileDeviceData = { // 传给移动设备的数据
-                    //     sync:{
-                    //         page: this.resourceIndex,
-                    //         type: this.mode === 'picture'? 1: 0
-                    //     },
-                    //     shape: mobileDrawShape,
-                    //     hbsize: [1152, 710],
-                    //     line: _this.strokeWidth,
-                    //     color: _this.strokeColor,
-                    //     pointlist: [startPoint],
-                    //     text: '',
-                    //     peerId: _this.teacherId
-                    // }
-                    // const params = {
-                    //     type: 'mousedown',
-                    //     canvasWidth: canvas.offsetWidth,
-                    //     e
-                    // }
-                    _this.drawByShape();
-                    // _this.sendDrawData(params)
-
-                    //鼠标移动事件
-                    canvas.onmousemove = function (event) {
-                        const e = {
-                            screenX: event.screenX,
-                            screenY: event.screenY,
-                            clientX: event.layerX,
-                            clientY: event.layerY,
+                    if (_this.shape === 'DELETE') {
+                        const params = {
+                            event: 'select_line',
+                            data: {
+                                action: 'mousedown',
+                                hbsize: [canvas.offsetWidth, canvas.offsetHeight],
+                                startPoint
+                            }
                         }
-                        // let endPoint = []
-                        // const params = {
-                        //     type: 'mousemove',
-                        //     canvasWidth: canvas.offsetWidth,
-                        //     e
-                        // }
-                        // if (shape === 'FREE_DRAWING') {
-                        //     endPoint = [event.layerX, event.layerY]
-                        //     mobileDeviceData.pointlist = [startPoint, endPoint]
-                        //     startPoint = endPoint
-                        //     Object.assign(params, { data: mobileDeviceData, event: 'draw'})
-                        // }
-                        //
-                        // _this.sendDrawData(params)
-                    };
+                        _this.rtcRoom.sendMessage(params)
+
+                        //鼠标移动事件
+                        canvas.onmousemove = function (event) {
+                            const params = {
+                                event: 'select_line',
+                                data: {
+                                    action: 'mousemove',
+                                    hbsize: [canvas.offsetWidth, canvas.offsetHeight],
+                                    startPoint: [event.layerX, event.layerY]
+                                }
+                            }
+                            _this.rtcRoom.sendMessage(params)
+                        };
+                    }
+
                     //鼠标抬起事件
                     document.onmouseup = function (event) {
-                        // 判断是否有选择对象
-                        const objectId = instance.activeObjectId;
-                        if (!objectId && _this.drawObjectActive) {
-                            _this.drawObjectActive = false;
-                        } else if (objectId &&  !_this.drawObjectActive) {
-                            _this.drawObjectActive = true;
+                        if (_this.shape === 'FREE_DRAWING') {
+                            // 禁止图像旋转移动
+                            const objects = instance._graphics._objects
+                            const objectsIdArr = Object.keys(objects)
+                            instance.setObjectProperties(parseInt(objectsIdArr[objectsIdArr.length - 1]), {
+                                lockMovementX: true,
+                                lockMovementY: true,
+                                lockScalingX: true,
+                                lockScalingY: true,
+                                lockRotation: true
+                            });
+
+                            _this.drawParams.data.pointlist.push([event.layerX, event.layerY])
+                            _this.drawParams.data.finished = true
+                            _this.sendDrawData()
+                            instance.stopDrawingMode(); //即时更换线条颜色
+                            _this.drawByShape();
+                            canvas.onmousemove = null;
                         }
 
-                        const e = {
-                            screenX: event.screenX,
-                            screenY: event.screenY,
-                            clientX: event.layerX,
-                            clientY: event.layerY,
+                        if (_this.shape === 'DELETE') {
+                            // 判断是否有选择对象
+                            const objectId = instance.activeObjectId;
+                            if (!objectId && _this.drawObjectActive) {
+                                _this.drawObjectActive = false;
+                            } else if (objectId &&  !_this.drawObjectActive) {
+                                _this.drawObjectActive = true;
+                            }
+                            const params = {
+                                event: 'select_line',
+                                data: {
+                                    action: 'mouseup',
+                                    hbsize: [canvas.offsetWidth, canvas.offsetHeight],
+                                    startPoint: [event.layerX, event.layerY]
+                                }
+                            }
+                            _this.rtcRoom.sendMessage(params)
+                            canvas.onmousemove = null;
                         }
-                        // let endPoint = [event.layerX, event.layerY]
-                        // mobileDeviceData.pointlist = [startPoint, endPoint]
-                        // const params = {
-                        //     data: mobileDeviceData,
-                        //     event: 'draw',
-                        //     type: 'mouseup',
-                        //     canvasWidth: canvas.offsetWidth,
-                        //     e
-                        // }
-                        // _this.sendDrawData(params)
-                        instance.stopDrawingMode(); //即时更换线条颜色
-                        _this.drawByShape();
-                        canvas.onmousemove = null;
                         document.onmouseup = null;
                     }
                 };
@@ -651,15 +723,13 @@
                 const imageEditor = this.imageEditor;
                 imageEditor.stopDrawingMode();
                 imageEditor.changeCursor('default');
-                // const params = {
-                //     type: 'stopDrawing'
-                // }
-                // this.sendDrawData(params)
             },
 
             //橡皮擦功能
             eraser () {
                 const imageEditor = this.imageEditor;
+                const objectId = imageEditor.activeObjectId;
+                console.log(imageEditor)
                 if (this.shape !== 'NORMAL') {
                     this.stopDrawing();
                 }
@@ -667,11 +737,13 @@
                 this.drawObjectActive = false
 
                 // 发送删除图形请求
-                // const params = {
-                //     type: 'ERASER',
-                //
-                // };
-                // this.sendDrawData(params);
+                const params = {
+                    event: 'delete_line',
+                    data: {
+                        source: 'web'
+                    }
+                }
+                this.rtcRoom.sendMessage(params)
             },
 
             //清除所有
@@ -681,19 +753,17 @@
                 this.drawObjectActive = false;
                 imageEditor._graphics._canvas.deactivateAll();
                 imageEditor._graphics._canvas.renderAll();
-
-                // 发送清除图形请求
-                // const params = {
-                //     type: 'CLEARALL',
-                //     event: 'clear'
-                // };
-                // this.sendDrawData(params);
             },
 
             //发送画图数据
-            sendDrawData (params) {
-                Object.assign(params, {id: this.teacherId})
-                this.rtcRoom.sendMessage(params)
+            sendDrawData () {
+                if (!this.drawTimeout) {
+                    this.drawTimeout = setInterval(() => {
+                        this.rtcRoom.sendMessage(this.drawParams)
+                        clearInterval(this.drawTimeout)
+                        this.drawTimeout = null
+                    }, 100)
+                }
             },
 
             // 显示隐藏画板
@@ -713,12 +783,13 @@
                 if (this.mode !== 'video') return
                 const video = this.$refs['video-play']
                 const play = this.$refs['play']
-                play.classList.toggle('pause')
                 if (video.paused) {
                     video.play();
+                    play.classList.add('pause')
                     this.sendMediaData(0, true)
                 }else {
                     video.pause();
+                    play.classList.remove('pause')
                     this.sendMediaData(0, false)
                 }
             },
@@ -770,8 +841,6 @@
                 if (progress || progress === 0) {
                     params = {
                         event: 'player_seek_to_value',
-                        type: 'control_video_progress',
-                        progress,
                         data: {
                             value: progress,
                             sync: {
@@ -783,8 +852,6 @@
                 }else {
                     params = {
                         event: 'media_controll',
-                        type: 'control_video_play',
-                        isplay,
                         data: {
                             isplay,
                             sync: {
@@ -799,15 +866,16 @@
 
             // 切换动画
             changeAnimate (e, direction, firstLoad) {
+                if (this.$store.state.liveBroadcast.liveBroadcastData.allOperation) {
+                    return this.$message.warning('请先关闭全部授权', 5);
+                }
+                if (this.$store.getters.updateControlStatus) {
+                    return this.$message.warning('请先关闭单人授权', 5);
+                }
                 this.changeDrawStatus('NORMAL');
                 const length = this.coursewareResource.length - 1
                 let index = this.resourceIndex
                 if (direction === 2) { // 动画前进
-                    // if (index >= length) {
-                    //     this.resourceIndex = 0
-                    //     this.changeAnimate(this.$event, 1)
-                    //     return
-                    // }
                     if (index >= length && !firstLoad) {
                         this.lastPageTip = true
                         setTimeout(() => {
@@ -818,11 +886,6 @@
                     this.clearAll()
                     this.resourceIndex ++
                 }else if (direction === 0) { // 动画后退
-                    // if (index <= 0) {
-                    //     this.resourceIndex = length
-                    //     this.changeAnimate(this.$event, 1)
-                    //     return
-                    // }
                     if (index <= 0 && !firstLoad) {
                         this.firstPageTip = true
                         setTimeout(() => {
@@ -851,20 +914,18 @@
                     this.mode = firstLoad? this.mode: 'game'
                     this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
-                // this.sendMediaData(0, false)
-                // const params = {
-                //     type: 'animate_page_change',
-                //     event: 'show_content_change',
-                //     data: {
-                //         page: this.resourceIndex,
-                //         type: 0
-                //     },
-                //     page: this.resourceIndex
-                // }
-                // this.$store.commit('setCoursewarePage', this.resourceIndex)
-                // if (!firstLoad) {
-                //     this.rtcRoom.sendMessage(params)
-                // }
+                this.sendMediaData(this.mode === 'video'? 1: 0, false)
+                const params = {
+                    event: 'show_content_change',
+                    data: {
+                        page: this.resourceIndex,
+                        type: 0
+                    },
+                }
+                this.$store.commit('setCoursewarePage', this.resourceIndex)
+                if (!firstLoad) {
+                    this.rtcRoom.sendMessage(params)
+                }
             },
 
             // 缓存游戏
@@ -925,6 +986,7 @@
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
         main {
             overflow: hidden;
+            position: relative;
             .main-left {
                 float: left;
                 width:1271rem/@baseFontSize;
@@ -968,6 +1030,9 @@
                         border-radius:10rem/@baseFontSize;
                         overflow: hidden;
                         background-color: rgba(0, 0, 0, 0);
+                        &.mouseStyle .upper-canvas {
+                            cursor: url("./images/pen.cur"), crosshair !important;
+                        }
                         .tui-image-editor-main-container {
                             width: 100%;
                             height: 100%;
@@ -1005,11 +1070,15 @@
                     right: 6rem/@baseFontSize;
                     top: 50%;
                     transform: translate(0, -50%);
+                    transition: all .3s ease;
                     padding: 0 6rem/@baseFontSize;
                     display: flex;
                     justify-content: space-evenly;
                     flex-direction: column;
                     z-index: 999;
+                    &.hidden {
+                        transform: translate(150%, -50%);
+                    }
                     > div {
                         width: 48rem/@baseFontSize;
                         height: 48rem/@baseFontSize;

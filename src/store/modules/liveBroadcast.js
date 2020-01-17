@@ -6,7 +6,7 @@ const liveBroadcast = {
         liveBroadcastData: { // 本地状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
-            stageStatus: {id: '', videoType: ''}, // 学生上台状态
+            stageStatus: {}, // 学生上台状态
             mode: '', // 缓存操作模式
             coursewarePage: 0,
             allOperation: false
@@ -15,11 +15,12 @@ const liveBroadcast = {
         liveBroadcastDataCurrent: { // 当前在线学生的状态缓存
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
+            stageStatus: {}, // 学生上台状态
         },
         teacherId: '',
         studentId: '',
         operatePermission: true, // 允许学生操作权限
-        setOperatePermissionComplete: true // 确保operatePermission设置完成
+        stageStatusSortByStage: [] // 根据学生上台次序排序
     },
     mutations: {
         // 设置rtcRoom
@@ -36,12 +37,6 @@ const liveBroadcast = {
         setAllOperationStatus (state, status) {
             state.liveBroadcastData.allOperation = status
             this.commit('updateControlStatusAll', status)
-        },
-
-        // 设置学生上台状态
-        setStageStatus (state, data) {
-            state.liveBroadcastData.stageStatus = data
-            this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // 设置mode
@@ -61,14 +56,29 @@ const liveBroadcast = {
             state.operatePermission = permission
         },
 
+        // 设置上台的学生
+        setStageStatusSortByStage (state, arr) {
+            if (arr.length === 0) {
+                state.stageStatusSortByStage = []
+            }else {
+                arr.forEach(id => {
+                    if (state.stageStatusSortByStage.indexOf(id) === -1) {
+                        state.stageStatusSortByStage.push(id)
+                    }
+                })
+            }
+        },
+
         // peerIdList
         setPeerIdList (state, data) {
             state.peerIdList = data
             const peerIdList = state.peerIdList
             const audioStatusInLocalStorage = state.liveBroadcastData.audioStatus
             const controlStatusInLocalStorage = state.liveBroadcastData.controlStatus
+            const stageStatusInLocalStorage = state.liveBroadcastData.stageStatus
             const audioStatusInCurrent = {}
             const controlStatusInCurrent = {}
+            const stageStatusInCurrent = {}
             peerIdList.forEach(id => {
                 if (audioStatusInLocalStorage[id]) {
                     audioStatusInCurrent[id] = audioStatusInLocalStorage[id]
@@ -80,9 +90,15 @@ const liveBroadcast = {
                 }else {
                     controlStatusInCurrent[id] = 2
                 }
+                if (stageStatusInLocalStorage[id]) {
+                    stageStatusInCurrent[id] = stageStatusInLocalStorage[id]
+                }else {
+                    stageStatusInCurrent[id] = 2
+                }
             })
             state.liveBroadcastDataCurrent.audioStatus = audioStatusInCurrent
             state.liveBroadcastDataCurrent.controlStatus = controlStatusInCurrent
+            state.liveBroadcastDataCurrent.stageStatus = stageStatusInCurrent
         },
 
         // 设置audioStatus
@@ -93,8 +109,8 @@ const liveBroadcast = {
             const status = data.status;
             audioStatus[id] = status
             audioStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.audioStatus = {...audioStatusInCurrent}
-            state.liveBroadcastData.audioStatus = {...audioStatus}
+            state.liveBroadcastDataCurrent.audioStatus = audioStatusInCurrent
+            state.liveBroadcastData.audioStatus = audioStatus
             // state.liveBroadcastDataCurrent.audioStatus[id] = status
             // state.liveBroadcastData.audioStatus[id] = status
             this.commit('writeLiveBroadcastDataToLocalStorage')
@@ -108,16 +124,39 @@ const liveBroadcast = {
             const status = data.status;
             controlStatus[id] = status
             controlStatusInCurrent[id] = status
-            state.liveBroadcastDataCurrent.controlStatus = {...controlStatusInCurrent}
-            state.liveBroadcastData.controlStatus = {...controlStatus}
+            state.liveBroadcastDataCurrent.controlStatus = controlStatusInCurrent
+            state.liveBroadcastData.controlStatus = controlStatus
             // state.liveBroadcastData.controlStatus[id] = status
             // state.liveBroadcastDataCurrent.controlStatus[id] = status
-            this.commit('writeLiveBroadcastDataToLocalStorage')
+            // this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 设置学生上台状态
+        setStageStatus (state, data) {
+            const stageStatus = {...state.liveBroadcastData.stageStatus};
+            const stageStatusInCurrent = {...state.liveBroadcastDataCurrent.stageStatus};
+            const id = data.id;
+            const status = data.status;
+            stageStatus[id] = status
+            stageStatusInCurrent[id] = status
+            const index = state.stageStatusSortByStage.indexOf(id)
+            if (index !== -1) {
+                state.stageStatusSortByStage.splice(index, 1)
+            }
+            if (status === 1) {
+                state.stageStatusSortByStage.push(id)
+            }
+            state.liveBroadcastDataCurrent.stageStatus = stageStatusInCurrent
+            state.liveBroadcastData.stageStatus = stageStatus
         },
 
         // 读取本地存储
         readLiveBroadcastDataFromLocalStorage(state) {
             const localStorage = common.getLocalStorage('9manLiveBroadcast')
+            // 重置部分内容
+            localStorage.controlStatus = {}
+            localStorage.stageStatus = {}
+            localStorage.allOperation = false
             if (localStorage) {
                 state.liveBroadcastData = localStorage
             }
@@ -161,13 +200,13 @@ const liveBroadcast = {
                     operations: status
                 }
             }
-            const controlCloseCurrentObj = state.liveBroadcastDataCurrent.controlStatus
-            const controlCloseObj = state.liveBroadcastData.controlStatus
+            const controlCloseCurrentObj = {...state.liveBroadcastDataCurrent.controlStatus}
+            const controlCloseObj = {...state.liveBroadcastData.controlStatus}
 
             if (!status) { // 全体禁止操作
-                for (let id in controlCloseObj) { // 全部禁止时需将连接过本教室的所有学生禁止
+                for (let id in controlCloseCurrentObj) {
                     controlCloseObj[id] = 2
-                    controlCloseCurrentObj[id]? controlCloseCurrentObj[id] = 2: ''
+                    controlCloseCurrentObj[id] = 2
                 }
                 state.rtcRoom.changeAISyncStatus(true);
             } else { // 全体操作
@@ -177,8 +216,44 @@ const liveBroadcast = {
                 }
                 state.rtcRoom.changeAISyncStatus(false);
             }
+            state.liveBroadcastDataCurrent.controlStatus = controlCloseCurrentObj
+            state.liveBroadcastData.controlStatus = controlCloseObj
             state.rtcRoom.sendMessage(params)
-            this.commit('writeLiveBroadcastDataToLocalStorage')
+            // this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 全体上台
+        updateStageStatusAll(state, stageAllStatus) {
+            const params = {
+                event: 'all_video',
+                data: {
+                    sync: {
+                        page: state.liveBroadcastData.coursewarePage,
+                        type: state.liveBroadcastData.mode === 'video'? 1: 0
+                    },
+                    video: stageAllStatus
+                }
+            }
+            const stageCurrentObj = state.liveBroadcastDataCurrent.stageStatus
+            const stageObj = state.liveBroadcastData.stageStatus
+            const stageStatusSortByStage = state.stageStatusSortByStage
+
+            if (!stageAllStatus) { // 全体取消上台
+                if (stageStatusSortByStage.length <= 0) return
+                for (let id in stageCurrentObj) {
+                    stageObj[id] = 2
+                    stageCurrentObj[id] = 2
+                }
+                state.stageStatusSortByStage = []
+            } else { // 全体上台
+                for (let id in stageCurrentObj) {
+                    if (stageStatusSortByStage.indexOf(id) !== -1) continue
+                    stageObj[id] = 1
+                    stageCurrentObj[id] = 1
+                    stageStatusSortByStage.push(id)
+                }
+            }
+            state.rtcRoom.sendMessage(params)
         },
     },
     getters: {
@@ -205,11 +280,9 @@ const liveBroadcast = {
         // ControlStatus
         updateControlStatus(state) {
             const controlStatus = state.liveBroadcastDataCurrent.controlStatus;
-            let totalCount = 0
             let num = 0
             let controlOpenArr = []
             for (let key in controlStatus) {
-                totalCount ++
                 if (controlStatus[key] === 1) {
                     num ++
                     controlOpenArr.push(key)
@@ -219,6 +292,44 @@ const liveBroadcast = {
                 return false // 表示全体禁止操作
             }else {
                 return controlOpenArr
+            }
+        },
+
+        // 当前上台学生的id
+        // stageStatus(state) {
+        //     const stageStatus = state.liveBroadcastDataCurrent.stageStatus;
+        //     let num = 0
+        //     let stageArr = []
+        //     for (let key in stageStatus) {
+        //         if (stageStatus[key] === 1) {
+        //             num ++
+        //             stageArr.push(key)
+        //         }
+        //     }
+        //     if (num === 0) {
+        //         return false // 表示全体禁止操作
+        //     }else {
+        //         return stageArr
+        //     }
+        // },
+
+        // 是否为全部上台状态
+        stageAllStatus(state) {
+            const stageStatus = state.liveBroadcastDataCurrent.stageStatus;
+            let totalCount = 0
+            let num = 0
+            let stageArr = []
+            for (let key in stageStatus) {
+                totalCount ++
+                if (stageStatus[key] === 1) {
+                    num ++
+                    stageArr.push(key)
+                }
+            }
+            if (num === totalCount && totalCount !== 0) {
+                return true
+            }else {
+                return false
             }
         },
 

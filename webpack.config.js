@@ -72,7 +72,7 @@ module.exports = {
                         }
                     ]
             },
-            {test: /\.(jpg|png|gif|bmp|jpeg)$/, use: ['url-loader?limit=30000&name=[hash:8]-[name].[ext]']},
+            {test: /\.(jpg|png|gif|bmp|jpeg|cur|ico)$/, use: ['url-loader?limit=30000&name=[hash:8]-[name].[ext]']},
             {test: /\.(ttf|eot|woff|woff2|svg)$/, use: ['url-loader']},
             {test: /\.(mp4)$/, use: ['file-loader?limit=1']},
             {test: /\.js$/, exclude: /node_modules/, use: [{loader: 'babel-loader'}]},

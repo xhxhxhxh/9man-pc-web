@@ -1,6 +1,12 @@
 <template>
     <div class="live-container">
         <main>
+            <div class="move-star" ref="moveStar">
+                <img src="./images/move_star.png" alt="" class="star">
+            </div>
+            <div class="animate-star" ref="animateStar" v-show="showAnimateStar">
+                <img :src="animateStarSrc" alt="" class="star">
+            </div>
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
                     <iframe :src="iframeSrc"
@@ -55,7 +61,7 @@
             <div class="main-right">
                 <div class="teacher-area">
                     <div class="classroom">
-                        <button>离开教室</button>
+                        <button @click="leaveRoom">离开教室</button>
                         <button>开始上课</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
@@ -65,7 +71,7 @@
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
-                                  v-for="id in peerIdList" :key="id" role="teacher"></StudentVideo>
+                                  v-for="id in peerIdList" :key="id" role="teacher" @award="award"></StudentVideo>
                 </div>
             </div>
         </main>
@@ -78,6 +84,7 @@
     var ImageEditor = require('tui-image-editor/dist/tui-image-editor.min');
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
+    import animate_star from './images/animate_star.gif';
 
     // 导入socket
     import RTCRoom from '@/lib/RTCRoomSDK/RTCRoomManager';
@@ -112,6 +119,8 @@
                 showPlayArea: false, // 控制播放器控件显示
                 showPlayAreaAlways: false, // 当鼠标进入空间区则一直显示
                 firstLoad: true,
+                showAnimateStar: false, // 控制星星显示
+                animateStarSrc: animate_star,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -351,7 +360,7 @@
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
-                    this.streamObj[id] = null;
+                    this.$set(this.streamObj, id, null)
                     if (id === teacherPeerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
@@ -454,6 +463,7 @@
                     content: '',
                     centered: true,
                     onOk:() => {
+                        this.allUsersCancelOperate();
                         rtcRoom.leaveRoom();
                         window.close();
                     },
@@ -461,12 +471,13 @@
                 });
             },
 
-            // 老师离开房间 取消全部授权
+            // 老师离开房间 取消全部授权和全部上台
             allUsersCancelOperate () {
                 const allOperation = this.$store.state.liveBroadcast.liveBroadcastData.allOperation
                 if (allOperation) {
                     this.$store.commit('setAllOperationStatus',false)
                 }
+                this.$store.commit('updateStageStatusAll',false)
             },
 
             // 当学生连接时同步状态
@@ -975,18 +986,99 @@
 
             },
 
+            // 发放奖励
+            award (id) {
+                const index = this.peerIdList.indexOf(id)
+                const left = index * 513 + 275
+                const bottom = 35
+                const moveStar = this.$refs.moveStar
+                const _this = this
+                moveStar.classList.add('move')
+
+                setTimeout(() => {
+                    _this.animateStarSrc = animate_star
+                    this.showAnimateStar = true
+                }, 500)
+                setTimeout(() => {
+                    this.showAnimateStar = false
+                    this.animateStarSrc = ''
+                    moveStar.style.left = left / 100 + 'rem'
+                    moveStar.style.bottom = bottom / 100 + 'rem'
+                    moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
+                    moveStar.addEventListener('transitionend', transitionend)
+                }, 2500)
+
+                function transitionend() {
+                    moveStar.style.left = ''
+                    moveStar.style.bottom = ''
+                    moveStar.style.transform = ''
+                    moveStar.classList.remove('move')
+                    moveStar.removeEventListener('transitionend', transitionend)
+                }
+            }
+
         }
     }
 </script>
 
 <style lang="less">
     @import "../../less/index";
+
+    @keyframes animate-star {
+        0% {
+            display: block;
+            width: 0;
+            height: 0;
+            left: 0;
+            top: 0;
+        }
+        16.7% {
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: url("./images/animate_star.gif") no-repeat;
+            background-size: cover;
+        }
+    }
+
     .live-container {
         background:rgba(248,209,194,1);
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
         main {
             overflow: hidden;
             position: relative;
+            .move-star {
+                position: absolute;
+                left: 1650rem/@baseFontSize;
+                bottom: 0;
+                height: 253rem/@baseFontSize;
+                width: 267rem/@baseFontSize;
+                transform: translate(0, 0) scale(0);
+                z-index: 9999;
+                &.move {
+                    left: 50%;
+                    bottom: 60.4%;
+                    transform: translate(-50%, 50%) scale(1);
+                    transition: all .5s ease;
+                }
+                img {
+                    display: block;
+                    height: 100%;
+                }
+            }
+            .animate-star {
+                position: absolute;
+                left: 50%;
+                bottom: 60%;
+                transform: translate(-50%, 50%);
+                height: 480rem/@baseFontSize;
+                width: 800rem/@baseFontSize;
+                z-index: 9999;
+                img {
+                    display: block;
+                    height: 100%;
+                }
+            }
             .main-left {
                 float: left;
                 width:1271rem/@baseFontSize;

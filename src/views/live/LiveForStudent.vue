@@ -19,7 +19,7 @@
             <div class="main-right">
                 <div class="teacher-area">
                     <div class="classroom">
-                        <button>离开教室</button>
+                        <button @click="leaveRoom">离开教室</button>
                         <button>{{className + '《' + coursewareName + '》'}}</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="student"
@@ -266,6 +266,7 @@
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
+                    this.$set(this.streamObj, id, null)
                     if (id === peerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
@@ -282,14 +283,18 @@
                         this.studentNameObj[id] = info.name
                         this.peerIdList.push(id)
                     }
+                    if (id === teacherId) {
+                        const info = rtcRoom.getRoomUser(id);
+                        this.teacherName = info.name
+                    }
                 })
 
                 //用户连接成功成功时设置用户状态
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
-                    if (id !== this.teacherId) {
-                        rtcRoom.closeVideo(this.studentId, [this.teacherId])
-                    }
+                    // if (id !== this.teacherId) {
+                    //     rtcRoom.closeVideo(this.studentId, [this.teacherId])
+                    // }
                 })
 
                 // 用户离开时更新peerIdList

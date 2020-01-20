@@ -1,5 +1,5 @@
 <template>
-    <div class="studentVideo-container">
+    <div class="studentVideo-container" ref="studentVideo">
         <div class="monkey-box">
             <img src="./images/student_bg.png" alt="" class="monkey">
         </div>
@@ -16,11 +16,10 @@
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
-                    <img :src="starSrc" alt="">
+                    <img :src="starSrc" alt="" ref="star" @click="award">
                 </div>
             </div>
         </div>
-
     </div>
 </template>
 
@@ -46,7 +45,9 @@
 
         },
         mounted() {
-
+            if (this.role === 'teacher') {
+                this.changeStar()
+            }
         },
         computed: {
             muteSrc () {
@@ -176,6 +177,22 @@
                     videoBox.children[0].style.top = ''
                     videoBox.children[0].style.left = ''
                 }
+            },
+
+            // 星星变色
+            changeStar () {
+                const starDom = this.$refs.star
+                starDom.onmouseenter = () => {
+                    this.starSrc = star
+                }
+                starDom.onmouseleave = () => {
+                    this.starSrc = cancelStar
+                }
+            },
+
+            // 发放奖励
+            award () {
+                this.$emit('award', this.id)
             }
         }
     }
@@ -189,6 +206,7 @@
         width: 393rem/@baseFontSize;
         height: 240rem/@baseFontSize;
         border-radius: 10rem/@baseFontSize;
+        position: relative;
 
         .monkey-box {
             position: relative;

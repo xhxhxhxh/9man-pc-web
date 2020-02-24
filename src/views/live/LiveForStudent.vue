@@ -38,8 +38,8 @@
 
 <script>
     import { Icon } from 'ant-design-vue';
-    // const ImageEditor = require('tui-image-editor');
-    const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min'); // 将mousemove和mousedown挂载对象从document改到底层canvas
+    const ImageEditor = require('tui-image-editor');
+    // const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min'); // 将mousemove和mousedown挂载对象从document改到底层canvas
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
 
@@ -196,8 +196,9 @@
         },
         mounted() {
             this.initDrawingBoard();
+            this.stopMouseEventPropagation();
             this.sendEventToIframe();
-            this.getMessage()
+            this.getMessage();
         },
         methods: {
             // 初始化
@@ -252,9 +253,28 @@
                     const event = data.event
                     if (event === 'live_sync') { // 同步基础数据
                         const result = data.data
-                        this.mode = result.type? 'video': 'game'
-                        this.resourceIndex = result.animate_page
+                        // 同步页数
+                        this.resourceIndex = result.sync.page
                         this.changeAnimate(true);
+                        // 获取授权状态
+                        const isAllOperate = result.isAllOperate
+                        const operateId = result.operateId
+                        if (isAllOperate) {
+                            this.$message.success('你可以操作游戏了', 5)
+                        }
+                        if (!isAllOperate && operateId === this.studentId) {
+                            this.operating = true
+                            this.$message.success('你可以操作游戏了', 5)
+                        }
+                        // 上台状态
+                        const singleVideoArr = result.singleVideoArr
+                        singleVideoArr.forEach(item => {
+                            const id = item
+                            const videoBox = document.querySelector('#studentVideo' + id).parentElement
+                            this.$store.commit('setStageStatus', {id, status: 1})
+                            videoBox.classList.add('onStage')
+                        })
+
                     }
 
                 })
@@ -392,6 +412,20 @@
                 this.imageEditor = instance;
             },
 
+            // 阻止该组件的鼠标事件传递到document，影响画图
+            stopMouseEventPropagation () {
+                const liveContainer = document.querySelector('.live-container')
+                liveContainer.onmousedown = function (e) {
+                    e.stopPropagation()
+                }
+                liveContainer.onmousemove = function (e) {
+                    e.stopPropagation()
+                }
+                liveContainer.onmouseup = function (e) {
+                    e.stopPropagation()
+                }
+            },
+
             // 当处于课件操作状态时，将wrapper中的事件传发到iframe
             sendEventToIframe () {
                 const wrapper = this.$refs.wrapper;
@@ -498,14 +532,14 @@
             },
 
             // 切换动画
-            changeAnimate (firstLoad) {
+            changeAnimate () {
                 const courseware = this.coursewareResource[this.resourceIndex]
                 const type = courseware.type
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 this.gameCache()
                 if (type === 1) { // 视频
-                    this.mode = firstLoad? this.mode: 'video'
+                    this.mode = 'video'
                     this.$nextTick(function () {
                         const video = this.$refs['video-play']
                         video.src = resourceUrl + '/' + url
@@ -513,11 +547,9 @@
                     })
                     this.clearAll()
                 }else if (type === 2) { // 动画
-                    this.mode = firstLoad? this.mode: 'game'
+                    this.mode = 'game'
                     this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.studentId
                     this.clearAll()
-                    // 显示动画时先允许操作
-                    this.wrapperZIndex = 0
                 }
             },
 
@@ -586,8 +618,7 @@
                     console.log(res)
                     switch (event) {
                         case 'show_content_change': // 更换页码
-                            this.resourceIndex = data.page
-                            console.log(data.page)
+                            this.resourceIndex = data.sync.page
                             this.changeAnimate()
                             break;
                         case 'media_controll': // 控制视频播放
@@ -601,9 +632,6 @@
                         case 'player_seek_to_value': // 控制视频进度
                             const progress = data.value
                             video.currentTime = progress * video.duration
-                            if (video.paused) {
-                                video.play()
-                            }
                             break;
                         case 'add_line': // 处理画板数据
                             path = data.pointlist
@@ -625,7 +653,7 @@
                                         path[index][0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
                                         path[index][1] * size.canvasScale + main.offsetTop - size.scrollTop,
                                         false, false, false, false, 0, null)
-                                    upperCanvas.dispatchEvent(mouseEvent)
+                                    document.dispatchEvent(mouseEvent)
                                 }
                             }
                             if (data.finished) {
@@ -635,7 +663,7 @@
                                     path[index][0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
                                     path[index][1] * size.canvasScale + main.offsetTop - size.scrollTop,
                                     false, false, false, false, 0, null)
-                                upperCanvas.dispatchEvent(mouseEvent)
+                                document.dispatchEvent(mouseEvent)
                                 index = 0
 
                                 // 记录实际画板中线的id
@@ -655,15 +683,28 @@
                                 startPoint[0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
                                 startPoint[1] * size.canvasScale + main.offsetTop - size.scrollTop,
                                 false, false, false, false, 0, null)
-                            upperCanvas.dispatchEvent(mouseEvent)
+                            if (data.action === 'mousedown') {
+                                upperCanvas.dispatchEvent(mouseEvent)
+                            } else {
+                                document.dispatchEvent(mouseEvent)
+                            }
                             break;
                         case 'delete_line': // 删除线条
                             if (data.source === 'web') {
                                 this.imageEditor.removeActiveObject()
                             } else {
-                                lineIdList.forEach(id => {
-                                    this.imageEditor.removeObject(lineIdObj[id])
-                                })
+                                const length = lineIdList.length
+                                let index = 0
+                                const deleteLine  = () => {
+                                    if (index < length) {
+                                        this.imageEditor.removeObject(lineIdObj[lineIdList[index]])
+                                            .then(() => {
+                                                index ++
+                                                deleteLine()
+                                            })
+                                    }
+                                }
+                                deleteLine()
                             }
                             break;
                         case 'delete_line_choose_add': // 已选择的线条
@@ -679,13 +720,13 @@
                                 if (this.operating) {
                                     this.$message.warning('你不能再操作游戏了', 5)
                                 }
-                                return
+                                break;
                             }
                             if (peerId === this.studentId) {
                                 this.operating = true
-                                return this.$message.success('你可以操作游戏了', 5)
+                                this.$message.success('你可以操作游戏了', 5)
                             }else {
-                                return this.$message.warning(`学生${this.studentNameObj[peerId]}正在操作游戏`, 5)
+                                this.$message.warning(`学生${this.studentNameObj[peerId]}正在操作游戏`, 5)
                             }
                             break;
                         case 'all_operations': // 全部授权
@@ -728,6 +769,7 @@
                             }else {
                                 this.$store.commit('setStageStatusSortByStage', [])
                             }
+                            break;
                     }
                 });
             },
@@ -750,6 +792,7 @@
     .live-container {
         background:rgba(248,209,194,1);
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
+        min-height: 100%;
         main {
             overflow: hidden;
             position: relative;

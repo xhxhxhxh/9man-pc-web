@@ -16,7 +16,7 @@
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
-                    <img :src="starSrc" alt="" ref="star" @click="award">
+                    <img :src="starSrc" alt="" ref="star" @mousedown="award">
                 </div>
             </div>
         </div>
@@ -37,7 +37,6 @@
             return {
                 starSrc: cancelStar,
                 showOperateArea: false,
-                stageStatus: false, // 上台状态
             }
         },
         props: ['id', 'rtcRoom', 'studentName', 'peerIdList', 'stream', 'role'],
@@ -80,7 +79,7 @@
             // 控制学生操作
             controlStudentOperate() {
                 const {operatePermission, liveBroadcastDataCurrent, teacherId, liveBroadcastData} = this.$store.state.liveBroadcast
-                const {allOperation, coursewarePage, mode} = liveBroadcastData
+                const {allOperation, coursewarePage} = liveBroadcastData
                 if (allOperation) {
                     return this.$message.warning('请先关闭全部授权', 5);
                 }
@@ -103,7 +102,7 @@
                     data: {
                         sync: {
                             page: coursewarePage,
-                            type: mode === 'video'? 1: 0
+                            type: 0
                         }
                     }
                 }
@@ -154,23 +153,23 @@
                 const videoBox = this.$refs.videoBox
                 const {liveBroadcastData} = this.$store.state.liveBroadcast
                 const {coursewarePage, mode} = liveBroadcastData
-                this.stageStatus = !this.stageStatus
+                const stageStatus = liveBroadcastData.stageStatus[this.id]
 
                 const params = {
                     event: 'single_video',
                     data: {
                         sync: {
                             page: coursewarePage,
-                            type: mode === 'video'? 1: 0
+                            type: 0
                         },
                         peerId: this.id,
-                        appear: this.stageStatus
+                        appear: stageStatus !== 1
                     }
                 }
                 this.rtcRoom.sendMessage(params)
 
-                this.$store.commit('setStageStatus', {id: this.id, status: this.stageStatus? 1: 2})
-                if (this.stageStatus) {
+                this.$store.commit('setStageStatus', {id: this.id, status: stageStatus === 1? 2: 1})
+                if (liveBroadcastData.stageStatus[this.id] === 1) {
                     videoBox.classList.add('onStage')
                 } else {
                     videoBox.className = 'video-box'
@@ -191,8 +190,8 @@
             },
 
             // 发放奖励
-            award () {
-                this.$emit('award', this.id)
+            award (e) {
+                this.$emit('award', e)
             }
         }
     }

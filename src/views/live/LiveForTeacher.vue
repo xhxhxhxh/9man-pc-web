@@ -1,12 +1,12 @@
 <template>
     <div class="live-container">
+        <div class="move-star" ref="moveStar">
+            <img src="./images/move_star.png" alt="" class="star">
+        </div>
+        <div class="animate-star" ref="animateStar" v-show="showAnimateStar">
+            <img :src="animateStarSrc" alt="" class="star">
+        </div>
         <main>
-            <div class="move-star" ref="moveStar">
-                <img src="./images/move_star.png" alt="" class="star">
-            </div>
-            <div class="animate-star" ref="animateStar" v-show="showAnimateStar">
-                <img :src="animateStarSrc" alt="" class="star">
-            </div>
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
                     <iframe :src="iframeSrc"
@@ -121,6 +121,7 @@
                 firstLoad: true,
                 showAnimateStar: false, // 控制星星显示
                 animateStarSrc: animate_star,
+                startStarAnimate: false, // 星星动画节流
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -138,6 +139,7 @@
                 drawObjectActive: false,
                 drawParams: {}, // 存放线条数据
                 drawTimeout: null, // 开启发送数据计时
+                lineIdObj: {}, // 存储本地id与其相对应的移动端id
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
@@ -408,7 +410,7 @@
                             data: {
                                 sync: {
                                     page: this.resourceIndex,
-                                    type: this.mode === 'video'? 1: 0
+                                    type: 0
                                 },
                                 operations: true
                             }
@@ -446,12 +448,12 @@
             // 还原老师掉线前状态
             recoverPage () {
                 const liveBroadcastData = this.$store.state.liveBroadcast.liveBroadcastData
-                const mode = liveBroadcastData.mode
-                if (!mode) { // 无本地缓存时
-                    this.firstLoad = false
-                }else {
-                    this.mode = mode
-                }
+                // const mode = liveBroadcastData.mode
+                // if (!mode) { // 无本地缓存时
+                //     this.firstLoad = false
+                // }else {
+                //     this.mode = mode
+                // }
                 this.resourceIndex = liveBroadcastData.coursewarePage? liveBroadcastData.coursewarePage: 0
             },
 
@@ -482,16 +484,25 @@
 
             // 当学生连接时同步状态
             synchronize(userId) {
+                const {liveBroadcastData} = this.$store.state.liveBroadcast
+                const {allOperation} = liveBroadcastData
+                const updateControlStatus = this.$store.getters.updateControlStatus
                 const params = {
                     event: 'live_sync',
                     data: {
-                        type: this.mode === 'video'? 1: 0,
-                        time: 240,
-                        animate_page: this.resourceIndex,
-                        multiMedia_page: 0,
+                        from: 'web',
+                        shape: 'curve',
+                        hbColor: '#ff0000',
+                        hbLine: 3,
+                        isSingleOperate: !!updateControlStatus.length,
+                        operateId: updateControlStatus.length? updateControlStatus[0]: '',
+                        isAllOperate: allOperation,
+                        isAllVideo: false,
+                        isSingleVideo: this.stageStatus.length > 0,
+                        singleVideoArr: this.stageStatus,
                         sync: {
                             page: this.resourceIndex,
-                            type: this.mode === 'video'? 1: 0
+                            type: 0
                         },
 
                     }
@@ -554,22 +565,55 @@
                 const canvas = document.querySelector('#tui-image-editor');
                 const upperCanvas = document.querySelector('.upper-canvas');
 
+                instance.on('objectActivated', function(props) {
+                    const id = props.id
+                    let lineIdList = []
+                    const lineIdObj = _this.lineIdObj[id]
+                    if (lineIdObj) { // 存在表示单选，不存在表示选择了多条直线
+                        lineIdList.push(lineIdObj)
+                    } else {
+                        const lineIdArr = instance._graphics._canvas._activeGroup._objects // 选择线条对象
+                        lineIdArr.forEach(item => {
+                            lineIdList.push(_this.lineIdObj[item['__fe_id']])
+                        })
+                    }
+                    const params = {
+                        event: 'delete_line_choose_add',
+                        data: {
+                            lineIds: lineIdList,
+                        }
+                    }
+                    _this.rtcRoom.sendMessage(params)
+                });
+
                 //鼠标点击事件
                 canvas.onmousedown = function(event) {
                     let startPoint = [event.layerX, event.layerY]
                     if (_this.shape === 'FREE_DRAWING') {
                         // 计算lineId
+                        const activeGroup = instance._graphics._canvas._activeGroup
                         const objects = instance._graphics._objects
                         const objectsIdArr = Object.keys(objects)
                         const num = (Array(7).join('0') + objectsIdArr.length).slice(-7)
-                        const lineId = moment().format('HHmmssSSS') + num
+                        var lineId = moment().format('HHmmssSSS') + num
+
+                        if (activeGroup) { // 清除多选状态
+                            instance._graphics._canvas.deactivateAll();
+                            instance._graphics._canvas.renderAll();
+                            const params = {
+                                event: 'delete_line_choose_cancel',
+                                data: {
+                                }
+                            }
+                            _this.rtcRoom.sendMessage(params)
+                        }
 
                         _this.drawParams = {
                             event: 'add_line',
                             data: {
                                 sync:{
                                     page: this.resourceIndex,
-                                    type: this.mode === 'video'? 1: 0
+                                    type: 0
                                 },
                                 lineId,
                                 shape: 'curve',
@@ -620,13 +664,16 @@
                             // 禁止图像旋转移动
                             const objects = instance._graphics._objects
                             const objectsIdArr = Object.keys(objects)
-                            instance.setObjectProperties(parseInt(objectsIdArr[objectsIdArr.length - 1]), {
+                            const lineIdLocal = parseInt(objectsIdArr[objectsIdArr.length - 1])
+                            instance.setObjectProperties(lineIdLocal, {
                                 lockMovementX: true,
                                 lockMovementY: true,
                                 lockScalingX: true,
                                 lockScalingY: true,
                                 lockRotation: true
                             });
+
+                            _this.lineIdObj[lineIdLocal] = lineId // 存储本地id与其相对应的移动端id
 
                             _this.drawParams.data.pointlist.push([event.layerX, event.layerY])
                             _this.drawParams.data.finished = true
@@ -740,7 +787,6 @@
             eraser () {
                 const imageEditor = this.imageEditor;
                 const objectId = imageEditor.activeObjectId;
-                console.log(imageEditor)
                 if (this.shape !== 'NORMAL') {
                     this.stopDrawing();
                 }
@@ -822,9 +868,9 @@
                 const play = this.$refs['play']
                 slider.blur() // antd slider bug
                 this.sendMediaData(0, !video.paused, value / 100)
-                if (video.paused) {
+                if (play.classList.contains('pause')) {
                     video.play()
-                    play.classList.add('pause')
+                    this.sendMediaData(0, true)
                 }
                 video.currentTime = value / 100 * video.duration
             },
@@ -855,7 +901,7 @@
                         data: {
                             value: progress,
                             sync: {
-                                type,
+                                type: 0,
                                 page: this.resourceIndex
                             }
                         }
@@ -865,8 +911,9 @@
                         event: 'media_controll',
                         data: {
                             isplay,
+                            source: 'fromweb',
                             sync: {
-                                type,
+                                type: 0,
                                 page: this.resourceIndex
                             }
                         }
@@ -914,7 +961,7 @@
                 this.gameCache()
                 if (type === 1) { // 视频
                     this.$store.commit('setOperatePermission', false)
-                    this.mode = firstLoad? this.mode: 'video'
+                    this.mode = 'video'
                     const video = this.$refs['video-play']
                     video.src = resourceUrl + '/' + url
                     const play = this.$refs['play']
@@ -922,7 +969,7 @@
                     video.pause();
                 }else if (type === 2) { // 动画
                     this.$store.commit('setOperatePermission', true)
-                    this.mode = firstLoad? this.mode: 'game'
+                    this.mode = 'game'
                     this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.teacherId + '&manager=1'
                 }
                 this.sendMediaData(this.mode === 'video'? 1: 0, false)
@@ -930,7 +977,11 @@
                     event: 'show_content_change',
                     data: {
                         page: this.resourceIndex,
-                        type: 0
+                        type: 0,
+                        sync: {
+                            page: this.resourceIndex,
+                            type: 0
+                        },
                     },
                 }
                 this.$store.commit('setCoursewarePage', this.resourceIndex)
@@ -987,10 +1038,11 @@
             },
 
             // 发放奖励
-            award (id) {
-                const index = this.peerIdList.indexOf(id)
-                const left = index * 513 + 275
-                const bottom = 35
+            award (e) {
+                if (this.startStarAnimate) return
+                this.startStarAnimate = true
+                const clientX = e.clientX
+                const clientY = e.clientY
                 const moveStar = this.$refs.moveStar
                 const _this = this
                 moveStar.classList.add('move')
@@ -1002,8 +1054,8 @@
                 setTimeout(() => {
                     this.showAnimateStar = false
                     this.animateStarSrc = ''
-                    moveStar.style.left = left / 100 + 'rem'
-                    moveStar.style.bottom = bottom / 100 + 'rem'
+                    moveStar.style.left = clientX + 'px'
+                    moveStar.style.bottom = document.querySelector('.live-container').offsetHeight - clientY + 'px'
                     moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
                     moveStar.addEventListener('transitionend', transitionend)
                 }, 2500)
@@ -1013,6 +1065,7 @@
                     moveStar.style.bottom = ''
                     moveStar.style.transform = ''
                     moveStar.classList.remove('move')
+                    _this.startStarAnimate = false
                     moveStar.removeEventListener('transitionend', transitionend)
                 }
             }
@@ -1044,41 +1097,43 @@
     .live-container {
         background:rgba(248,209,194,1);
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
+        position: relative;
+        min-height: 100%;
+        .move-star {
+            position: absolute;
+            left: 1650rem/@baseFontSize;
+            bottom: 0;
+            height: 253rem/@baseFontSize;
+            width: 267rem/@baseFontSize;
+            transform: translate(0, 0) scale(0);
+            z-index: 9999;
+            &.move {
+                left: 50%;
+                bottom: 60.4%;
+                transform: translate(-50%, 50%) scale(1);
+                transition: all .5s ease;
+            }
+            img {
+                display: block;
+                height: 100%;
+            }
+        }
+        .animate-star {
+            position: absolute;
+            left: 50%;
+            bottom: 60%;
+            transform: translate(-50%, 50%);
+            height: 480rem/@baseFontSize;
+            width: 800rem/@baseFontSize;
+            z-index: 9999;
+            img {
+                display: block;
+                height: 100%;
+            }
+        }
         main {
             overflow: hidden;
             position: relative;
-            .move-star {
-                position: absolute;
-                left: 1650rem/@baseFontSize;
-                bottom: 0;
-                height: 253rem/@baseFontSize;
-                width: 267rem/@baseFontSize;
-                transform: translate(0, 0) scale(0);
-                z-index: 9999;
-                &.move {
-                    left: 50%;
-                    bottom: 60.4%;
-                    transform: translate(-50%, 50%) scale(1);
-                    transition: all .5s ease;
-                }
-                img {
-                    display: block;
-                    height: 100%;
-                }
-            }
-            .animate-star {
-                position: absolute;
-                left: 50%;
-                bottom: 60%;
-                transform: translate(-50%, 50%);
-                height: 480rem/@baseFontSize;
-                width: 800rem/@baseFontSize;
-                z-index: 9999;
-                img {
-                    display: block;
-                    height: 100%;
-                }
-            }
             .main-left {
                 float: left;
                 width:1271rem/@baseFontSize;

@@ -28,8 +28,11 @@
             </div>
             <div class="main-bottom">
                 <div class="students-area">
-                    <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
-                                  v-for="id in peerIdList" :key="id" role="student"></StudentVideo>
+                    <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="student"></StudentVideo>
+                </div>
+                <div class="placeholder">
+                    <img src="./images/placeholder.png" alt="">
                 </div>
             </div>
         </main>
@@ -74,6 +77,8 @@
                 // -----------基础数据---------------
                 mode: 'game', // 游戏模式:game, 视频模式:video
                 firstLoad: true,
+                didMounted: false, // 页面渲染完毕
+                didJoinedRoom: false, // 进入课堂完成
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -96,6 +101,8 @@
                 teacherId: '', // 老师id
                 studentId: '',
                 studentName: '',
+                studentList: [],
+                studentIdList: [], // 存放学生初次连接的id
                 className: '',
                 roomId: '',
                 teacherName: '',
@@ -119,9 +126,10 @@
             stageStatus: function (stageStatusArr) {
                 const stageStatusArrLength = stageStatusArr.length
                 const translateLeft = 393 + 120 // 未上台时学生视频的左偏移单位距离
+
                 if (stageStatusArrLength === 1) {
                     const studentDomObj = document.querySelector('#studentVideo' + stageStatusArr[0])
-                    const indexOfStudent = this.peerIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
+                    const indexOfStudent = this.studentIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
                     const translateTop = 783 + 17
                     studentDomObj.classList.add('oneStudentOnStage')
                     studentDomObj.classList.remove('moreStudentOnStage')
@@ -141,8 +149,8 @@
                     const secondLeft = 115 + 520
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.top = studentDomObj1.style.top = `${-top / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
@@ -158,9 +166,9 @@
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj1.style.top = `${-firstTop / 100}rem`
                     studentDomObj2.style.top = studentDomObj3.style.top = `${-secondTop / 100}rem`
@@ -178,10 +186,10 @@
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
                     const studentDomObj4 = document.querySelector('#studentVideo' + stageStatusArr[3])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
-                    const indexOfFourthStudent = this.peerIdList.indexOf(stageStatusArr[3])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
+                    const indexOfFourthStudent = this.studentIdList.indexOf(stageStatusArr[3])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
                     studentDomObj3.style.left = `${(-translateLeft * indexOfThirdStudent + firstLeft) / 100}rem`
@@ -195,16 +203,25 @@
             this.init();
         },
         mounted() {
+            this.didMounted = true;
             this.initDrawingBoard();
             this.stopMouseEventPropagation();
             this.sendEventToIframe();
-            this.getMessage();
+            if (this.didJoinedRoom) {
+                this.getMessage()
+            }
         },
         methods: {
             // 初始化
-            init () {
+            async init () {
+                // 载入本地存储
+                this.$store.commit('readLiveBroadcastDataFromLocalStorage')
+
                 // rem适配
                 this.resize()
+
+                // 获取课堂信息
+                await this.queryClassInfo()
 
                 // 初始化rtcROOM
                 this.initRtcRoom()
@@ -282,6 +299,10 @@
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
                 // this.iframeSrc = `/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${peerId}`
                 this.rtcRoom = rtcRoom
+                this.didJoinedRoom = true
+                if (this.didMounted) {
+                    this.getMessage()
+                }
 
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
@@ -293,8 +314,13 @@
                             if (peerId !== teacherId) {
                                 this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
-                            } else {
-                                this.teacherName = item.name
+                            }
+                        })
+                        rtcRoom.requestRoomInfo('user_sort', {});
+                        this.studentList.forEach((item, index) => {
+                            if (item.uid === id) {
+                                this.$set(this.studentList[index], 'joinRoom', true)
+                                this.$set(this.studentList[index], 'isconnect', true)
                             }
                         })
                     }
@@ -303,33 +329,76 @@
                         this.studentNameObj[id] = info.name
                         this.peerIdList.push(id)
                     }
-                    if (id === teacherId) {
-                        const info = rtcRoom.getRoomUser(id);
-                        this.teacherName = info.name
-                    }
                 })
 
                 //用户连接成功成功时设置用户状态
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
-                    // if (id !== this.teacherId) {
-                    //     rtcRoom.closeVideo(this.studentId, [this.teacherId])
-                    // }
+                    if (id !== this.teacherId) {
+                        // rtcRoom.closeVideo(this.studentId, [this.teacherId])
+                        rtcRoom.requestRoomInfo('user_sort', {});
+                        this.studentList.forEach((item, index) => {
+                            if (item.uid === id) {
+                                this.$set(this.studentList[index], 'joinRoom', true)
+                                this.$set(this.studentList[index], 'isconnect', true)
+                            }
+                        })
+                    }
                 })
 
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
-                    delete this.studentNameObj[id]
                     const index = this.peerIdList.indexOf(id)
                     if (index !== -1) {
+                        this.studentList.forEach((item, index) => {
+                            if (item.uid === id) {
+                                this.$set(this.studentList[index], 'isconnect', false)
+                            }
+                        })
                         this.peerIdList.splice(index, 1)
+                        this.$store.commit('setPeerIdList', this.peerIdList)
+                        this.$store.commit('resetStatus', id)
+                        const studentVideo = document.querySelector('#studentVideo' + id)
+                        studentVideo.style = ''
                     }
                 });
 
                 rtcRoom.on('media-receive', (peerId, stream) => {
                     this.$set(this.streamObj, peerId, stream)
                 })
+
+                // 获取学生次序
+                rtcRoom.on('room-info-notify',(method,data) => {
+                    const list = data.list
+                    const indexOfTeacher = list.indexOf(this.teacherId)
+                    if (indexOfTeacher !== -1) {
+                        list.splice(indexOfTeacher, 1)
+                    }
+                    if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
+                    this.studentIdList = list
+                    this.$store.commit('setStudentIdList', list)
+                    // 处理学生顺序
+                    const studentIdObj = {}
+                    const cacheStudentList = [...this.studentList]
+                    list.forEach((item, index) => {
+                        studentIdObj[item] = index
+                    })
+
+                    for (let i = 0; i < cacheStudentList.length; i++) {
+                        const userId = cacheStudentList[i].uid
+                        const targetIndex = studentIdObj[userId]
+                        if (targetIndex !== undefined && targetIndex !== i) {
+                            // 交换位置
+                            [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
+                            if (targetIndex > i) {
+                                i--
+                            }
+                        }
+                    }
+                    this.studentList = cacheStudentList
+
+                });
 
                 // 用户关闭页面
                 window.onbeforeunload = () => {
@@ -346,6 +415,7 @@
                     centered: true,
                     onOk:() => {
                         rtcRoom.leaveRoom();
+                        localStorage.removeItem('9manLiveBroadcast');
                         window.close();
                     },
                     onCancel() {},
@@ -386,6 +456,34 @@
                     })
             },
 
+            // 查询课堂信息
+            queryClassInfo () {
+                const params = {
+                    id: this.$route.params.classId
+                }
+                return this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassRoomInfo', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const studentList = data.data.data.student_list
+                            const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
+                            studentList.forEach(item => {
+                                if (localStudentIdList.includes(item.uid)) {
+                                    item.joinRoom = true
+                                }else {
+                                    item.joinRoom = false
+                                }
+                                item.isconnect = false
+                            })
+                            this.studentList = studentList
+                            this.teacherName = data.data.data.teacher_name
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+            },
+
             // 初始化画板
             initDrawingBoard () {
                 const mainLeft = this.$refs.mainLeft;
@@ -404,7 +502,7 @@
                     cssMaxWidth: drawingBoardWidth,
                     cssMaxHeight: drawingBoardHeight,
                     selectionStyle: {
-                        cornerSize: 20,
+                        cornerSize: 0,
                         rotatingPointOffset: 70,
                         borderColor: '#000',
                     }
@@ -639,8 +737,8 @@
                             if (!lineIdObj[data.lineId]) { // id不存在则开始画新的线
                                 let size = this.getDrawBoardSize(data, canvas)
                                 mouseEvent.initMouseEvent("mousedown", true, true, document.defaultView, 0, 0, 0,
-                                    path[index][0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
-                                    path[index][1] * size.canvasScale + main.offsetTop - size.scrollTop,
+                                    path[index][0] * size.canvasScale - size.scrollLeft,
+                                    path[index][1] * size.canvasScale - size.scrollTop,
                                     false, false, false, false, 0, null)
                                 upperCanvas.dispatchEvent(mouseEvent)
                                 lineIdObj[data.lineId] = true
@@ -650,8 +748,8 @@
                                 for (index; index < path.length; index++) {
                                     let size = this.getDrawBoardSize(data, canvas)
                                     mouseEvent.initMouseEvent("mousemove", true, true, document.defaultView, 0, 0, 0,
-                                        path[index][0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
-                                        path[index][1] * size.canvasScale + main.offsetTop - size.scrollTop,
+                                        path[index][0] * size.canvasScale - size.scrollLeft,
+                                        path[index][1] * size.canvasScale - size.scrollTop,
                                         false, false, false, false, 0, null)
                                     document.dispatchEvent(mouseEvent)
                                 }
@@ -660,8 +758,8 @@
                                 index--
                                 let size = this.getDrawBoardSize(data, canvas)
                                 mouseEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, 0, 0,
-                                    path[index][0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
-                                    path[index][1] * size.canvasScale + main.offsetTop - size.scrollTop,
+                                    path[index][0] * size.canvasScale - size.scrollLeft,
+                                    path[index][1] * size.canvasScale - size.scrollTop,
                                     false, false, false, false, 0, null)
                                 document.dispatchEvent(mouseEvent)
                                 index = 0
@@ -680,8 +778,8 @@
                             let size = this.getDrawBoardSize(data, canvas)
                             const startPoint = data.startPoint
                             mouseEvent.initMouseEvent(data.action, true, true, document.defaultView, 0, 0, 0,
-                                startPoint[0] * size.canvasScale + main.offsetLeft - size.scrollLeft,
-                                startPoint[1] * size.canvasScale + main.offsetTop - size.scrollTop,
+                                startPoint[0] * size.canvasScale - size.scrollLeft,
+                                startPoint[1] * size.canvasScale - size.scrollTop,
                                 false, false, false, false, 0, null)
                             if (data.action === 'mousedown') {
                                 upperCanvas.dispatchEvent(mouseEvent)
@@ -746,22 +844,25 @@
                             if (status) {
                                 videoBox.classList.add('onStage')
                             } else {
-                                videoBox.className = 'video-box'
+                                videoBox.classList.remove('onStage')
                                 videoBox.children[0].style.top = ''
                                 videoBox.children[0].style.left = ''
                             }
                             break;
                         case 'all_video': // 上台
                             const allStatus = data.video
-                            const videoBoxArr = document.querySelectorAll('.video-box')
 
-                            videoBoxArr.forEach(videoBox => {
-                                if (!allStatus) { // 取消所有学生上台
-                                    videoBox.className = 'video-box'
-                                    videoBox.children[0].style.top = ''
-                                    videoBox.children[0].style.left = ''
-                                } else {
-                                    videoBox.classList.add('onStage')
+                            this.studentList.forEach(item => {
+                                if (item.isconnect) {
+                                    const id = item.uid
+                                    const videoBox = document.querySelector('#studentVideo' + id).parentElement
+                                    if (!allStatus) { // 取消所有学生上台
+                                        videoBox.classList.remove('onStage')
+                                        videoBox.children[0].style.top = ''
+                                        videoBox.children[0].style.left = ''
+                                    } else {
+                                        videoBox.classList.add('onStage')
+                                    }
                                 }
                             })
                             if (allStatus) {
@@ -913,6 +1014,7 @@
                 height: 240rem/@baseFontSize;
                 margin-top: 17rem/@baseFontSize;
                 float: left;
+                display: flex;
                 .students-area {
                     display: flex;
                     > div {
@@ -920,6 +1022,16 @@
                         &:last-of-type {
                             margin-right: 0;
                         }
+                    }
+                }
+                .placeholder {
+                    flex: 1;
+                    padding-left: 120rem/@baseFontSize;
+                    img {
+                        object-fit: cover;
+                        height: 100%;
+                        width: 100%;
+                        border-radius: 10rem/@baseFontSize;
                     }
                 }
             }

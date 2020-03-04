@@ -342,14 +342,14 @@ export default class extends EventEmitter
       if (pc.iceConnectionState === "connected") {
         this.emit('rtc-peer-connected',{ peerId: peerId });
 
-        this.gatherStats(pc, peerId);
+//        this.gatherStats(pc, peerId);
 
       }else if (pc.iceConnectionState === "failed" ||
         pc.iceConnectionState === "disconnected" ||
         pc.iceConnectionState === "closed") {
         // Handle the failure
 
-        this.clearStats(peerId);
+//        this.clearStats(peerId);
       }else if (pc.iceConnectionState === "completed") {
 
       }
@@ -609,7 +609,7 @@ export default class extends EventEmitter
       this.emit('rtc-media-receive',obj);
 
       if (this._deviceStatus === 0 || this._deviceStatus === 1) {
-        this.voiceActivityDetection();
+//        this.voiceActivityDetection();
       }
 
     }
@@ -716,15 +716,13 @@ export default class extends EventEmitter
 
     let signaling = this._signalingFactory('remove_peer',data);
 
-    this._socket.emit('signaling', JSON.stringify(signaling), (obj) => {
-      that.disconnect();
-    });
-
+    this._socket.emit('signaling', JSON.stringify(signaling));
+    this.disconnect();
   }
 
   _closeConnection(peerId) {
 
-    this.clearStats(peerId);
+//    this.clearStats(peerId);
 
     let pc = peerConnections.get(peerId);
     if (pc) {

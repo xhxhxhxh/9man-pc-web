@@ -39,7 +39,7 @@
                 allStage: false
             }
         },
-        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role'],
+        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role', 'studentList'],
         created () {
 
         },
@@ -77,7 +77,7 @@
                 // 学生下台
                 const videoBoxArr = document.querySelectorAll('.video-box')
                 videoBoxArr.forEach(videoBox => {
-                    videoBox.className = 'video-box'
+                    videoBox.classList.remove('onStage')
                     videoBox.children[0].style.top = ''
                     videoBox.children[0].style.left = ''
                 })
@@ -90,16 +90,19 @@
                 if (this.$store.getters.updateControlStatus) {
                     return this.$message.warning('前先关闭学生授权', 5);
                 }
-                const videoBoxArr = document.querySelectorAll('.video-box')
                 const stageAllStatus = this.$store.getters.stageAllStatus
 
-                videoBoxArr.forEach(videoBox => {
-                    if (stageAllStatus) { // 取消所有学生上台
-                        videoBox.className = 'video-box'
-                        videoBox.children[0].style.top = ''
-                        videoBox.children[0].style.left = ''
-                    } else {
-                        videoBox.classList.add('onStage')
+                this.studentList.forEach(item => {
+                    if (item.isconnect) {
+                        const id = item.uid
+                        const videoBox = document.querySelector('#studentVideo' + id).parentElement
+                        if (stageAllStatus) { // 取消所有学生上台
+                            videoBox.classList.remove('onStage')
+                            videoBox.children[0].style.top = ''
+                            videoBox.children[0].style.left = ''
+                        } else {
+                            videoBox.classList.add('onStage')
+                        }
                     }
                 })
 
@@ -120,6 +123,8 @@
             border-radius:10rem/@baseFontSize 10rem/@baseFontSize 0 0;
             overflow: hidden;
             position: relative;
+            background:url("./images/teacher_coming.png") no-repeat;
+            background-size: cover;
             video {
                 width: 100%;
                 height: 100%;

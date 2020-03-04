@@ -7,6 +7,7 @@ const liveBroadcast = {
             audioStatus: {}, // 静音
             controlStatus: {}, // 操作
             stageStatus: {}, // 学生上台状态
+            studentIdList: [], // 进入过房间的学生ID
             mode: '', // 缓存操作模式
             coursewarePage: 0,
             allOperation: false
@@ -51,6 +52,12 @@ const liveBroadcast = {
             this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
+        // 设置studentIdList
+        setStudentIdList (state, data) {
+            state.liveBroadcastData.studentIdList = data
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
         // 设置操作权限
         setOperatePermission (state, permission) {
             state.operatePermission = permission
@@ -67,6 +74,20 @@ const liveBroadcast = {
                     }
                 })
             }
+        },
+
+        // 学生离线重置状态
+        resetStatus (state, id) {
+            const audioStatus = state.liveBroadcastDataCurrent.audioStatus
+            const controlStatus = state.liveBroadcastDataCurrent.controlStatus
+            const stageStatus = state.liveBroadcastDataCurrent.stageStatus
+            delete audioStatus[id]
+            delete controlStatus[id]
+            delete stageStatus[id]
+            state.liveBroadcastData.audioStatus = {...audioStatus}
+            state.liveBroadcastData.controlStatus = {...controlStatus}
+            state.liveBroadcastData.stageStatus = {...stageStatus}
+            state.stageStatusSortByStage.splice(state.stageStatusSortByStage.indexOf(id), 1)
         },
 
         // peerIdList
@@ -246,8 +267,8 @@ const liveBroadcast = {
                 }
                 state.stageStatusSortByStage = []
             } else { // 全体上台
-                for (let id in stageCurrentObj) {
-                    if (stageStatusSortByStage.indexOf(id) !== -1) continue
+                for (let id of state.liveBroadcastData.studentIdList) {
+                    if (!stageCurrentObj[id] || stageStatusSortByStage.indexOf(id) !== -1) continue
                     stageObj[id] = 1
                     stageCurrentObj[id] = 1
                     stageStatusSortByStage.push(id)

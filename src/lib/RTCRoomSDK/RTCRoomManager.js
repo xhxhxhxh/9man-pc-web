@@ -122,6 +122,15 @@ export default class RTCRoomManager extends EventEmitter {
     this._rtcRoom.close();
   }
 
+  requestRoomInfo(method,params)
+  {
+    let data = {
+      event: method,
+      data : params
+    };
+    this.sendRequestMessage('room_info', data);
+  }
+
   sendMessage(message,peerId)
   {
     this._rtcRoom.sendMessage(message,peerId);
@@ -168,6 +177,14 @@ export default class RTCRoomManager extends EventEmitter {
       resource: resource ? resource : ''
     };
     this.sendRequestMessage('ai_restart',data);
+  }
+
+  requestAIRoleInfo(peerId)
+  {
+    let data = {
+      peerId: peerId
+    };
+    this.sendRequestMessage('ai_role_info',data);
   }
 
   openVideo(peerId,except)
@@ -350,7 +367,12 @@ export default class RTCRoomManager extends EventEmitter {
 
   handleRequestMessageEvent(method,data)
   {
-
+    if (method === 'ai_role_info') {
+      this.emit('ai-action-notify',method,data);
+    }else if (method === 'room_info') {
+      let event = data.event;
+      this.emit('room-info-notify',event,data);
+    }
   }
 
   handleNotificationMessageEvent(method,data)
@@ -399,6 +421,8 @@ export default class RTCRoomManager extends EventEmitter {
     }else if (method === 'ai_start') {
       this.emit('ai-action-notify',method,data);
     }else if (method === 'ai_result') {
+      this.emit('ai-action-notify',method,data);
+    }else if (method === 'ai_role') {
       this.emit('ai-action-notify',method,data);
     }
   }
@@ -605,6 +629,6 @@ export default class RTCRoomManager extends EventEmitter {
   }
 
 
-  //todo 添加音频判断 添加没有视频时发起offer的sdp修改 课堂开始结束设计
+  //todo 添加音频判断
 
 }

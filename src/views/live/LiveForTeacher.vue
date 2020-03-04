@@ -35,7 +35,7 @@
                     <div class="previous-page" @click="changeAnimate($event, 0)">
                         <a-tooltip placement="right" :visible="firstPageTip">
                             <template slot="title">
-                                <span>已经是第一页了</span>
+                                <span>已经是第一个课件了</span>
                             </template>
                             <a-icon type="step-backward" />
                         </a-tooltip>
@@ -43,7 +43,7 @@
                     <div class="next-page" @click="changeAnimate($event, 2)">
                         <a-tooltip placement="right" :visible="lastPageTip">
                             <template slot="title">
-                                <span>已经是最后一页了</span>
+                                <span>已经是最后一个课件了</span>
                             </template>
                             <a-icon type="step-backward" />
                         </a-tooltip>
@@ -65,13 +65,16 @@
                         <button>开始上课</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
-                                  :stream="streamObj[teacherId]"></TeacherVideo>
+                                  :stream="streamObj[teacherId]" :studentList="studentList"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
                 <div class="students-area">
-                    <StudentVideo :id="id" :rtcRoom="rtcRoom" :studentName="studentNameObj[id]" :stream="streamObj[id]"
-                                  v-for="id in peerIdList" :key="id" role="teacher" @award="award"></StudentVideo>
+                    <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award"></StudentVideo>
+                </div>
+                <div class="placeholder">
+                    <img src="./images/placeholder.png" alt="">
                 </div>
             </div>
         </main>
@@ -143,9 +146,10 @@
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
-                studentNameObj: {}, // 每个学生的姓名
                 teacherId: '', // 老师id
                 roomId: '',
+                studentList: [],
+                studentIdList: [], // 存放学生初次连接的id
                 teacherName: '',
                 className: '',
                 streamObj: {}, // 视频流
@@ -184,7 +188,7 @@
 
                 if (stageStatusArrLength === 1) {
                     const studentDomObj = document.querySelector('#studentVideo' + stageStatusArr[0])
-                    const indexOfStudent = this.peerIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
+                    const indexOfStudent = this.studentIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
                     const translateTop = 783 + 17
                     const scale = 1044 / 320
                     studentDomObj.classList.add('oneStudentOnStage')
@@ -206,8 +210,8 @@
                     const secondLeft = 115 + 520
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.top = studentDomObj1.style.top = `${-top / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
@@ -223,9 +227,9 @@
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj1.style.top = `${-firstTop / 100}rem`
                     studentDomObj2.style.top = studentDomObj3.style.top = `${-secondTop / 100}rem`
@@ -243,10 +247,10 @@
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
                     const studentDomObj4 = document.querySelector('#studentVideo' + stageStatusArr[3])
-                    const indexOfFirstStudent = this.peerIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.peerIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.peerIdList.indexOf(stageStatusArr[2])
-                    const indexOfFourthStudent = this.peerIdList.indexOf(stageStatusArr[3])
+                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
+                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
+                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
+                    const indexOfFourthStudent = this.studentIdList.indexOf(stageStatusArr[3])
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
                     studentDomObj3.style.left = `${(-translateLeft * indexOfThirdStudent + firstLeft) / 100}rem`
@@ -266,12 +270,15 @@
         },
         methods: {
             // 初始化
-            init () {
+            async init () {
                 // 载入本地存储
                 this.$store.commit('readLiveBroadcastDataFromLocalStorage')
 
                 // rem适配
                 this.resize()
+
+                // 获取课堂信息
+                await this.queryClassInfo()
 
                 // 初始化rtcROOM
                 this.initRtcRoom()
@@ -281,6 +288,8 @@
 
                 // 获取课件信息
                 this.getCoursewareInfo(this.$route.params.coursewareId)
+
+
             },
 
             // 动态改变rem值
@@ -367,16 +376,11 @@
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
                             if (peerId !== teacherPeerId) {
-                                this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
-                            }else {
-                                this.teacherName = item.name
                             }
                         })
                     }
                     if (!this.peerIdList.includes(id) && id !== teacherPeerId) {
-                        const info = rtcRoom.getRoomUser(id);
-                        this.studentNameObj[id] = info.name
                         this.peerIdList.push(id)
                     }
                     this.$store.commit('setPeerIdList', this.peerIdList)
@@ -387,6 +391,15 @@
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
                     if (id === teacherPeerId) return
+
+                    rtcRoom.requestRoomInfo('user_sort', {});
+                    this.studentList.forEach((item, index) => {
+                        if (item.uid === id) {
+                            this.$set(this.studentList[index], 'joinRoom', true)
+                            this.$set(this.studentList[index], 'isconnect', true)
+                        }
+                    })
+
                     const liveBroadcastData = this.$store.state.liveBroadcast.liveBroadcastData
                     // 处理静音状态
                     const userAudioStatus = liveBroadcastData.audioStatus[id]
@@ -423,18 +436,59 @@
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
-                    delete this.studentNameObj[id]
                     const index = this.peerIdList.indexOf(id)
+                    if (id !== teacherPeerId) {
+                        this.studentList.forEach((item, index) => {
+                            if (item.uid === id) {
+                                this.$set(this.studentList[index], 'isconnect', false)
+                            }
+                        })
+                    }
                     if (index !== -1) {
                         this.peerIdList.splice(index, 1)
                         this.$store.commit('setPeerIdList', this.peerIdList)
+                        this.$store.commit('resetStatus', id)
+                        // 下台
+                        const studentVideo = document.querySelector('#studentVideo' + id)
+                        studentVideo.style = ''
                     }
-
                 });
 
                 rtcRoom.on('media-receive', (peerId, stream) => {
                     this.$set(this.streamObj, peerId, stream)
                 })
+
+                // 获取学生次序
+                rtcRoom.on('room-info-notify',(method,data) => {
+                    const list = data.list
+                    const indexOfTeacher = list.indexOf(this.teacherId)
+                    if (indexOfTeacher !== -1) {
+                        list.splice(indexOfTeacher, 1)
+                    }
+                    if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
+                    this.studentIdList = list
+                    this.$store.commit('setStudentIdList', list)
+                    // 处理学生顺序
+                    const studentIdObj = {}
+                    const cacheStudentList = [...this.studentList]
+                    list.forEach((item, index) => {
+                        studentIdObj[item] = index
+                    })
+
+                    for (let i = 0; i < cacheStudentList.length; i++) {
+                        const userId = cacheStudentList[i].uid
+                        const targetIndex = studentIdObj[userId]
+                        if (targetIndex !== undefined && targetIndex !== i) {
+                            // 交换位置
+                            [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
+                            if (targetIndex > i) {
+                                i--
+                            }
+                        }
+                    }
+                    this.studentList = cacheStudentList
+
+                });
 
                 // 用户关闭页面
                 window.onbeforeunload = () => {
@@ -467,6 +521,7 @@
                     onOk:() => {
                         this.allUsersCancelOperate();
                         rtcRoom.leaveRoom();
+                        localStorage.removeItem('9manLiveBroadcast');
                         window.close();
                     },
                     onCancel() {},
@@ -537,6 +592,34 @@
                     })
             },
 
+            // 查询课堂信息
+            queryClassInfo () {
+                const params = {
+                    id: this.$route.params.classId
+                }
+                return this.$axios.get(this.$store.state.apiUrl + '/v1/classRoom/queryClassRoomInfo', {params})
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            const studentList = data.data.data.student_list
+                            const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
+                            studentList.forEach(item => {
+                                if (localStudentIdList.includes(item.uid)) {
+                                    item.joinRoom = true
+                                }else {
+                                    item.joinRoom = false
+                                }
+                                item.isconnect = false
+                            })
+                            this.studentList = studentList
+                            this.teacherName = data.data.data.teacher_name
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+            },
+
             // 初始化画板
             initDrawingBoard () {
                 const mainLeft = this.$refs.mainLeft;
@@ -555,7 +638,7 @@
                     cssMaxWidth: drawingBoardWidth,
                     cssMaxHeight: drawingBoardHeight,
                     selectionStyle: {
-                        cornerSize: 20,
+                        cornerSize: 0,
                         rotatingPointOffset: 70,
                         borderColor: '#000',
                     }
@@ -588,7 +671,9 @@
 
                 //鼠标点击事件
                 canvas.onmousedown = function(event) {
-                    let startPoint = [event.layerX, event.layerY]
+                    const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
+                    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+                    let startPoint = [event.clientX + scrollLeft, event.clientY + scrollTop]
                     if (_this.shape === 'FREE_DRAWING') {
                         // 计算lineId
                         const activeGroup = instance._graphics._canvas._activeGroup
@@ -627,8 +712,8 @@
                         _this.sendDrawData();
 
                         //鼠标移动事件
-                        canvas.onmousemove = function (event) {
-                            _this.drawParams.data.pointlist.push([event.layerX, event.layerY])
+                        document.onmousemove = function (event) {
+                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft, event.clientY + scrollTop])
                             _this.sendDrawData()
                         };
                     }
@@ -645,13 +730,13 @@
                         _this.rtcRoom.sendMessage(params)
 
                         //鼠标移动事件
-                        canvas.onmousemove = function (event) {
+                        document.onmousemove = function (event) {
                             const params = {
                                 event: 'select_line',
                                 data: {
                                     action: 'mousemove',
                                     hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                    startPoint: [event.layerX, event.layerY]
+                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
                                 }
                             }
                             _this.rtcRoom.sendMessage(params)
@@ -675,12 +760,12 @@
 
                             _this.lineIdObj[lineIdLocal] = lineId // 存储本地id与其相对应的移动端id
 
-                            _this.drawParams.data.pointlist.push([event.layerX, event.layerY])
+                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft, event.clientY + scrollTop])
                             _this.drawParams.data.finished = true
                             _this.sendDrawData()
                             instance.stopDrawingMode(); //即时更换线条颜色
                             _this.drawByShape();
-                            canvas.onmousemove = null;
+                            document.onmousemove = null;
                         }
 
                         if (_this.shape === 'DELETE') {
@@ -696,11 +781,11 @@
                                 data: {
                                     action: 'mouseup',
                                     hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                    startPoint: [event.layerX, event.layerY]
+                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
                                 }
                             }
                             _this.rtcRoom.sendMessage(params)
-                            canvas.onmousemove = null;
+                            document.onmousemove = null;
                         }
                         document.onmouseup = null;
                     }
@@ -1369,6 +1454,7 @@
                 height: 240rem/@baseFontSize;
                 margin-top: 17rem/@baseFontSize;
                 float: left;
+                display: flex;
                 .students-area {
                     display: flex;
                     > div {
@@ -1376,6 +1462,16 @@
                         &:last-of-type {
                             margin-right: 0;
                         }
+                    }
+                }
+                .placeholder {
+                    flex: 1;
+                    padding-left: 120rem/@baseFontSize;
+                    img {
+                        object-fit: cover;
+                        height: 100%;
+                        width: 100%;
+                        border-radius: 10rem/@baseFontSize;
                     }
                 }
             }

@@ -39,8 +39,8 @@ routerMap.teacher = [
         ]
     },
     // { path: '/liveBroadcastForTeacher/:roomId/:teacherId/:coursewareId/:name', component: () => import('@/views/liveBroadcast/LiveBroadcastForTeacher-v2') },
-    { path: '/liveForTeacher/:roomId/:teacherId/:coursewareId/:classname', component: TeacherLive },
-    { path: '/liveForStudent/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: StudentLive },
+    { path: '/liveForTeacher/:classId/:roomId/:teacherId/:coursewareId/:classname', component: TeacherLive },
+    { path: '/liveForStudent/:classId/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: StudentLive },
     { path: '*', redirect: '/404'}
 ];
 export default routerMap

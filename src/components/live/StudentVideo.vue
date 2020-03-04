@@ -3,8 +3,9 @@
         <div class="monkey-box">
             <img src="./images/student_bg.png" alt="" class="monkey">
         </div>
-        <div class="video-box" ref="videoBox">
-            <div class="student-video-area" :id="'studentVideo' + id" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
+        <div ref="videoBox" :class="{'video-box': true, hasJoinedRoom: info.joinRoom, hasConnected: info.isconnect}">
+            <div class="student-video-area" :id="'studentVideo' + id" @mouseenter="info.isconnect? showOperateArea = true: ''"
+                 @mouseleave="info.isconnect? showOperateArea = false: ''">
                 <p class="name-box">
                     <span class="name">{{studentName}}</span>
                     <span class="star">
@@ -12,7 +13,7 @@
                     <span>12</span>
                 </span>
                 </p>
-                <video autoplay loop type="video/*" ref="video" @dblclick="onStage"></video>
+                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect"></video>
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
@@ -39,7 +40,7 @@
                 showOperateArea: false,
             }
         },
-        props: ['id', 'rtcRoom', 'studentName', 'peerIdList', 'stream', 'role'],
+        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info'],
         components: {
 
         },
@@ -90,7 +91,7 @@
                 // 学生下台
                 const videoBoxArr = document.querySelectorAll('.video-box')
                 videoBoxArr.forEach(videoBox => {
-                    videoBox.className = 'video-box'
+                    videoBox.classList.remove('onStage')
                     videoBox.children[0].style.top = ''
                     videoBox.children[0].style.left = ''
                 })
@@ -172,7 +173,7 @@
                 if (liveBroadcastData.stageStatus[this.id] === 1) {
                     videoBox.classList.add('onStage')
                 } else {
-                    videoBox.className = 'video-box'
+                    videoBox.classList.remove('onStage')
                     videoBox.children[0].style.top = ''
                     videoBox.children[0].style.left = ''
                 }
@@ -226,8 +227,17 @@
             width: 320rem/@baseFontSize;
             height: 100%;
             border-radius: 10rem/@baseFontSize;
-            background:url("./images/stage.png") no-repeat;
+            background:url("./images/not_enter.png") no-repeat;
             background-size: cover;
+            &.hasJoinedRoom {
+                background:url("./images/leave.png") no-repeat;
+                background-size: cover;
+            }
+            &.hasConnected {
+                background:url("./images/stage.png") no-repeat;
+                background-size: cover;
+            }
+
             .student-video-area {
                 position: absolute;
                 left: 0;
@@ -235,7 +245,6 @@
                 width: 100%;
                 height: 100%;
                 border-radius: 10rem/@baseFontSize;
-                background-color: rgba(89,89,89,1);
                 transition: all .5s ease;
                 overflow: hidden;
                 transform-style: preserve-3d;
@@ -244,6 +253,7 @@
                     width: 100%;
                     height: 100%;
                     border-radius: 10rem/@baseFontSize;
+                    background-color: #595959;
                 }
 
                 .operate-area {

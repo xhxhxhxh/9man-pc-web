@@ -73,7 +73,7 @@ module.exports = {
                         }]
                 })
             },
-            {test: /\.(jpg|png|gif|bmp|jpeg)$/,
+            {test: /\.(jpg|png|gif|bmp|jpeg|cur)$/,
                 use: [{
                     loader: 'url-loader',
                     options: {

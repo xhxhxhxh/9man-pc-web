@@ -13,7 +13,7 @@
                     <span>12</span>
                 </span>
                 </p>
-                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect"></video>
+                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId"></video>
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
@@ -40,7 +40,7 @@
                 showOperateArea: false,
             }
         },
-        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info'],
+        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId'],
         components: {
 
         },
@@ -117,6 +117,7 @@
                     this.$store.commit('setControlStatus', {id: id, status: 1})
                     this.rtcRoom.sendMessage(params)
                     this.rtcRoom.changeAIControl(id)
+                    this.$emit('setAlert', {visiable: true, message: `学生 ${this.studentName} 正在操作课件`})
                     return
                 }
 
@@ -124,10 +125,12 @@
                     Object.assign(params.data, {peerId: ''})
                     this.$store.commit('setControlStatus', {id: id, status: 2})
                     this.rtcRoom.changeAIControl(teacherId)
+                    this.$emit('setAlert', {visiable: false, message: ``})
                 }else if (controlStatus === 2) { // 开启操作
                     Object.assign(params.data, {peerId: id})
                     this.$store.commit('setControlStatus', {id: id, status: 1})
                     this.rtcRoom.changeAIControl(id)
+                    this.$emit('setAlert', {visiable: true, message: `学生 ${this.studentName} 正在操作课件`})
                 }
                 this.rtcRoom.sendMessage(params)
             },
@@ -191,8 +194,10 @@
             },
 
             // 发放奖励
-            award (e) {
-                this.$emit('award', e)
+            award () {
+                if (this.role === 'teacher') {
+                    this.$emit('award', this.id)
+                }
             }
         }
     }

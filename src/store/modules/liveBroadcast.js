@@ -87,7 +87,10 @@ const liveBroadcast = {
             state.liveBroadcastData.audioStatus = {...audioStatus}
             state.liveBroadcastData.controlStatus = {...controlStatus}
             state.liveBroadcastData.stageStatus = {...stageStatus}
-            state.stageStatusSortByStage.splice(state.stageStatusSortByStage.indexOf(id), 1)
+            const index = state.stageStatusSortByStage.indexOf(id)
+            if (index !== -1) {
+                state.stageStatusSortByStage.splice(index, 1)
+            }
         },
 
         // peerIdList
@@ -229,13 +232,13 @@ const liveBroadcast = {
                     controlCloseObj[id] = 2
                     controlCloseCurrentObj[id] = 2
                 }
-                state.rtcRoom.changeAISyncStatus(true);
+                state.rtcRoom.changeAISyncStatus(1);
             } else { // 全体操作
                 for (let id in controlCloseCurrentObj) {
                     controlCloseObj[id] = 1
                     controlCloseCurrentObj[id] = 1
                 }
-                state.rtcRoom.changeAISyncStatus(false);
+                state.rtcRoom.changeAISyncStatus(0);
             }
             state.liveBroadcastDataCurrent.controlStatus = controlCloseCurrentObj
             state.liveBroadcastData.controlStatus = controlCloseObj

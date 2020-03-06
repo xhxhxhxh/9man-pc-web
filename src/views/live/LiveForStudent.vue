@@ -1,5 +1,18 @@
 <template>
-    <div class="live-container">
+    <div class="live-container-student">
+        <div class="move-star" ref="moveStar">
+            <img src="./images/move_star.png" alt="" class="star">
+        </div>
+        <div class="animate-star" ref="animateStar" v-show="showAnimateStar">
+            <img :src="animateStarSrc" alt="" class="star">
+        </div>
+        <div class="alert">
+            <a-alert
+                    v-if="alertVisible"
+                    :message="alertMessage"
+                    type="success"
+            />
+        </div>
         <main ref="main">
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
@@ -11,7 +24,7 @@
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
                     <video src="" ref="video-play" preload="auto" @ended="videoEnded"></video>
                 </div>
-                <div class="draw-area">
+                <div class="draw-area" ref="drawArea">
                     <div id="tui-image-editor" ref="drawArea" :class="{mouseStyle: shape === 'FREE_DRAWING'}"></div>
                 </div>
                 <div class="wrapper" ref="wrapper"></div>
@@ -23,13 +36,13 @@
                         <button>{{className + '《' + coursewareName + '》'}}</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="student"
-                                  :stream="streamObj[teacherId]"></TeacherVideo>
+                                  :stream="streamObj[teacherId]" :teacherId="teacherId"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
                 <div class="students-area">
-                    <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
-                                  v-for="item in studentList" :key="item.uid" :info="item" role="student"></StudentVideo>
+                    <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]" @award="award"
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="student" :studentId="studentId"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -45,6 +58,7 @@
     // const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min'); // 将mousemove和mousedown挂载对象从document改到底层canvas
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
+    import animate_star from './images/animate_star.gif';
 
     // 导入socket
     import RTCRoom from '@/lib/RTCRoomSDK/RTCRoomManager';
@@ -79,6 +93,11 @@
                 firstLoad: true,
                 didMounted: false, // 页面渲染完毕
                 didJoinedRoom: false, // 进入课堂完成
+                alertVisible: false, // 顶部提醒框
+                alertMessage: '',
+                showAnimateStar: false, // 控制星星显示
+                animateStarSrc: animate_star,
+                startStarAnimate: false, // 星星动画节流
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -100,7 +119,6 @@
                 studentNameObj: {}, // 每个学生的姓名
                 teacherId: '', // 老师id
                 studentId: '',
-                studentName: '',
                 studentList: [],
                 studentIdList: [], // 存放学生初次连接的id
                 className: '',
@@ -206,7 +224,7 @@
             this.didMounted = true;
             this.initDrawingBoard();
             this.stopMouseEventPropagation();
-            this.sendEventToIframe();
+            // this.sendEventToIframe();
             if (this.didJoinedRoom) {
                 this.getMessage()
             }
@@ -262,7 +280,6 @@
                 this.roomId = roomId
                 const teacherId = this.teacherId = this.$route.params.teacherId
                 this.className = this.$route.params.classname
-                this.studentName = userParams.name
 
                 // 同步状态
                 rtcRoom.on('message-notify-receive', (peerId, data) => {
@@ -277,23 +294,32 @@
                         const isAllOperate = result.isAllOperate
                         const operateId = result.operateId
                         if (isAllOperate) {
-                            this.$message.success('你可以操作游戏了', 5)
+                            this.setAlert({visiable: true, message: `你可以操作游戏了`})
+                            this.setPointerEvents(true)
+                        }else {
+                            if (result.isSingleOperate) {
+                                if (operateId === this.studentId) {
+                                    this.operating = true
+                                    this.setPointerEvents(true)
+                                    this.setAlert({visiable: true, message: `你可以操作游戏了`})
+                                }else {
+                                    this.operating = false
+                                    this.setAlert({visiable: true, message: `学生 ${this.studentNameObj[operateId]} 正在操作游戏`})
+                                }
+                            }
                         }
-                        if (!isAllOperate && operateId === this.studentId) {
-                            this.operating = true
-                            this.$message.success('你可以操作游戏了', 5)
-                        }
+
                         // 上台状态
                         const singleVideoArr = result.singleVideoArr
-                        singleVideoArr.forEach(item => {
-                            const id = item
-                            const videoBox = document.querySelector('#studentVideo' + id).parentElement
-                            this.$store.commit('setStageStatus', {id, status: 1})
-                            videoBox.classList.add('onStage')
+                        this.$nextTick(function () {
+                            singleVideoArr.forEach(item => {
+                                const id = item
+                                const videoBox = document.querySelector('#studentVideo' + id).parentElement
+                                this.$store.commit('setStageStatus', {id, status: 1})
+                                videoBox.classList.add('onStage')
+                            })
                         })
-
                     }
-
                 })
 
                 rtcRoom.joinRoom(host,port,roomId,peerId,userParams);
@@ -312,7 +338,6 @@
                         rtcRoom.getAllRoomUser().forEach(item => {
                             const peerId = item._peerId
                             if (peerId !== teacherId) {
-                                this.studentNameObj[peerId] = item.name
                                 this.peerIdList.push(peerId)
                             }
                         })
@@ -325,8 +350,6 @@
                         })
                     }
                     if (!this.peerIdList.includes(id) && id !== teacherId) {
-                        const info = rtcRoom.getRoomUser(id);
-                        this.studentNameObj[id] = info.name
                         this.peerIdList.push(id)
                     }
                 })
@@ -339,8 +362,15 @@
                         rtcRoom.requestRoomInfo('user_sort', {});
                         this.studentList.forEach((item, index) => {
                             if (item.uid === id) {
+                                const videoBox = document.querySelector('#studentVideo' + id).parentElement
                                 this.$set(this.studentList[index], 'joinRoom', true)
                                 this.$set(this.studentList[index], 'isconnect', true)
+                                // 防止class被重置
+                                if (videoBox.classList.contains('onStage')) {
+                                    this.$nextTick(function () {
+                                        videoBox.classList.add('onStage')
+                                    })
+                                }
                             }
                         })
                     }
@@ -422,11 +452,7 @@
                 });
             },
 
-            // 视频播放结束
-            videoEnded (e) {
-                const video = e.target
-                video.currentTime = 0
-            },
+
 
             // 获取课件信息
             getCoursewareInfo (id) {
@@ -468,6 +494,7 @@
                             const studentList = data.data.data.student_list
                             const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
                             studentList.forEach(item => {
+                                this.studentNameObj[item.uid] = item.uname
                                 if (localStudentIdList.includes(item.uid)) {
                                     item.joinRoom = true
                                 }else {
@@ -512,7 +539,7 @@
 
             // 阻止该组件的鼠标事件传递到document，影响画图
             stopMouseEventPropagation () {
-                const liveContainer = document.querySelector('.live-container')
+                const liveContainer = document.querySelector('.live-container-student')
                 liveContainer.onmousedown = function (e) {
                     e.stopPropagation()
                 }
@@ -529,7 +556,6 @@
                 const wrapper = this.$refs.wrapper;
                 const iframe = this.$refs.iframe;
                 const _this = this;
-
                 //鼠标点击事件
                 wrapper.onmousedown = function(event) {
                     if (_this.mode !== 'game') return;
@@ -547,7 +573,7 @@
                     gameCanvas.dispatchEvent(mouseEvent);
 
                     //鼠标移动事件
-                    wrapper.onmousemove = function (event) {
+                    document.onmousemove = function (event) {
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
@@ -560,7 +586,7 @@
                     };
 
                     //鼠标抬起事件
-                    wrapper.onmouseup = function (event) {
+                    document.onmouseup = function (event) {
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
@@ -570,10 +596,23 @@
                         mouseEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
                             e.clientX , e.clientY, false, false, false, false, 0, null);
                         gameCanvas.dispatchEvent(mouseEvent);
-                        wrapper.onmousemove = null;
-                        wrapper.onmouseup = null;
+                        document.onmousemove = null;
+                        document.onmouseup = null;
                     }
                 };
+            },
+
+            // 设置点击穿透
+            setPointerEvents (status) {
+                const drawArea = this.$refs.drawArea
+                const wrapper = this.$refs.wrapper
+                if (status) {
+                    drawArea.style.pointerEvents = 'none'
+                    wrapper.style.pointerEvents = 'none'
+                }else {
+                    drawArea.style.pointerEvents = 'auto'
+                    wrapper.style.pointerEvents = 'auto'
+                }
             },
 
             //根据shape绘制图形
@@ -627,6 +666,18 @@
                 } else if (status === 'DELETE') {
                     this.eraser();
                 }
+            },
+
+            // 设置提醒框
+            setAlert (data) {
+                this.alertVisible = data.visiable
+                this.alertMessage = data.message
+            },
+
+            // 视频播放结束
+            videoEnded (e) {
+                const video = e.target
+                video.currentTime = 0
             },
 
             // 切换动画
@@ -696,6 +747,46 @@
                     }
                 }
 
+            },
+
+            // 发放奖励
+            award () {
+                const starDom = document.querySelector('#studentVideo' + this.studentId + ' .star')
+                const rect = starDom.getBoundingClientRect()
+                const height = rect.height
+                const width = rect.width
+                const bottom = rect.bottom
+                const right = rect.right
+                console.log(starDom.getBoundingClientRect())
+                if (this.startStarAnimate) return
+                this.startStarAnimate = true
+                const clientX = right - width / 2
+                const clientY = bottom - height / 2
+                const moveStar = this.$refs.moveStar
+                const _this = this
+                moveStar.classList.add('move')
+
+                setTimeout(() => {
+                    _this.animateStarSrc = animate_star
+                    this.showAnimateStar = true
+                }, 500)
+                setTimeout(() => {
+                    this.showAnimateStar = false
+                    this.animateStarSrc = ''
+                    moveStar.style.left = clientX + 'px'
+                    moveStar.style.bottom = document.querySelector('.live-container-student').offsetHeight - clientY + 'px'
+                    moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
+                    moveStar.addEventListener('transitionend', transitionend)
+                }, 2500)
+
+                function transitionend() {
+                    moveStar.style.left = ''
+                    moveStar.style.bottom = ''
+                    moveStar.style.transform = ''
+                    moveStar.classList.remove('move')
+                    _this.startStarAnimate = false
+                    moveStar.removeEventListener('transitionend', transitionend)
+                }
             },
 
             //接收画图数据，建立连接
@@ -817,27 +908,39 @@
                             if (!peerId) {
                                 if (this.operating) {
                                     this.$message.warning('你不能再操作游戏了', 5)
+                                    this.operating = false
                                 }
+                                this.setPointerEvents(false)
+
+                                this.setAlert({visiable: false, message: ''})
                                 break;
                             }
                             if (peerId === this.studentId) {
                                 this.operating = true
-                                this.$message.success('你可以操作游戏了', 5)
+                                this.setPointerEvents(true)
+                                this.setAlert({visiable: true, message: `你可以操作游戏了`})
                             }else {
-                                this.$message.warning(`学生${this.studentNameObj[peerId]}正在操作游戏`, 5)
+                                this.operating = false
+                                this.setPointerEvents(false)
+                                this.setAlert({visiable: true, message: `学生 ${this.studentNameObj[peerId]} 正在操作游戏`})
                             }
                             break;
                         case 'all_operations': // 全部授权
                             const operations = data.operations
                             this.operating = operations
                             if (operations) {
-                                this.$message.success('你可以操作游戏了', 5)
+                                this.setAlert({visiable: true, message: `你可以操作游戏了`})
+                                this.setPointerEvents(true)
+
                             }else {
+                                this.operating = false
+                                this.setPointerEvents(false)
+                                this.setAlert({visiable: false, message: ''})
                                 this.$message.warning('你不能再操作游戏了', 5)
                             }
                             break;
                         case 'single_video': // 上台
-                            const id = data.peerId
+                            let id = data.peerId
                             const status = data.appear
                             const videoBox = document.querySelector('#studentVideo' + id).parentElement
                             this.$store.commit('setStageStatus', {id, status: status? 1: 2})
@@ -871,6 +974,11 @@
                                 this.$store.commit('setStageStatusSortByStage', [])
                             }
                             break;
+                        case 'award': // 奖励
+                            if (data.id === this.studentId) {
+                                this.award()
+                            }
+                            break;
                     }
                 });
             },
@@ -890,10 +998,55 @@
 
 <style lang="less">
     @import "../../less/index";
-    .live-container {
+    .live-container-student {
         background:rgba(248,209,194,1);
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
         min-height: 100%;
+        position: relative;
+        .move-star {
+            position: absolute;
+            left: 1650rem/@baseFontSize;
+            bottom: 0;
+            height: 253rem/@baseFontSize;
+            width: 267rem/@baseFontSize;
+            transform: translate(0, 0) scale(0);
+            z-index: 9999;
+            &.move {
+                left: 50%;
+                bottom: 60.4%;
+                transform: translate(-50%, 50%) scale(1);
+                transition: all .5s ease;
+            }
+            img {
+                display: block;
+                height: 100%;
+            }
+        }
+        .animate-star {
+            position: absolute;
+            left: 50%;
+            bottom: 60%;
+            transform: translate(-50%, 50%);
+            height: 480rem/@baseFontSize;
+            width: 800rem/@baseFontSize;
+            z-index: 9999;
+            img {
+                display: block;
+                height: 100%;
+            }
+        }
+        .alert {
+            position: fixed;
+            z-index: 999;
+            top: 20rem/@baseFontSize;
+            left: 50%;
+            transform: translate(-50%, 0);
+            opacity: 0.9;
+            .ant-alert {
+                border-radius: 4px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+        }
         main {
             overflow: hidden;
             position: relative;

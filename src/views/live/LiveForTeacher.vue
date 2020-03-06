@@ -6,6 +6,13 @@
         <div class="animate-star" ref="animateStar" v-show="showAnimateStar">
             <img :src="animateStarSrc" alt="" class="star">
         </div>
+        <div class="alert">
+            <a-alert
+                    v-if="alertVisible"
+                    :message="alertMessage"
+                    type="success"
+            />
+        </div>
         <main>
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
@@ -17,10 +24,10 @@
                 <div class="video-area" v-show="mode === 'video'" ref="video-area">
                     <video src="" ref="video-play" preload="auto" @timeupdate="videoTimeupdate" @ended="videoEnded"></video>
                 </div>
-                <div class="draw-area">
+                <div class="draw-area" ref="drawArea">
                     <div id="tui-image-editor" ref="drawArea" :class="{mouseStyle: shape === 'FREE_DRAWING'}"></div>
                 </div>
-                <div class="wrapper" v-show="shape === 'NORMAL'" ref="wrapper"></div>
+<!--                <div class="wrapper" v-show="shape === 'NORMAL'" ref="wrapper"></div>-->
                 <div :class="{'operate-area': true, hidden: stageStatus.length > 0}" @mousemove="e => e.stopPropagation()">
                     <div :class="{default: true, active: shape === 'NORMAL'}" @click="changeDrawStatus('NORMAL')">
                         <icon-font type="iconuf00db"/>
@@ -65,13 +72,13 @@
                         <button>开始上课</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
-                                  :stream="streamObj[teacherId]" :studentList="studentList"></TeacherVideo>
+                                  :stream="streamObj[teacherId]" :studentList="studentList" @setAlert="setAlert"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
-                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award"></StudentVideo>
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award" @setAlert="setAlert"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -125,6 +132,8 @@
                 showAnimateStar: false, // 控制星星显示
                 animateStarSrc: animate_star,
                 startStarAnimate: false, // 星星动画节流
+                alertVisible: false, // 顶部提醒框
+                alertMessage: '',
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -266,7 +275,7 @@
         mounted() {
             this.controlPlayArea();
             this.initDrawingBoard();
-            this.sendEventToIframe();
+            // this.sendEventToIframe();
         },
         methods: {
             // 初始化
@@ -414,22 +423,11 @@
                         this.$store.commit('setAudioStatus', {id: id, status: 1})
                     }
 
-                    // 处理操作状态
-                    const allOperation = liveBroadcastData.liveBroadcastData
-                    if (allOperation) { // 当处于全部授权状态时
+                    const allOperation = liveBroadcastData.allOperation
+                    if (allOperation) { // 全部授权同步授权状态
                         this.$store.commit('setControlStatus', {id: id, status: 1})
-                        const params = {
-                            event: 'all_operations',
-                            data: {
-                                sync: {
-                                    page: this.resourceIndex,
-                                    type: 0
-                                },
-                                operations: true
-                            }
-                        }
-                        rtcRoom.notifyMessage(params, id)
                     }
+
                     this.synchronize(id)
                 });
 
@@ -445,6 +443,27 @@
                         })
                     }
                     if (index !== -1) {
+                        // 关闭学生操作
+                        const {liveBroadcastData} = this.$store.state.liveBroadcast
+                        const {allOperation} = liveBroadcastData
+                        const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
+                        const currentOperateUser = controlOpenStatus[0]
+                        if (!allOperation && currentOperateUser === id) {
+                            const params = {
+                                event: 'single_operations',
+                                data: {
+                                    sync: {
+                                        page: this.resourceIndex,
+                                        type: 0
+                                    },
+                                    peerId: ''
+                                }
+                            }
+                            this.setAlert({visiable: false, message: ''})
+                            this.rtcRoom.sendMessage(params)
+                            this.rtcRoom.changeAIControl(teacherPeerId)
+                        }
+
                         this.peerIdList.splice(index, 1)
                         this.$store.commit('setPeerIdList', this.peerIdList)
                         this.$store.commit('resetStatus', id)
@@ -492,6 +511,7 @@
 
                 // 用户关闭页面
                 window.onbeforeunload = () => {
+                    this.allUsersCancelOperate();
                     rtcRoom.leaveRoom();
                 }
 
@@ -519,8 +539,6 @@
                     content: '',
                     centered: true,
                     onOk:() => {
-                        this.allUsersCancelOperate();
-                        rtcRoom.leaveRoom();
                         localStorage.removeItem('9manLiveBroadcast');
                         window.close();
                     },
@@ -533,6 +551,23 @@
                 const allOperation = this.$store.state.liveBroadcast.liveBroadcastData.allOperation
                 if (allOperation) {
                     this.$store.commit('setAllOperationStatus',false)
+                }else { // 取消单个学生授权
+                    const controlOpenStatus = this.$store.getters.updateControlStatus // 处于开启操作的用户数组
+                    if (controlOpenStatus.length > 0) {
+                        const params = {
+                            event: 'single_operations',
+                            data: {
+                                sync: {
+                                    page: this.resourceIndex,
+                                    type: 0
+                                },
+                                peerId: ''
+                            }
+                        }
+                        this.setAlert({visiable: false, message: ''})
+                        this.rtcRoom.sendMessage(params)
+                        this.rtcRoom.changeAIControl(this.teacherId)
+                    }
                 }
                 this.$store.commit('updateStageStatusAll',false)
             },
@@ -815,7 +850,7 @@
                     gameCanvas.dispatchEvent(mouseEvent);
 
                     //鼠标移动事件
-                    wrapper.onmousemove = function (event) {
+                    document.onmousemove = function (event) {
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
@@ -828,7 +863,7 @@
                     };
 
                     //鼠标抬起事件
-                    wrapper.onmouseup = function (event) {
+                    document.onmouseup = function (event) {
                         const e = {
                             screenX: event.screenX,
                             screenY: event.screenY,
@@ -838,8 +873,8 @@
                         mouseEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, e.screenX, e.screenY,
                             e.clientX , e.clientY, false, false, false, false, 0, null);
                         gameCanvas.dispatchEvent(mouseEvent);
-                        wrapper.onmousemove = null;
-                        wrapper.onmouseup = null;
+                        document.onmousemove = null;
+                        document.onmouseup = null;
                     }
                 };
             },
@@ -911,11 +946,15 @@
             // 显示隐藏画板
             changeDrawStatus(status) {
                 this.shape = status;
+                const drawArea = this.$refs.drawArea
                 if (status === 'FREE_DRAWING') {
+                    drawArea.style.pointerEvents = 'auto'
                     this.drawByShape();
                 } else if (status === 'NORMAL') {
+                    drawArea.style.pointerEvents = 'none'
                     this.stopDrawing();
                 } else if (status === 'DELETE') {
+                    drawArea.style.pointerEvents = 'auto'
                     this.eraser();
                 }
             },
@@ -1005,6 +1044,12 @@
                     }
                 }
                 this.rtcRoom.sendMessage(params)
+            },
+
+            // 设置提醒框
+            setAlert (data) {
+                this.alertVisible = data.visiable
+                this.alertMessage = data.message
             },
 
             // 切换动画
@@ -1123,36 +1168,14 @@
             },
 
             // 发放奖励
-            award (e) {
-                if (this.startStarAnimate) return
-                this.startStarAnimate = true
-                const clientX = e.clientX
-                const clientY = e.clientY
-                const moveStar = this.$refs.moveStar
-                const _this = this
-                moveStar.classList.add('move')
-
-                setTimeout(() => {
-                    _this.animateStarSrc = animate_star
-                    this.showAnimateStar = true
-                }, 500)
-                setTimeout(() => {
-                    this.showAnimateStar = false
-                    this.animateStarSrc = ''
-                    moveStar.style.left = clientX + 'px'
-                    moveStar.style.bottom = document.querySelector('.live-container').offsetHeight - clientY + 'px'
-                    moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
-                    moveStar.addEventListener('transitionend', transitionend)
-                }, 2500)
-
-                function transitionend() {
-                    moveStar.style.left = ''
-                    moveStar.style.bottom = ''
-                    moveStar.style.transform = ''
-                    moveStar.classList.remove('move')
-                    _this.startStarAnimate = false
-                    moveStar.removeEventListener('transitionend', transitionend)
-                }
+            award (id) {
+               const params = {
+                   event: 'award',
+                   data: {
+                       id
+                   }
+               }
+                this.rtcRoom.sendMessage(params)
             }
 
         }
@@ -1216,6 +1239,18 @@
                 height: 100%;
             }
         }
+        .alert {
+            position: fixed;
+            z-index: 999;
+            top: 20rem/@baseFontSize;
+            left: 50%;
+            transform: translate(-50%, 0);
+            opacity: 0.9;
+            .ant-alert {
+                border-radius: 4px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            }
+        }
         main {
             overflow: hidden;
             position: relative;
@@ -1256,6 +1291,7 @@
                     top: 0;
                     height: 100%;
                     width: 100%;
+                    pointer-events: none;
                     #tui-image-editor {
                         width: 100% !important;
                         height: 100% !important;

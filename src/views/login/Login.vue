@@ -285,6 +285,7 @@
                 });
                 this.$router.matcher = router.matcher; // 重置路由
                 const roles = this.$store.getters.roles;
+                console.log(roles)
                 this.$router.addRoutes(roles);
                 const fromRoute = this.$route.query.from;
                 if (fromRoute) {

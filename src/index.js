@@ -10,10 +10,14 @@ import './lib/animate.css'
 import 'normalize.css';
 import './css/base.css';
 import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
-    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio, Tooltip } from 'ant-design-vue';
+    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio, Tooltip, Alert } from 'ant-design-vue';
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = false;
+message.config({
+    top: `60px`,
+    maxCount: 3,
+});
 Vue.prototype.$axios= axios;
 Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;
@@ -38,6 +42,7 @@ Vue.use(Spin);
 Vue.use(Pagination);
 Vue.use(Radio);
 Vue.use(Tooltip);
+Vue.use(Alert);
 
 
 Vue.use(VueRouter);

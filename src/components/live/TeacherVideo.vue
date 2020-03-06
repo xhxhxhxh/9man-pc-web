@@ -1,7 +1,7 @@
 <template>
     <div class="teacherVideo-container">
         <div class="video-area" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
-            <video autoplay loop type="video/mp4" ref="video" muted></video>
+            <video autoplay loop type="video/mp4" ref="video" :muted="!teacherId"></video>
             <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                 <div @click="setAllOperationStatus(!allOperation)"
                      :class="{controlAll: allOperation, 'operate-item': true}">
@@ -39,7 +39,7 @@
                 allStage: false
             }
         },
-        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role', 'studentList'],
+        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role', 'studentList', 'teacherId'],
         created () {
 
         },
@@ -84,6 +84,11 @@
 
                 this.$store.commit('updateStageStatusAll', false)
                 this.$store.commit('setAllOperationStatus',status)
+                if (status) {
+                    this.$emit('setAlert', {visiable: true, message: `正处于全部授权`})
+                }else {
+                    this.$emit('setAlert', {visiable: false, message: ``})
+                }
             },
 
             setAllStageStatus () {

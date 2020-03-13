@@ -511,7 +511,7 @@
 
                 // 用户关闭页面
                 window.onbeforeunload = () => {
-                    this.allUsersCancelOperate();
+                    // this.allUsersCancelOperate();
                     rtcRoom.leaveRoom();
                 }
 
@@ -533,7 +533,6 @@
 
             // 离开房间
             leaveRoom () {
-                const rtcRoom = this.rtcRoom
                 this.$confirm({
                     title: '确定要退出房间吗?',
                     content: '',
@@ -1089,14 +1088,15 @@
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 this.gameCache()
+                const video = this.$refs['video-play']
+                video.pause()
                 if (type === 1) { // 视频
                     this.$store.commit('setOperatePermission', false)
                     this.mode = 'video'
-                    const video = this.$refs['video-play']
                     video.src = resourceUrl + '/' + url
                     const play = this.$refs['play']
                     play.classList.remove('pause')
-                    video.pause();
+                    this.progressBar = 0
                 }else if (type === 2) { // 动画
                     this.$store.commit('setOperatePermission', true)
                     this.mode = 'game'

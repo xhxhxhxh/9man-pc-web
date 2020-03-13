@@ -391,6 +391,30 @@
                         this.$store.commit('resetStatus', id)
                         const studentVideo = document.querySelector('#studentVideo' + id)
                         studentVideo.style = ''
+                    }else { // 老师离开取消授权和上台
+                        rtcRoom.changeAISyncStatus(1); // 取消全体授权
+                        rtcRoom.changeAIControl(id)
+                        // 取消单人授权
+                        if (this.operating) {
+                            this.$message.warning('你不能再操作游戏了', 5)
+                            this.operating = false
+                        }
+                        this.setPointerEvents(false)
+
+                        this.setAlert({visiable: false, message: ''})
+                        // 全部下台
+                        this.studentList.forEach(item => {
+                            if (item.isconnect) {
+                                const id = item.uid
+                                const videoBox = document.querySelector('#studentVideo' + id).parentElement
+                                if (videoBox.classList.contains('onStage')) {
+                                    videoBox.classList.remove('onStage')
+                                    videoBox.children[0].style.top = ''
+                                    videoBox.children[0].style.left = ''
+                                }
+                            }
+                        })
+                        this.$store.commit('setStageStatusSortByStage', [])
                     }
                 });
 
@@ -687,13 +711,11 @@
                 const url = courseware.url
                 const resourceUrl = this.$store.state.resourceUrl
                 this.gameCache()
+                const video = this.$refs['video-play']
+                video.pause();
                 if (type === 1) { // 视频
                     this.mode = 'video'
-                    this.$nextTick(function () {
-                        const video = this.$refs['video-play']
-                        video.src = resourceUrl + '/' + url
-                        video.pause();
-                    })
+                    video.src = resourceUrl + '/' + url
                     this.clearAll()
                 }else if (type === 2) { // 动画
                     this.mode = 'game'
@@ -757,7 +779,6 @@
                 const width = rect.width
                 const bottom = rect.bottom
                 const right = rect.right
-                console.log(starDom.getBoundingClientRect())
                 if (this.startStarAnimate) return
                 this.startStarAnimate = true
                 const clientX = right - width / 2

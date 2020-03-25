@@ -13,7 +13,7 @@
                     type="success"
             />
         </div>
-        <main ref="main">
+        <main ref="main" class="clearFix">
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
                     <iframe :src="iframeSrc"
@@ -42,7 +42,8 @@
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]" @award="award"
-                                  v-for="item in studentList" :key="item.uid" :info="item" role="student" :studentId="studentId"></StudentVideo>
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="student" :studentId="studentId"
+                                  :roleInfo="roleInfoObj[item.uid]"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -116,6 +117,7 @@
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
+                roleInfoObj: {}, // 学生职位信息
                 studentNameObj: {}, // 每个学生的姓名
                 teacherId: '', // 老师id
                 studentId: '',
@@ -342,6 +344,8 @@
                             }
                         })
                         rtcRoom.requestRoomInfo('user_sort', {});
+                        rtcRoom.requestRoomInfo('ai_role_info', {});
+                        rtcRoom.requestRoomInfo('room_config', {manager: teacherId});
                         this.studentList.forEach((item, index) => {
                             if (item.uid === id) {
                                 this.$set(this.studentList[index], 'joinRoom', true)
@@ -422,35 +426,52 @@
                     this.$set(this.streamObj, peerId, stream)
                 })
 
+                // 获取学生职位
+                rtcRoom.on('ai-action-notify', (method,data) => {
+                    this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                })
+
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
-                    const list = data.list
-                    const indexOfTeacher = list.indexOf(this.teacherId)
-                    if (indexOfTeacher !== -1) {
-                        list.splice(indexOfTeacher, 1)
-                    }
-                    if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
-                    this.studentIdList = list
-                    this.$store.commit('setStudentIdList', list)
-                    // 处理学生顺序
-                    const studentIdObj = {}
-                    const cacheStudentList = [...this.studentList]
-                    list.forEach((item, index) => {
-                        studentIdObj[item] = index
-                    })
+                    if (method === 'user_sort') {
+                        console.log('user_sort', data)
+                        const list = data.list
+                        const indexOfTeacher = list.indexOf(this.teacherId)
+                        if (indexOfTeacher !== -1) {
+                            list.splice(indexOfTeacher, 1)
+                        }
+                        if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
+                        this.studentIdList = list
+                        this.$store.commit('setStudentIdList', list)
+                        // 处理学生顺序
+                        const studentIdObj = {}
+                        const cacheStudentList = [...this.studentList]
+                        list.forEach((item, index) => {
+                            studentIdObj[item] = index
+                        })
 
-                    for (let i = 0; i < cacheStudentList.length; i++) {
-                        const userId = cacheStudentList[i].uid
-                        const targetIndex = studentIdObj[userId]
-                        if (targetIndex !== undefined && targetIndex !== i) {
-                            // 交换位置
-                            [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
-                            if (targetIndex > i) {
-                                i--
+                        for (let i = 0; i < cacheStudentList.length; i++) {
+                            const userId = cacheStudentList[i].uid
+                            const targetIndex = studentIdObj[userId]
+                            if (targetIndex !== undefined && targetIndex !== i) {
+                                // 交换位置
+                                [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
+                                if (targetIndex > i) {
+                                    i--
+                                }
                             }
                         }
+                        this.studentList = cacheStudentList
+                    }else if (method === 'ai_role_info') {
+                        const roleInfoList = data.list
+                        const roleInfoObj = {}
+                        roleInfoList.forEach(item => {
+                            const src = item.midpath + item.path
+                            roleInfoObj[item.peerId] = {src}
+                        })
+                        this.roleInfoObj = roleInfoObj
                     }
-                    this.studentList = cacheStudentList
+
 
                 });
 
@@ -475,8 +496,6 @@
                     onCancel() {},
                 });
             },
-
-
 
             // 获取课件信息
             getCoursewareInfo (id) {
@@ -768,12 +787,12 @@
                         return middle;
                     }
                 }
-
             },
 
             // 发放奖励
             award () {
                 const starDom = document.querySelector('#studentVideo' + this.studentId + ' .star')
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                 const rect = starDom.getBoundingClientRect()
                 const height = rect.height
                 const width = rect.width
@@ -795,7 +814,7 @@
                     this.showAnimateStar = false
                     this.animateStarSrc = ''
                     moveStar.style.left = clientX + 'px'
-                    moveStar.style.bottom = document.querySelector('.live-container-student').offsetHeight - clientY + 'px'
+                    moveStar.style.bottom = document.querySelector('.live-container-student').offsetHeight - clientY - scrollTop + 'px'
                     moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
                     moveStar.addEventListener('transitionend', transitionend)
                 }, 2500)
@@ -1012,7 +1031,6 @@
                     canvasScale: canvas.offsetWidth / data.hbsize[0]
                 }
             }
-
         }
     }
 </script>
@@ -1069,7 +1087,6 @@
             }
         }
         main {
-            overflow: hidden;
             position: relative;
             .main-left {
                 float: left;

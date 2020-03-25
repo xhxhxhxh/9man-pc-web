@@ -92,7 +92,7 @@
             },
 
             setAllStageStatus () {
-                if (this.$store.getters.updateControlStatus) {
+                if (this.$store.getters.updateControlStatus || this.$store.state.liveBroadcast.liveBroadcastData.allOperation) {
                     return this.$message.warning('前先关闭学生授权', 5);
                 }
                 const stageAllStatus = this.$store.getters.stageAllStatus

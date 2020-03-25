@@ -57,7 +57,7 @@
                         </thead>
                         <tbody>
                             <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="goLiveBroadcast(`liveForStudent/${item.id}/${roomId}/${item['teacher_uid']}/${userId}/${item['courseware_no']}/${item['class_name']}`)">
+                                @click="queryClassInfo(item)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
                                 <td>
@@ -136,7 +136,6 @@
                             this.loading = false;
                             this.totalCount = data.data.count;
                             this.courseList = data.data.data;
-                            this.queryClassInfo(this.courseList[0]['id']);
                         }
                     })
                     .catch(() => {
@@ -145,13 +144,14 @@
             },
 
             // 查询课堂信息
-            queryClassInfo (classId) {
-                const params = {id: classId};
+            queryClassInfo (classInfo) {
+                const params = {id: classInfo.id};
                 this.$axios.get(this.rootUrl + '/v1/classRoom/queryClassRoomInfo', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
                             this.roomId = data.data.data.room_no;
+                            this.goLiveBroadcast(`liveForStudent/${classInfo.id}/${this.roomId}/${classInfo['teacher_uid']}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}`)
                         }
                     })
                     .catch(() => {

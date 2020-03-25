@@ -13,7 +13,7 @@
                     type="success"
             />
         </div>
-        <main>
+        <main class="clearFix">
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
                     <iframe :src="iframeSrc"
@@ -78,7 +78,8 @@
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
-                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award" @setAlert="setAlert"></StudentVideo>
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award" @setAlert="setAlert"
+                                  :roleInfo="roleInfoObj[item.uid]"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -155,6 +156,7 @@
                 // -----------rtcRoom数据---------------
                 rtcRoom: null,
                 peerIdList: [], // 学生的id
+                roleInfoObj: {}, // 学生职位信息
                 teacherId: '', // 老师id
                 roomId: '',
                 studentList: [],
@@ -297,8 +299,6 @@
 
                 // 获取课件信息
                 this.getCoursewareInfo(this.$route.params.coursewareId)
-
-
             },
 
             // 动态改变rem值
@@ -356,7 +356,6 @@
                         }, 1000)
                     }
                 }
-
             },
 
             // 初始化rtcROOM
@@ -388,6 +387,9 @@
                                 this.peerIdList.push(peerId)
                             }
                         })
+                        rtcRoom.requestRoomInfo('user_sort', {});
+                        rtcRoom.requestRoomInfo('room_config', {manager: teacherPeerId});
+                        rtcRoom.requestRoomInfo('ai_role_info', {});
                     }
                     if (!this.peerIdList.includes(id) && id !== teacherPeerId) {
                         this.peerIdList.push(id)
@@ -400,7 +402,6 @@
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
                     if (id === teacherPeerId) return
-
                     rtcRoom.requestRoomInfo('user_sort', {});
                     this.studentList.forEach((item, index) => {
                         if (item.uid === id) {
@@ -423,10 +424,10 @@
                         this.$store.commit('setAudioStatus', {id: id, status: 1})
                     }
 
-                    const allOperation = liveBroadcastData.allOperation
-                    if (allOperation) { // 全部授权同步授权状态
-                        this.$store.commit('setControlStatus', {id: id, status: 1})
-                    }
+                    // const allOperation = liveBroadcastData.allOperation
+                    // if (allOperation) { // 全部授权同步授权状态
+                    //     this.$store.commit('setControlStatus', {id: id, status: 1})
+                    // }
 
                     this.synchronize(id)
                 });
@@ -477,35 +478,51 @@
                     this.$set(this.streamObj, peerId, stream)
                 })
 
+                // 获取学生职位
+                rtcRoom.on('ai-action-notify', (method,data) => {
+                    this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                })
+
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
-                    const list = data.list
-                    const indexOfTeacher = list.indexOf(this.teacherId)
-                    if (indexOfTeacher !== -1) {
-                        list.splice(indexOfTeacher, 1)
-                    }
-                    if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
-                    this.studentIdList = list
-                    this.$store.commit('setStudentIdList', list)
-                    // 处理学生顺序
-                    const studentIdObj = {}
-                    const cacheStudentList = [...this.studentList]
-                    list.forEach((item, index) => {
-                        studentIdObj[item] = index
-                    })
+                    if (method === 'user_sort') {
+                        console.log('user_sort', data)
+                        const list = data.list
+                        const indexOfTeacher = list.indexOf(this.teacherId)
+                        if (indexOfTeacher !== -1) {
+                            list.splice(indexOfTeacher, 1)
+                        }
+                        if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
+                        this.studentIdList = list
+                        this.$store.commit('setStudentIdList', list)
+                        // 处理学生顺序
+                        const studentIdObj = {}
+                        const cacheStudentList = [...this.studentList]
+                        list.forEach((item, index) => {
+                            studentIdObj[item] = index
+                        })
 
-                    for (let i = 0; i < cacheStudentList.length; i++) {
-                        const userId = cacheStudentList[i].uid
-                        const targetIndex = studentIdObj[userId]
-                        if (targetIndex !== undefined && targetIndex !== i) {
-                            // 交换位置
-                            [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
-                            if (targetIndex > i) {
-                                i--
+                        for (let i = 0; i < cacheStudentList.length; i++) {
+                            const userId = cacheStudentList[i].uid
+                            const targetIndex = studentIdObj[userId]
+                            if (targetIndex !== undefined && targetIndex !== i) {
+                                // 交换位置
+                                [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
+                                if (targetIndex > i) {
+                                    i--
+                                }
                             }
                         }
+                        this.studentList = cacheStudentList
+                    } else if (method === 'ai_role_info') {
+                        const roleInfoList = data.list
+                        const roleInfoObj = {}
+                        roleInfoList.forEach(item => {
+                            const src = item.midpath + item.path
+                            roleInfoObj[item.peerId] = {src}
+                        })
+                        this.roleInfoObj = roleInfoObj
                     }
-                    this.studentList = cacheStudentList
 
                 });
 
@@ -545,7 +562,7 @@
                 });
             },
 
-            // 老师离开房间 取消全部授权和全部上台
+            // 老师离开房间 取消全部授权和全部上台(移交给学生端处理)
             allUsersCancelOperate () {
                 const allOperation = this.$store.state.liveBroadcast.liveBroadcastData.allOperation
                 if (allOperation) {
@@ -826,7 +843,7 @@
                 };
             },
 
-            // 当处于课件操作状态时，将wrapper中的事件传发到iframe
+            // 当处于课件操作状态时，将wrapper中的事件传发到iframe (改用点击穿透)
             sendEventToIframe () {
                 const wrapper = this.$refs.wrapper;
                 const iframe = this.$refs.iframe;
@@ -1177,30 +1194,12 @@
                }
                 this.rtcRoom.sendMessage(params)
             }
-
         }
     }
 </script>
 
 <style lang="less">
     @import "../../less/index";
-
-    @keyframes animate-star {
-        0% {
-            display: block;
-            width: 0;
-            height: 0;
-            left: 0;
-            top: 0;
-        }
-        16.7% {
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: url("./images/animate_star.gif") no-repeat;
-            background-size: cover;
-        }
-    }
 
     .live-container {
         background:rgba(248,209,194,1);
@@ -1252,7 +1251,6 @@
             }
         }
         main {
-            overflow: hidden;
             position: relative;
             .main-left {
                 float: left;

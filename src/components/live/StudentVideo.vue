@@ -1,7 +1,7 @@
 <template>
     <div class="studentVideo-container" ref="studentVideo">
         <div class="monkey-box">
-            <img src="./images/student_bg.png" alt="" class="monkey">
+            <img :src="roleInfo? $store.state.resourceUrl + '/' + roleInfo.src: ''" alt="" :class="{monkey: true, move: !!roleInfo}" >
         </div>
         <div ref="videoBox" :class="{'video-box': true, hasJoinedRoom: info.joinRoom, hasConnected: info.isconnect}">
             <div class="student-video-area" :id="'studentVideo' + id" @mouseenter="info.isconnect? showOperateArea = true: ''"
@@ -40,7 +40,7 @@
                 showOperateArea: false,
             }
         },
-        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId'],
+        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId', 'roleInfo'],
         components: {
 
         },
@@ -151,7 +151,7 @@
             // 学生上台
             onStage() {
                 if (this.role !== 'teacher') return
-                if (this.$store.getters.updateControlStatus) { // 有学生处于授权状态时不能上台
+                if (this.$store.getters.updateControlStatus || this.$store.state.liveBroadcast.liveBroadcastData.allOperation) { // 有学生处于授权状态时不能上台
                     return this.$message.warning('前先关闭学生授权', 5);
                 }
                 const videoBox = this.$refs.videoBox
@@ -206,6 +206,18 @@
 <style lang="less" scoped>
     @import "../../less/index";
 
+    @keyframes animal-move {
+        50% {
+            transform: translate(0, 0);
+        }
+        75% {
+            transform: translate(0, 0) scale(0.8);
+        }
+        100% {
+            transform: translate(0, 0) scale(1);
+        }
+    }
+
     .studentVideo-container {
         user-select: none;
         width: 393rem/@baseFontSize;
@@ -220,10 +232,14 @@
             height: 100%;
             .monkey {
                 position: absolute;
-                right: 0;
+                transform: translate(-100%, 0);
+                left: 0;
                 top: 38rem/@baseFontSize;
                 display: block;
                 width: 100rem/@baseFontSize;
+                &.move {
+                    animation: animal-move 1s forwards;
+                }
             }
         }
         .video-box {

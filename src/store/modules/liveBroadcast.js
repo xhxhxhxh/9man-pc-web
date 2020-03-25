@@ -227,17 +227,21 @@ const liveBroadcast = {
             const controlCloseCurrentObj = {...state.liveBroadcastDataCurrent.controlStatus}
             const controlCloseObj = {...state.liveBroadcastData.controlStatus}
 
+            for (let id in controlCloseCurrentObj) {
+                controlCloseObj[id] = 2
+                controlCloseCurrentObj[id] = 2
+            }
             if (!status) { // 全体禁止操作
-                for (let id in controlCloseCurrentObj) {
-                    controlCloseObj[id] = 2
-                    controlCloseCurrentObj[id] = 2
-                }
+                // for (let id in controlCloseCurrentObj) {
+                //     controlCloseObj[id] = 2
+                //     controlCloseCurrentObj[id] = 2
+                // }
                 state.rtcRoom.changeAISyncStatus(1);
             } else { // 全体操作
-                for (let id in controlCloseCurrentObj) {
-                    controlCloseObj[id] = 1
-                    controlCloseCurrentObj[id] = 1
-                }
+                // for (let id in controlCloseCurrentObj) {
+                //     controlCloseObj[id] = 1
+                //     controlCloseCurrentObj[id] = 1
+                // }
                 state.rtcRoom.changeAISyncStatus(0);
             }
             state.liveBroadcastDataCurrent.controlStatus = controlCloseCurrentObj

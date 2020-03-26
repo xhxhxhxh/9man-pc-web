@@ -68,11 +68,11 @@ const liveBroadcast = {
             if (arr.length === 0) {
                 state.stageStatusSortByStage = []
             }else {
-                arr.forEach(id => {
-                    if (state.stageStatusSortByStage.indexOf(id) === -1) {
-                        state.stageStatusSortByStage.push(id)
-                    }
-                })
+                const stageStatusSortByStage = state.stageStatusSortByStage
+                for (let id of state.liveBroadcastData.studentIdList) {
+                    if (arr.indexOf(id) === -1 || stageStatusSortByStage.indexOf(id) !== -1) continue
+                    stageStatusSortByStage.push(id)
+                }
             }
         },
 

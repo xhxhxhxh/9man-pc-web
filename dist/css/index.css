@@ -518,7 +518,6 @@ from {
   border-radius: 0 23px 23px 0;
 }
 .home-container .home-foot {
-  height: 306px;
   background-color: #2D2D2D;
 }
 .home-container .home-foot main {
@@ -547,6 +546,12 @@ from {
   cursor: pointer;
 }
 .home-container .home-foot main .base-info .nav > dl dd:hover {
+  color: #f85415;
+}
+.home-container .home-foot main .base-info .nav > dl dd a {
+  color: #cccccc;
+}
+.home-container .home-foot main .base-info .nav > dl dd a:hover {
   color: #f85415;
 }
 .home-container .home-foot main .base-info .QR-code {
@@ -718,40 +723,6 @@ from {
   color: #fff;
 }
 
-@-webkit-keyframes animate-star {
-0% {
-    display: block;
-    width: 0;
-    height: 0;
-    left: 0;
-    top: 0;
-}
-16.7% {
-    left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-    background: url(../images/ea6d292a-animate_star.gif) no-repeat;
-    background-size: cover;
-}
-}
-@keyframes animate-star {
-0% {
-    display: block;
-    width: 0;
-    height: 0;
-    left: 0;
-    top: 0;
-}
-16.7% {
-    left: 50%;
-    top: 50%;
-    -webkit-transform: translate(-50%, -50%);
-    transform: translate(-50%, -50%);
-    background: url(../images/ea6d292a-animate_star.gif) no-repeat;
-    background-size: cover;
-}
-}
 .live-container {
   background: #f8d1c2;
   padding: 0.2rem 1.4rem;
@@ -809,7 +780,6 @@ from {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .live-container main {
-  overflow: hidden;
   position: relative;
 }
 .live-container main .main-left {
@@ -1195,7 +1165,6 @@ from {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .live-container-student main {
-  overflow: hidden;
   position: relative;
 }
 .live-container-student main .main-left {
@@ -2390,6 +2359,34 @@ body > textarea {
   border-radius: 0 0 0.1rem 0.1rem;
 }
 
+@-webkit-keyframes animal-move-data-v-3155ba50 {
+50% {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+}
+75% {
+    -webkit-transform: translate(0, 0) scale(0.8);
+    transform: translate(0, 0) scale(0.8);
+}
+100% {
+    -webkit-transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1);
+}
+}
+@keyframes animal-move-data-v-3155ba50 {
+50% {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
+}
+75% {
+    -webkit-transform: translate(0, 0) scale(0.8);
+    transform: translate(0, 0) scale(0.8);
+}
+100% {
+    -webkit-transform: translate(0, 0) scale(1);
+    transform: translate(0, 0) scale(1);
+}
+}
 .studentVideo-container[data-v-3155ba50] {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -2408,10 +2405,16 @@ body > textarea {
 }
 .studentVideo-container .monkey-box .monkey[data-v-3155ba50] {
   position: absolute;
-  right: 0;
+  -webkit-transform: translate(-100%, 0);
+  transform: translate(-100%, 0);
+  left: 0;
   top: 0.38rem;
   display: block;
   width: 1rem;
+}
+.studentVideo-container .monkey-box .monkey.move[data-v-3155ba50] {
+  -webkit-animation: animal-move-data-v-3155ba50 1s forwards;
+  animation: animal-move-data-v-3155ba50 1s forwards;
 }
 .studentVideo-container .video-box[data-v-3155ba50] {
   position: relative;
@@ -4137,6 +4140,18 @@ body > textarea {
   cursor: pointer;
   color: #f85415;
 }
+.register-container .register-area .register main form .ant-form-item .login p {
+  margin: 0;
+}
+.register-container .register-area .register main form .ant-form-item .protocol {
+  font-size: 12px;
+  margin: 0;
+  text-align: center;
+  line-height: 30px;
+}
+.register-container .register-area .register main form .ant-form-item .protocol a {
+  color: #5499d9;
+}
 .register-container .register-area .register main form .ant-form-item:nth-child(2) .getVerificationCode {
   width: 84px;
   height: 36px;
@@ -5016,6 +5031,15 @@ body > textarea {
 }
 .login-container .login-area .login main form .ant-form-item .register span:hover {
   color: #f85415;
+}
+.login-container .login-area .login main form .ant-form-item .protocol {
+  font-size: 12px;
+  margin: 0;
+  text-align: center;
+  line-height: 30px;
+}
+.login-container .login-area .login main form .ant-form-item .protocol a {
+  color: #5499d9;
 }
 .login-container .login-area .login main form .ant-form-item:nth-child(3) .getVerificationCode {
   -webkit-user-select: none;

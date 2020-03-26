@@ -161,6 +161,7 @@
                 roomId: '',
                 studentList: [],
                 studentIdList: [], // 存放学生初次连接的id
+                studentIdIndexObj: {}, // studentId与其在studentList对应的次序
                 teacherName: '',
                 className: '',
                 streamObj: {}, // 视频流
@@ -403,12 +404,9 @@
                     console.log('用户连接：' + id)
                     if (id === teacherPeerId) return
                     rtcRoom.requestRoomInfo('user_sort', {});
-                    this.studentList.forEach((item, index) => {
-                        if (item.uid === id) {
-                            this.$set(this.studentList[index], 'joinRoom', true)
-                            this.$set(this.studentList[index], 'isconnect', true)
-                        }
-                    })
+
+                    this.$set(this.studentList[this.studentIdIndexObj[id]], 'joinRoom', true)
+                    this.$set(this.studentList[this.studentIdIndexObj[id]], 'isconnect', true)
 
                     const liveBroadcastData = this.$store.state.liveBroadcast.liveBroadcastData
                     // 处理静音状态
@@ -437,11 +435,7 @@
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
                     const index = this.peerIdList.indexOf(id)
                     if (id !== teacherPeerId) {
-                        this.studentList.forEach((item, index) => {
-                            if (item.uid === id) {
-                                this.$set(this.studentList[index], 'isconnect', false)
-                            }
-                        })
+                        this.$set(this.studentList[this.studentIdIndexObj[id]], 'isconnect', false)
                     }
                     if (index !== -1) {
                         // 关闭学生操作
@@ -486,7 +480,6 @@
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
                     if (method === 'user_sort') {
-                        console.log('user_sort', data)
                         const list = data.list
                         const indexOfTeacher = list.indexOf(this.teacherId)
                         if (indexOfTeacher !== -1) {
@@ -497,23 +490,20 @@
                         this.$store.commit('setStudentIdList', list)
                         // 处理学生顺序
                         const studentIdObj = {}
-                        const cacheStudentList = [...this.studentList]
+                        const studentIdOldIndexObj = {} // 旧次序
+                        const cacheStudentList = []
+                        this.studentList.forEach((item, index) => {
+                            studentIdOldIndexObj[item.uid] = index
+                        })
                         list.forEach((item, index) => {
                             studentIdObj[item] = index
+                            if(studentIdOldIndexObj[item] !== undefined) {
+                                cacheStudentList[index] = this.studentList[studentIdOldIndexObj[item]]
+                            }
                         })
 
-                        for (let i = 0; i < cacheStudentList.length; i++) {
-                            const userId = cacheStudentList[i].uid
-                            const targetIndex = studentIdObj[userId]
-                            if (targetIndex !== undefined && targetIndex !== i) {
-                                // 交换位置
-                                [cacheStudentList[i], cacheStudentList[targetIndex]] = [cacheStudentList[targetIndex], cacheStudentList[i]]
-                                if (targetIndex > i) {
-                                    i--
-                                }
-                            }
-                        }
                         this.studentList = cacheStudentList
+                        this.studentIdIndexObj = studentIdObj
                     } else if (method === 'ai_role_info') {
                         const roleInfoList = data.list
                         const roleInfoObj = {}
@@ -654,7 +644,8 @@
                         if (data.code === 200) {
                             const studentList = data.data.data.student_list
                             const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
-                            studentList.forEach(item => {
+                            studentList.forEach((item, index) => {
+                                this.studentIdIndexObj[item.uid] = index
                                 if (localStudentIdList.includes(item.uid)) {
                                     item.joinRoom = true
                                 }else {

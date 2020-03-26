@@ -83,6 +83,10 @@
                                 <div class="login">
                                     <p>已有账号? <span @click="$router.push('/login')">马上登录</span></p>
                                 </div>
+                                <p class="protocol">
+                                    <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
+                                    <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                                </p>
                             </a-form-item>
                         </a-form>
                     </main>
@@ -409,6 +413,18 @@
                                 span {
                                     cursor: pointer;
                                     color: @themeColor;
+                                }
+                                p {
+                                    margin: 0;
+                                }
+                            }
+                            .protocol {
+                                font-size: 12px;
+                                margin: 0;
+                                text-align: center;
+                                line-height: 30px;
+                                a {
+                                    color:  #5499d9;
                                 }
                             }
                         }

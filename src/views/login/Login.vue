@@ -73,6 +73,10 @@
                                     登 录
                                 </a-button>
                                 <div class="register"><span @click="$router.push('/register')">没有账号点击注册!</span></div>
+                                <p class="protocol">
+                                    <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
+                                    <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                                </p>
                             </a-form-item>
                         </a-form>
                     </main>
@@ -465,6 +469,15 @@
                                     &:hover {
                                         color: @themeColor;
                                     }
+                                }
+                            }
+                            .protocol {
+                                font-size: 12px;
+                                margin: 0;
+                                text-align: center;
+                                line-height: 30px;
+                                a {
+                                    color:  #5499d9;
                                 }
                             }
                         }

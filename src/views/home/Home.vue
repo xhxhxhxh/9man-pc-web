@@ -248,6 +248,12 @@
                             <dd>
                                 <span>功能特色</span>
                             </dd>
+                            <dd>
+                                <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                            </dd>
+                            <dd>
+                                <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
+                            </dd>
                         </dl>
                         <dl>
                             <dt>
@@ -1082,7 +1088,6 @@
             }
         }
         .home-foot {
-            height: 306px;
             background-color: #2D2D2D;
             main {
                 width: 1100px;
@@ -1110,6 +1115,12 @@
                                 cursor: pointer;
                                 &:hover {
                                     color: @themeColor;
+                                }
+                                a {
+                                    color: #cccccc;
+                                    &:hover {
+                                        color: @themeColor;
+                                    }
                                 }
                             }
                         }

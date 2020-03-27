@@ -84,8 +84,8 @@
                                     <p>已有账号? <span @click="$router.push('/login')">马上登录</span></p>
                                 </div>
                                 <p class="protocol">
-                                    <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
-                                    <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                                    <router-link to="/agreements/agreement">《用户服务协议》</router-link>
+                                    <router-link to="/agreements/privacyPolicy">《隐私政策》</router-link>
                                 </p>
                             </a-form-item>
                         </a-form>

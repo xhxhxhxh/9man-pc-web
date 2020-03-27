@@ -108,6 +108,7 @@
                 iframeSrcCache: '',
                 coursewareName: '',
                 //-----------播放器控件数据---------------
+                progress: 0, // 视频进度0-1
                 //-----------画板数据---------------
                 imageEditor: null,
                 shape: 'NORMAL', // NORMAL时可操作游戏 FREE_DRAWING画板 DELETE删除
@@ -322,6 +323,20 @@
                                 videoBox.classList.add('onStage')
                             })
                         })
+
+                        // 视频动画同步
+                        const courseWare_list = result.courseWare_list
+                        if (courseWare_list && courseWare_list.length > 0) {
+                            const video = this.$refs['video-play']
+                            const info = courseWare_list[0]
+                            video.oncanplay = () => {
+                                video.oncanplay = null
+                                video.currentTime = info.value * video.duration
+                                if (info.isplay) {
+                                    video.play()
+                                }
+                            }
+                        }
                     }
                 })
 
@@ -409,6 +424,10 @@
                             }
                         })
                         this.$store.commit('setStageStatusSortByStage', [])
+
+                        // 暂停视频
+                        const video = this.$refs['video-play']
+                        video.pause()
                     }
                 });
 
@@ -424,14 +443,14 @@
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
                     if (method === 'user_sort') {
+                        console.log(method, data)
                         const list = data.list
                         const indexOfTeacher = list.indexOf(this.teacherId)
                         if (indexOfTeacher !== -1) {
                             list.splice(indexOfTeacher, 1)
                         }
                         if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
-                        this.studentIdList = list
-                        this.$store.commit('setStudentIdList', list)
+
                         // 处理学生顺序
                         const studentIdObj = {}
                         const studentIdOldIndexObj = {} // 旧次序
@@ -443,9 +462,23 @@
                             studentIdObj[item] = index
                             if(studentIdOldIndexObj[item] !== undefined) {
                                 cacheStudentList[index] = this.studentList[studentIdOldIndexObj[item]]
+                                delete studentIdOldIndexObj[item]
+                            }else {
+                                list.splice(index, 1)
                             }
                         })
+                        let len = list.length
+                        if(len < this.studentList.length) {
+                            for(let key in studentIdOldIndexObj) {
+                                cacheStudentList[len] = this.studentList[studentIdOldIndexObj[key]]
+                                studentIdObj[key] = len
+                                list.push(key)
+                                len++
+                            }
+                        }
 
+                        this.studentIdList = list
+                        this.$store.commit('setStudentIdList', list)
                         this.studentList = cacheStudentList
                         this.studentIdIndexObj = studentIdObj
                     }else if (method === 'ai_role_info') {
@@ -723,6 +756,10 @@
                     this.mode = 'video'
                     video.src = resourceUrl + '/' + url
                     this.clearAll()
+                    video.oncanplay = () => {
+                        video.oncanplay = null
+                        video.currentTime = this.progress * video.duration
+                    }
                 }else if (type === 2) { // 动画
                     this.mode = 'game'
                     this.iframeSrc = resourceUrl + '/' + url + `&roomId=${this.roomId}&peerId=` + this.studentId
@@ -835,6 +872,7 @@
                     switch (event) {
                         case 'show_content_change': // 更换页码
                             this.resourceIndex = data.sync.page
+                            this.progress = data.value
                             this.changeAnimate()
                             break;
                         case 'media_controll': // 控制视频播放

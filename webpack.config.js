@@ -37,6 +37,11 @@ module.exports = {
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
             },
+            "/agreement": {
+                target: 'https://www.9mankid.com',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true
+            },
             "/datas": {
                 target: 'https://api.9mankid.com/uploads',
                 pathRewrite: {'^/' : '/'},

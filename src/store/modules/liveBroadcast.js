@@ -8,9 +8,11 @@ const liveBroadcast = {
             controlStatus: {}, // 操作
             stageStatus: {}, // 学生上台状态
             studentIdList: [], // 进入过房间的学生ID
+            videoProgress: {}, // 视频进度
             mode: '', // 缓存操作模式
             coursewarePage: 0,
-            allOperation: false
+            allOperation: false,
+            roomId: ''
         },
         peerIdList: [], // 当前在线学生id
         liveBroadcastDataCurrent: { // 当前在线学生的状态缓存
@@ -27,6 +29,20 @@ const liveBroadcast = {
         // 设置rtcRoom
         setRtcRoom (state, data) {
             state.rtcRoom = data
+        },
+
+        // 设置roomId
+        setRoomId (state, data) {
+            state.liveBroadcastData.roomId = data
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
+        // 设置videoProgress
+        setVideoProgress (state, data) {
+            const index = data.index
+            const progress = data.progress
+            state.liveBroadcastData.videoProgress[index] = progress
+            // this.commit('writeLiveBroadcastDataToLocalStorage')
         },
 
         // 设置老师id
@@ -175,15 +191,19 @@ const liveBroadcast = {
         },
 
         // 读取本地存储
-        readLiveBroadcastDataFromLocalStorage(state) {
+        readLiveBroadcastDataFromLocalStorage(state, roomId) {
             const localStorage = common.getLocalStorage('9manLiveBroadcast')
+            if (!localStorage) return
+            const localRoomId = localStorage.roomId
+            if (roomId !== localRoomId) { // 不相同房间则不读取存储
+                window.localStorage.removeItem('9manLiveBroadcast')
+                return
+            }
             // 重置部分内容
             localStorage.controlStatus = {}
             localStorage.stageStatus = {}
             localStorage.allOperation = false
-            if (localStorage) {
-                state.liveBroadcastData = localStorage
-            }
+            state.liveBroadcastData = localStorage
         },
 
         // 写入本地存储

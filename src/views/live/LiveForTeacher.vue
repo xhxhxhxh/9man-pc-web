@@ -93,6 +93,7 @@
     import { Icon } from 'ant-design-vue';
     import moment from 'moment';
     var ImageEditor = require('tui-image-editor/dist/tui-image-editor.min');
+    // var ImageEditor = require('@/lib/tui-image-editor.min');
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
     import animate_star from './images/animate_star.gif';
@@ -284,7 +285,7 @@
             // 初始化
             async init () {
                 // 载入本地存储
-                this.$store.commit('readLiveBroadcastDataFromLocalStorage')
+                this.$store.commit('readLiveBroadcastDataFromLocalStorage', this.$route.params.roomId)
 
                 // rem适配
                 this.resize()
@@ -371,6 +372,7 @@
                 this.teacherId = teacherPeerId
                 this.roomId = roomId
                 this.$store.commit('setTeacherId', teacherPeerId)
+                this.$store.commit('setRoomId', roomId)
                 this.className = userParams.classname
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
@@ -486,8 +488,7 @@
                             list.splice(indexOfTeacher, 1)
                         }
                         if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
-                        this.studentIdList = list
-                        this.$store.commit('setStudentIdList', list)
+
                         // 处理学生顺序
                         const studentIdObj = {}
                         const studentIdOldIndexObj = {} // 旧次序
@@ -499,9 +500,23 @@
                             studentIdObj[item] = index
                             if(studentIdOldIndexObj[item] !== undefined) {
                                 cacheStudentList[index] = this.studentList[studentIdOldIndexObj[item]]
+                                delete studentIdOldIndexObj[item]
+                            }else {
+                                list.splice(index, 1)
                             }
                         })
+                        let len = list.length
+                        if(len < this.studentList.length) {
+                            for(let key in studentIdOldIndexObj) {
+                                cacheStudentList[len] = this.studentList[studentIdOldIndexObj[key]]
+                                studentIdObj[key] = len
+                                list.push(key)
+                                len++
+                            }
+                        }
 
+                        this.studentIdList = list
+                        this.$store.commit('setStudentIdList', list)
                         this.studentList = cacheStudentList
                         this.studentIdIndexObj = studentIdObj
                     } else if (method === 'ai_role_info') {
@@ -600,9 +615,25 @@
                             page: this.resourceIndex,
                             type: 0
                         },
-
                     }
                 }
+
+                // 视频模式下
+                if(this.mode === 'video') {
+                    const video = this.$refs['video-play']
+                    Object.assign(params.data, {
+                        courseWare_list: [
+                            {
+                                isStart: true,
+                                value: this.progressBar / 100,
+                                isplay: !video.paused,
+                                type: 0,
+                                contentType: 1
+                            }
+                        ]
+                    })
+                }
+
                 this.rtcRoom.notifyMessage(params, userId)
             },
 
@@ -685,6 +716,36 @@
                         borderColor: '#000',
                     }
                 });
+                // console.log(instance)
+                // var path = new instance._graphics._fabric.Path('M121.32,0L44.58,0C36.67,0,29.5,3.22,24.31,8.41c-5.19,5.19-8.41,12.37-8.41,20.28c0,15.82,12.87,28.69,28.69,28.69c0,0,4.4,0,7.48,0C36.66,72.78,8.4,101.04,8.4,101.04C2.98,106.45,0,113.66,0,121.32c0,7.66,2.98,14.87,8.4,20.29l0,0c5.42,5.42,12.62,8.4,20.28,8.4c7.66,0,14.87-2.98,20.29-8.4c0,0,28.26-28.25,43.66-43.66c0,3.08,0,7.48,0,7.48c0,15.82,12.87,28.69,28.69,28.69c7.66,0,14.87-2.99,20.29-8.4c5.42-5.42,8.4-12.62,8.4-20.28l0-76.74c0-7.66-2.98-14.87-8.4-20.29C136.19,2.98,128.98,0,121.32,0z',{
+                //     fill: null,
+                //     strokeLineCap: 'round',
+                //     strokeLineJoin: 'round',
+                //     strokeDashArray: null,
+                //     strokeWidth: 3,
+                //     originX: 'center',
+                //     originY: 'center',
+                //     borderColor: "#000",
+                //     cornerColor: "green",
+                //     cornerSize: 0,
+                //     lockMovementX: true,
+                //     lockMovementY: true,
+                //     lockRotation: true,
+                //     lockScalingX: true,
+                //     lockScalingY: true,
+                //     stroke: "rgba(255,0,0,1)",
+                //     transparentCorners: false
+                // });
+                // path.set({ left: 120, top: 120 });
+                // instance._graphics._canvas.add(path);
+                // path.setCoords();
+                //
+                // instance._graphics._canvas.clearContext(instance._graphics._canvas.contextTop);
+                // var ctx = instance._graphics._canvas.contextTop;
+                //
+                // ctx.shadowColor = '';
+                // ctx.shadowBlur = ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
+                // instance._graphics._canvas.renderAll();
                 this.imageEditor = instance;
                 const _this = this;
                 const canvas = document.querySelector('#tui-image-editor');
@@ -1070,6 +1131,9 @@
                 this.changeDrawStatus('NORMAL');
                 const length = this.coursewareResource.length - 1
                 let index = this.resourceIndex
+                if(!firstLoad) {
+                    this.$store.commit('setVideoProgress', {index, progress: this.progressBar}) // 存储视频进度
+                }
                 if (direction === 2) { // 动画前进
                     if (index >= length && !firstLoad) {
                         this.lastPageTip = true
@@ -1104,7 +1168,12 @@
                     video.src = resourceUrl + '/' + url
                     const play = this.$refs['play']
                     play.classList.remove('pause')
-                    this.progressBar = 0
+                    let videoProgress = this.$store.state.liveBroadcast.liveBroadcastData.videoProgress[this.resourceIndex]
+                    this.progressBar = videoProgress? videoProgress: 0
+                    video.oncanplay = () => {
+                        video.oncanplay = null
+                        video.currentTime = this.progressBar / 100 * video.duration
+                    }
                 }else if (type === 2) { // 动画
                     this.$store.commit('setOperatePermission', true)
                     this.mode = 'game'
@@ -1116,6 +1185,7 @@
                     data: {
                         page: this.resourceIndex,
                         type: 0,
+                        value: this.progressBar / 100,
                         sync: {
                             page: this.resourceIndex,
                             type: 0

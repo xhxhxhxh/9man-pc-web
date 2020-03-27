@@ -74,8 +74,8 @@
                                 </a-button>
                                 <div class="register"><span @click="$router.push('/register')">没有账号点击注册!</span></div>
                                 <p class="protocol">
-                                    <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
-                                    <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                                    <router-link to="/agreements/agreement">《用户服务协议》</router-link>
+                                    <router-link to="/agreements/privacyPolicy">《隐私政策》</router-link>
                                 </p>
                             </a-form-item>
                         </a-form>
@@ -289,7 +289,6 @@
                 });
                 this.$router.matcher = router.matcher; // 重置路由
                 const roles = this.$store.getters.roles;
-                console.log(roles)
                 this.$router.addRoutes(roles);
                 const fromRoute = this.$route.query.from;
                 if (fromRoute) {

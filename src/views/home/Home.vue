@@ -249,10 +249,10 @@
                                 <span>功能特色</span>
                             </dd>
                             <dd>
-                                <a href="https://www.9mankid.com/agreement/privacyPolicy.html" target="_blank">《隐私政策》</a>
+                                <router-link to="/agreements/privacyPolicy">《隐私政策》</router-link>
                             </dd>
                             <dd>
-                                <a href="https://www.9mankid.com/agreement/SoftwareAndServiceAgreement.html" target="_blank">《用户服务协议》</a>
+                                <router-link to="/agreements/agreement">《用户服务协议》</router-link>
                             </dd>
                         </dl>
                         <dl>

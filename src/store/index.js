@@ -18,6 +18,7 @@ export default new Vuex.Store({
         rootUrl: env === 'production'? 'https://edu.9man.com': '', // https://edu.9man.com
         resourceUrl: env === 'production'? 'https://api.9mankid.com/uploads': '', // https://api.9mankid.com/uploads
         apiUrl: env === 'production'? 'https://api.9mankid.com/api': '', // https://api.9mankid.com/api
+        localUrl: env === 'production'? 'https://www.9mankid.com': '',
         identity: '',
         updateInfo: 0,
         updateUsername: 0,

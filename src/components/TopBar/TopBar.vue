@@ -2,7 +2,7 @@
     <div class="topBar-container">
         <div class="topBar-box">
             <div class="logo">
-                <img src="./images/logo.png" alt="">
+                <img src="./images/logo.png" alt="" @click="() => {$route.path !== '/home'? $router.push('/'): ''}">
             </div>
             <div class="login">
                 <span class="contract">联系方式：15558067572</span>
@@ -110,6 +110,9 @@
             float: left;
             img {
                 vertical-align: middle;
+                &:hover {
+                    cursor: pointer;
+                }
             }
         }
         .login {

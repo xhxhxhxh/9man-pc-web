@@ -41,8 +41,11 @@ const liveBroadcast = {
         setVideoProgress (state, data) {
             const index = data.index
             const progress = data.progress
+            const noSave = data.noSave
             state.liveBroadcastData.videoProgress[index] = progress
-            // this.commit('writeLiveBroadcastDataToLocalStorage')
+            if (!noSave) {
+                this.commit('writeLiveBroadcastDataToLocalStorage')
+            }
         },
 
         // 设置老师id

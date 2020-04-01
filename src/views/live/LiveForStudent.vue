@@ -913,11 +913,14 @@
                         case 'add_line': // 处理画板数据
                             path = data.pointlist
                             this.drawCurve()
+                            const mainRect = main.getBoundingClientRect()
+                            const mainLeft = mainRect.left
+                            const mainTop = mainRect.top
                             if (!lineIdObj[data.lineId]) { // id不存在则开始画新的线
                                 let size = this.getDrawBoardSize(data, canvas)
                                 mouseEvent.initMouseEvent("mousedown", true, true, document.defaultView, 0, 0, 0,
-                                    path[index][0] * size.canvasScale - size.scrollLeft,
-                                    path[index][1] * size.canvasScale - size.scrollTop,
+                                    path[index][0] * size.canvasScale - size.scrollLeft + mainLeft,
+                                    path[index][1] * size.canvasScale - size.scrollTop + mainTop,
                                     false, false, false, false, 0, null)
                                 upperCanvas.dispatchEvent(mouseEvent)
                                 lineIdObj[data.lineId] = true
@@ -927,8 +930,8 @@
                                 for (index; index < path.length; index++) {
                                     let size = this.getDrawBoardSize(data, canvas)
                                     mouseEvent.initMouseEvent("mousemove", true, true, document.defaultView, 0, 0, 0,
-                                        path[index][0] * size.canvasScale - size.scrollLeft,
-                                        path[index][1] * size.canvasScale - size.scrollTop,
+                                        path[index][0] * size.canvasScale - size.scrollLeft + mainLeft,
+                                        path[index][1] * size.canvasScale - size.scrollTop + mainTop,
                                         false, false, false, false, 0, null)
                                     document.dispatchEvent(mouseEvent)
                                 }
@@ -937,8 +940,8 @@
                                 index--
                                 let size = this.getDrawBoardSize(data, canvas)
                                 mouseEvent.initMouseEvent("mouseup", true, true, document.defaultView, 0, 0, 0,
-                                    path[index][0] * size.canvasScale - size.scrollLeft,
-                                    path[index][1] * size.canvasScale - size.scrollTop,
+                                    path[index][0] * size.canvasScale - size.scrollLeft + mainLeft,
+                                    path[index][1] * size.canvasScale - size.scrollTop + mainTop,
                                     false, false, false, false, 0, null)
                                 document.dispatchEvent(mouseEvent)
                                 index = 0

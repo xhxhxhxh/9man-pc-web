@@ -477,7 +477,9 @@
 
                 // 获取学生职位
                 rtcRoom.on('ai-action-notify', (method,data) => {
-                    this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    if(data.available) {
+                        this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    }
                 })
 
                 // 获取学生次序
@@ -535,6 +537,9 @@
                 // 用户关闭页面
                 window.onbeforeunload = () => {
                     // this.allUsersCancelOperate();
+                    if (this.mode === 'video') {
+                        this.$store.commit('setVideoProgress', {index: this.resourceIndex, progress: this.progressBar}) // 存储视频进度
+                    }
                     rtcRoom.leaveRoom();
                 }
 
@@ -791,7 +796,11 @@
                 canvas.onmousedown = function(event) {
                     const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft || 0
                     const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-                    let startPoint = [event.clientX + scrollLeft, event.clientY + scrollTop]
+                    const mainRect = mainLeft.getBoundingClientRect()
+                    const mainLeft2 = mainRect.left
+                    const mainTop = mainRect.top
+
+                    let startPoint = [event.clientX + scrollLeft - mainLeft2, event.clientY + scrollTop - mainTop]
                     if (_this.shape === 'FREE_DRAWING') {
                         // 计算lineId
                         const activeGroup = instance._graphics._canvas._activeGroup
@@ -815,7 +824,7 @@
                             event: 'add_line',
                             data: {
                                 sync:{
-                                    page: this.resourceIndex,
+                                    page: _this.resourceIndex,
                                     type: 0
                                 },
                                 lineId,
@@ -831,7 +840,7 @@
 
                         //鼠标移动事件
                         document.onmousemove = function (event) {
-                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft, event.clientY + scrollTop])
+                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft - mainLeft2, event.clientY + scrollTop - mainTop])
                             _this.sendDrawData()
                         };
                     }
@@ -842,7 +851,7 @@
                             data: {
                                 action: 'mousedown',
                                 hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                startPoint
+                                startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
                             }
                         }
                         _this.rtcRoom.sendMessage(params)
@@ -878,7 +887,7 @@
 
                             _this.lineIdObj[lineIdLocal] = lineId // 存储本地id与其相对应的移动端id
 
-                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft, event.clientY + scrollTop])
+                            _this.drawParams.data.pointlist.push([event.clientX + scrollLeft - mainLeft2, event.clientY + scrollTop - mainTop])
                             _this.drawParams.data.finished = true
                             _this.sendDrawData()
                             instance.stopDrawingMode(); //即时更换线条颜色
@@ -1147,7 +1156,7 @@
                 const length = this.coursewareResource.length - 1
                 let index = this.resourceIndex
                 if(!firstLoad) {
-                    this.$store.commit('setVideoProgress', {index, progress: this.progressBar}) // 存储视频进度
+                    this.$store.commit('setVideoProgress', {index, progress: this.progressBar, noSave: true}) // 存储视频进度
                 }
                 if (direction === 2) { // 动画前进
                     if (index >= length && !firstLoad) {

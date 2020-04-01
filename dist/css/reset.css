@@ -1625,6 +1625,26 @@ mark {
   border-radius: 0.1rem;
 }
 
+@-webkit-keyframes star-scale2 {
+from {
+    -webkit-transform: translate(-50%, 50%) scale(0) rotate(3600deg);
+    transform: translate(-50%, 50%) scale(0) rotate(3600deg);
+}
+to {
+    -webkit-transform: translate(-50%, 50%) scale(0.1) rotate(3600deg);
+    transform: translate(-50%, 50%) scale(0.1) rotate(3600deg);
+}
+}
+@keyframes star-scale2 {
+from {
+    -webkit-transform: translate(-50%, 50%) scale(0) rotate(3600deg);
+    transform: translate(-50%, 50%) scale(0) rotate(3600deg);
+}
+to {
+    -webkit-transform: translate(-50%, 50%) scale(0.1) rotate(3600deg);
+    transform: translate(-50%, 50%) scale(0.1) rotate(3600deg);
+}
+}
 .live-container-student {
   background: #f8d1c2;
   padding: 0.2rem 1.4rem;
@@ -1648,6 +1668,10 @@ mark {
   transform: translate(-50%, 50%) scale(1);
   -webkit-transition: all 0.5s ease;
   transition: all 0.5s ease;
+}
+.live-container-student .move-star.scale {
+  -webkit-animation: star-scale2 0.3s;
+  animation: star-scale2 0.3s;
 }
 .live-container-student .move-star img {
   display: block;
@@ -2904,6 +2928,48 @@ body > textarea {
     transform: translate(0, 0) scale(1);
 }
 }
+@-webkit-keyframes star-scale-data-v-3155ba50 {
+from {
+    -webkit-transform: translate(-50%, 50%) scale(0);
+    transform: translate(-50%, 50%) scale(0);
+}
+to {
+    -webkit-transform: translate(-50%, 50%) scale(1);
+    transform: translate(-50%, 50%) scale(1);
+}
+}
+@keyframes star-scale-data-v-3155ba50 {
+from {
+    -webkit-transform: translate(-50%, 50%) scale(0);
+    transform: translate(-50%, 50%) scale(0);
+}
+to {
+    -webkit-transform: translate(-50%, 50%) scale(1);
+    transform: translate(-50%, 50%) scale(1);
+}
+}
+@-webkit-keyframes star-scale2-data-v-3155ba50 {
+from {
+    -webkit-transform: translate(-50%, -50%) scale(0) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(0) rotate(1080deg);
+    visibility: unset;
+}
+to {
+    -webkit-transform: translate(-50%, -50%) scale(0.3) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(0.3) rotate(1080deg);
+}
+}
+@keyframes star-scale2-data-v-3155ba50 {
+from {
+    -webkit-transform: translate(-50%, -50%) scale(0) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(0) rotate(1080deg);
+    visibility: unset;
+}
+to {
+    -webkit-transform: translate(-50%, -50%) scale(0.3) rotate(1080deg);
+    transform: translate(-50%, -50%) scale(0.3) rotate(1080deg);
+}
+}
 .studentVideo-container[data-v-3155ba50] {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -2962,6 +3028,45 @@ body > textarea {
   overflow: hidden;
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
+}
+.studentVideo-container .video-box .student-video-area .move-star-self[data-v-3155ba50] {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  height: 0.95rem;
+  width: 1rem;
+  -webkit-transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1);
+  z-index: 99;
+  visibility: hidden;
+}
+.studentVideo-container .video-box .student-video-area .move-star-self.scale[data-v-3155ba50] {
+  -webkit-animation: star-scale2-data-v-3155ba50 0.3s;
+  animation: star-scale2-data-v-3155ba50 0.3s;
+}
+.studentVideo-container .video-box .student-video-area .move-star-self img[data-v-3155ba50] {
+  display: block;
+  height: 100%;
+}
+.studentVideo-container .video-box .student-video-area .animate-star-self[data-v-3155ba50] {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  -webkit-transform: translate(-50%, 50%);
+  transform: translate(-50%, 50%);
+  height: 1.8rem;
+  width: 3rem;
+  z-index: 99;
+}
+.studentVideo-container .video-box .student-video-area .animate-star-self img[data-v-3155ba50] {
+  display: block;
+  height: 100%;
+}
+.studentVideo-container .video-box .student-video-area .animate-star-self.scale[data-v-3155ba50] {
+  -webkit-animation: star-scale-data-v-3155ba50 0.1s;
+  animation: star-scale-data-v-3155ba50 0.1s;
+  -webkit-animation-fill-mode: forwards;
+  animation-fill-mode: forwards;
 }
 .studentVideo-container .video-box .student-video-area video[data-v-3155ba50] {
   width: 100%;

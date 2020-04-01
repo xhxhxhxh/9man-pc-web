@@ -9,15 +9,21 @@
                 <p class="name-box">
                     <span class="name">{{studentName}}</span>
                     <span class="star">
-                    <img src="./images/red_star.png" alt="">
-                    <span>12</span>
-                </span>
+                        <img src="./images/red_star.png" alt="">
+                        <span>{{info.star}}</span>
+                    </span>
                 </p>
                 <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId"></video>
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
                     <img :src="starSrc" alt="" ref="star" @mousedown="award">
+                </div>
+                <div :class="{'move-star-self': true, scale: moveStarScale}" ref="moveStarSelf">
+                    <img src="./images/move_star.png" alt="">
+                </div>
+                <div :class="{'animate-star-self': true, scale: showAnimateStar}" ref="animateStarSelf" v-show="showAnimateStar">
+                    <img :src="animateStarSrc" alt="">
                 </div>
             </div>
         </div>
@@ -31,6 +37,7 @@
     import cancelControlImg from './images/operate.png'
     import star from './images/award.png'
     import cancelStar from './images/award_black.png'
+    import animate_star from './images/animate_star_self.gif'
 
     export default {
         name: "StudentVideo",
@@ -38,9 +45,14 @@
             return {
                 starSrc: cancelStar,
                 showOperateArea: false,
+                showAnimateStar: false,
+                animateStarSrc: animate_star,
+                moveStarScale: false,
+                startStarAnimate: false, // 动画节流
+                awardButtonStatus: false // 按钮节流
             }
         },
-        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId', 'roleInfo'],
+        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId', 'roleInfo', 'roomId'],
         components: {
 
         },
@@ -73,7 +85,7 @@
                 } catch (error) {
                     video.src = window.URL.createObjectURL(val);
                 }
-            }
+            },
         },
 
         methods: {
@@ -195,8 +207,72 @@
 
             // 发放奖励
             award () {
-                if (this.role === 'teacher') {
-                    this.$emit('award', this.id)
+                if (this.role === 'teacher' && !this.awardButtonStatus && !this.startStarAnimate) {
+                    this.awardButtonStatus = true
+                    this.$axios.post(this.$store.state.apiUrl + '/v1/classRoomHistory/addClassRoomReward', {room_no: this.roomId, students: this.id})
+                        .then(res => {
+                            let data = res.data;
+                            if (data.code === 200) {
+                                const params = {
+                                    event: 'award',
+                                    data: {
+                                        id: this.id
+                                    }
+                                }
+                                this.rtcRoom.sendMessage(params)
+                                this.starAnimate()
+                            }
+                            this.awardButtonStatus = false
+                        })
+                        .catch(() => {
+                            this.awardButtonStatus = false
+                        })
+                }else {
+                    this.$message.warning('请稍后再试', 3)
+                }
+            },
+
+            // 他人获得奖励动效
+            starAnimate () {
+                if (this.startStarAnimate) return
+                this.startStarAnimate = true
+
+                const starDom = document.querySelector('#studentVideo' + this.id + ' .star img')
+                const starParent = starDom.parentElement.parentElement
+                const height = starDom.offsetHeight
+                const width = starDom.offsetWidth
+                const top = starDom.offsetTop + starParent.offsetTop
+                const left = starDom.offsetLeft + starParent.offsetLeft - starParent.offsetWidth / 2
+                const clientX = left + width / 2
+                const clientY = top + height / 2
+                const moveStar = this.$refs.moveStarSelf
+                const _this = this
+                this.showAnimateStar = true
+                this.moveStarScale = false
+                moveStar.style.left = ''
+                moveStar.style.top = ''
+                moveStar.style.transform = ''
+                _this.animateStarSrc = animate_star
+
+                setTimeout(() => {
+                    this.showAnimateStar = false
+                    moveStar.style.transition = 'all .5s ease'
+                    moveStar.style.visibility = 'unset'
+                    moveStar.style.left = clientX + 'px'
+                    moveStar.style.top = clientY + 'px'
+                    moveStar.style.transform = `translate(-50%, -50%) scale(0) rotate(1080deg)`
+                    moveStar.addEventListener('transitionend', transitionend)
+                }, 700)
+
+                function transitionend() {
+                    moveStar.removeEventListener('transitionend', transitionend)
+                    moveStar.style.transition = ''
+                    moveStar.style.visibility = ''
+                    _this.$emit('addStar', {id: _this.id, star: _this.info.star})
+                    setTimeout(() => {
+                        _this.startStarAnimate = false
+                    }, 1600)
+                    _this.moveStarScale = true
                 }
             }
         }
@@ -215,6 +291,25 @@
         }
         100% {
             transform: translate(0, 0) scale(1);
+        }
+    }
+
+    @keyframes star-scale {
+        from {
+            transform: translate(-50%, 50%) scale(0);
+        }
+        to {
+            transform: translate(-50%, 50%) scale(1);
+        }
+    }
+
+    @keyframes star-scale2 {
+        from {
+            transform: translate(-50%, -50%) scale(0) rotate(1080deg);
+            visibility: unset;
+        }
+        to {
+            transform: translate(-50%, -50%) scale(0.3) rotate(1080deg);
         }
     }
 
@@ -269,6 +364,41 @@
                 transition: all .5s ease;
                 overflow: hidden;
                 transform-style: preserve-3d;
+
+                .move-star-self {
+                    position: absolute;
+                    left: 50%;
+                    top: 50%;
+                    height: 95rem/@baseFontSize;
+                    width: 100rem/@baseFontSize;
+                    transform: translate(-50%, -50%) scale(1);
+                    z-index: 99;
+                    visibility: hidden;
+                    &.scale {
+                        animation: star-scale2 0.3s;
+                    }
+                    img {
+                        display: block;
+                        height: 100%;
+                    }
+                }
+                .animate-star-self {
+                    position: absolute;
+                    left: 50%;
+                    bottom: 50%;
+                    transform: translate(-50%, 50%);
+                    height: 180rem/@baseFontSize;
+                    width: 300rem/@baseFontSize;
+                    z-index: 99;
+                    img {
+                        display: block;
+                        height: 100%;
+                    }
+                    &.scale {
+                        animation: star-scale 0.1s;
+                        animation-fill-mode: forwards;
+                    }
+                }
 
                 video {
                     width: 100%;

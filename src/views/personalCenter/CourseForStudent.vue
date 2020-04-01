@@ -47,7 +47,7 @@
                             <tr>
                                 <th>序号</th>
                                 <th>阶段</th>
-                                <th>课堂名称</th>
+                                <th>课件名称</th>
                                 <th>班级</th>
                                 <th>学生</th>
                                 <th>上课日期</th>
@@ -60,10 +60,11 @@
                                 @click="queryClassInfo(item)">
                                 <td>{{ index + 1 }}</td>
                                 <td>L1</td>
-                                <td>
-                                    {{ item.type === 1? '正式课': '试听课' }}
-                                    {{ item.name? '《' + item.name + '》': '' }}
-                                </td>
+                                <td>{{ item['courseware_name'] }}</td>
+<!--                                <td>-->
+<!--                                    {{ item.type === 1? '正式课': '试听课' }}-->
+<!--                                    {{ item.name? '《' + item.name + '》': '' }}-->
+<!--                                </td>-->
                                 <td>{{ item['class_name'] }}</td>
                                 <td>小小小</td>
                                 <td>{{ formatterDate(item.planstarttime)}}</td>

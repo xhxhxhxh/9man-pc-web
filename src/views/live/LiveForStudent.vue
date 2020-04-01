@@ -43,7 +43,7 @@
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]" @award="award"
                                   v-for="item in studentList" :key="item.uid" :info="item" role="student" :studentId="studentId"
-                                  :roleInfo="roleInfoObj[item.uid]"></StudentVideo>
+                                  :roleInfo="roleInfoObj[item.uid]" :ref="item.uid" @addStar="addStar"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -56,6 +56,7 @@
 <script>
     import { Icon } from 'ant-design-vue';
     const ImageEditor = require('tui-image-editor');
+    // const ImageEditor = require('@/lib/tui-image-editor.min');
     // const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min'); // 将mousemove和mousedown挂载对象从document改到底层canvas
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
@@ -316,6 +317,7 @@
                         // 上台状态
                         const singleVideoArr = result.singleVideoArr
                         this.$nextTick(function () {
+                            if (!singleVideoArr) return
                             singleVideoArr.forEach(item => {
                                 const id = item
                                 const videoBox = document.querySelector('#studentVideo' + id).parentElement
@@ -325,16 +327,14 @@
                         })
 
                         // 视频动画同步
-                        const courseWare_list = result.courseWare_list
-                        if (courseWare_list && courseWare_list.length > 0) {
-                            const video = this.$refs['video-play']
-                            const info = courseWare_list[0]
-                            video.oncanplay = () => {
-                                video.oncanplay = null
-                                video.currentTime = info.value * video.duration
-                                if (info.isplay) {
-                                    video.play()
-                                }
+                        const isplay = result.sync.isplay
+                        const value = result.sync.value? result.sync.value: 0
+                        const video = this.$refs['video-play']
+                        video.oncanplay = () => {
+                            video.oncanplay = null
+                            video.currentTime = value * video.duration
+                            if (isplay) {
+                                video.play()
                             }
                         }
                     }
@@ -437,18 +437,15 @@
 
                 // 获取学生职位
                 rtcRoom.on('ai-action-notify', (method,data) => {
-                    this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    if(data.available) {
+                        this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    }
                 })
 
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
                     if (method === 'user_sort') {
-                        console.log(method, data)
                         const list = data.list
-                        const indexOfTeacher = list.indexOf(this.teacherId)
-                        if (indexOfTeacher !== -1) {
-                            list.splice(indexOfTeacher, 1)
-                        }
                         if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
 
                         // 处理学生顺序
@@ -458,15 +455,19 @@
                         this.studentList.forEach((item, index) => {
                             studentIdOldIndexObj[item.uid] = index
                         })
-                        list.forEach((item, index) => {
-                            studentIdObj[item] = index
-                            if(studentIdOldIndexObj[item] !== undefined) {
-                                cacheStudentList[index] = this.studentList[studentIdOldIndexObj[item]]
-                                delete studentIdOldIndexObj[item]
+
+                        for(let index = 0; index < list.length; index++) {
+                            let currentStudentId = list[index]
+                            studentIdObj[currentStudentId] = index
+                            if(studentIdOldIndexObj[currentStudentId] !== undefined) {
+                                cacheStudentList[index] = this.studentList[studentIdOldIndexObj[currentStudentId]]
+                                delete studentIdOldIndexObj[currentStudentId]
                             }else {
                                 list.splice(index, 1)
+                                index--
                             }
-                        })
+                        }
+
                         let len = list.length
                         if(len < this.studentList.length) {
                             for(let key in studentIdOldIndexObj) {
@@ -554,10 +555,18 @@
                         let data = res.data;
                         if (data.code === 200) {
                             const studentList = data.data.data.student_list
+                            const historyList = data.data.data.history_list
+                            const historyObj = {}
                             const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
+
+                            historyList.forEach(item => {
+                                historyObj[item.uid] = item
+                            })
+
                             studentList.forEach((item, index) => {
                                 this.studentNameObj[item.uid] = item.uname
                                 this.studentIdIndexObj[item.uid] = index
+                                item.star = historyObj[item.uid].star // 将historyList中的star放入studentList中
                                 if (localStudentIdList.includes(item.uid)) {
                                     item.joinRoom = true
                                 }else {
@@ -593,7 +602,7 @@
                     cssMaxHeight: drawingBoardHeight,
                     selectionStyle: {
                         cornerSize: 0,
-                        rotatingPointOffset: 70,
+                        rotatingPointOffset: 0,
                         borderColor: '#000',
                     }
                 });
@@ -815,25 +824,28 @@
 
             // 发放奖励
             award () {
-                const starDom = document.querySelector('#studentVideo' + this.studentId + ' .star')
+                if (this.startStarAnimate) return
+                this.startStarAnimate = true
+
+                const starDom = document.querySelector('#studentVideo' + this.studentId + ' .star img')
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
                 const rect = starDom.getBoundingClientRect()
                 const height = rect.height
                 const width = rect.width
                 const bottom = rect.bottom
                 const right = rect.right
-                if (this.startStarAnimate) return
-                this.startStarAnimate = true
                 const clientX = right - width / 2
                 const clientY = bottom - height / 2
                 const moveStar = this.$refs.moveStar
                 const _this = this
                 moveStar.classList.add('move')
+                moveStar.classList.remove('scale')
 
                 setTimeout(() => {
                     _this.animateStarSrc = animate_star
                     this.showAnimateStar = true
                 }, 500)
+
                 setTimeout(() => {
                     this.showAnimateStar = false
                     this.animateStarSrc = ''
@@ -841,16 +853,27 @@
                     moveStar.style.bottom = document.querySelector('.live-container-student').offsetHeight - clientY - scrollTop + 'px'
                     moveStar.style.transform = `translate(-50%, 50%) scale(0) rotate(3600deg)`
                     moveStar.addEventListener('transitionend', transitionend)
-                }, 2500)
+                }, 2000)
 
                 function transitionend() {
-                    moveStar.style.left = ''
-                    moveStar.style.bottom = ''
-                    moveStar.style.transform = ''
-                    moveStar.classList.remove('move')
-                    _this.startStarAnimate = false
                     moveStar.removeEventListener('transitionend', transitionend)
+                    moveStar.classList.remove('move')
+                    moveStar.classList.add('scale')
+                    _this.addStar({id: _this.studentId})
+                    setTimeout(() => {
+                        _this.startStarAnimate = false
+                        moveStar.style.left = ''
+                        moveStar.style.bottom = ''
+                        moveStar.style.transform = ''
+                    }, 300)
                 }
+            },
+
+            // 增加星星数
+            addStar(data) {
+                const id = data.id
+                const star = this.studentList[this.studentIdIndexObj[id]].star + 1
+                this.$set(this.studentList[this.studentIdIndexObj[id]], 'star', star)
             },
 
             //接收画图数据，建立连接
@@ -872,7 +895,7 @@
                     switch (event) {
                         case 'show_content_change': // 更换页码
                             this.resourceIndex = data.sync.page
-                            this.progress = data.value
+                            this.progress = data.sync.value
                             this.changeAnimate()
                             break;
                         case 'media_controll': // 控制视频播放
@@ -963,6 +986,8 @@
                             break;
                         case 'delete_line_choose_add': // 已选择的线条
                             lineIdList = data.lineIds
+                            const objects = this.imageEditor._graphics._objects
+                            this.imageEditor._graphics.setActiveObject(objects[lineIdObj[lineIdList[0]]])
                             break;
                         case 'delete_line_choose_cancel': // 取消选中
                             this.imageEditor._graphics._canvas.deactivateAll();
@@ -1042,6 +1067,8 @@
                         case 'award': // 奖励
                             if (data.id === this.studentId) {
                                 this.award()
+                            }else {
+                                this.$refs[data.id][0].starAnimate()
                             }
                             break;
                     }
@@ -1062,6 +1089,15 @@
 
 <style lang="less">
     @import "../../less/index";
+    @keyframes star-scale2 {
+        from {
+            transform: translate(-50%, 50%) scale(0) rotate(3600deg);
+        }
+        to {
+            transform: translate(-50%, 50%) scale(0.1) rotate(3600deg);
+        }
+    }
+
     .live-container-student {
         background:rgba(248,209,194,1);
         padding: 20rem/@baseFontSize 140rem/@baseFontSize;
@@ -1080,6 +1116,9 @@
                 bottom: 60.4%;
                 transform: translate(-50%, 50%) scale(1);
                 transition: all .5s ease;
+            }
+            &.scale {
+                animation: star-scale2 0.3s;
             }
             img {
                 display: block;

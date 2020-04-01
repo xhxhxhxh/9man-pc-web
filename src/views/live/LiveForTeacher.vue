@@ -69,7 +69,7 @@
                 <div class="teacher-area">
                     <div class="classroom">
                         <button @click="leaveRoom">离开教室</button>
-                        <button>开始上课</button>
+                        <button @click="startClass" :disabled="startClassDisabled">{{startClassDisabled? '正在': '开始'}}上课</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
                                   :stream="streamObj[teacherId]" :studentList="studentList" @setAlert="setAlert"></TeacherVideo>
@@ -78,8 +78,8 @@
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
-                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @award="award" @setAlert="setAlert"
-                                  :roleInfo="roleInfoObj[item.uid]"></StudentVideo>
+                                  v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @setAlert="setAlert"
+                                  :roleInfo="roleInfoObj[item.uid]" :roomId="roomId" @addStar="addStar"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -136,6 +136,7 @@
                 startStarAnimate: false, // 星星动画节流
                 alertVisible: false, // 顶部提醒框
                 alertMessage: '',
+                startClassDisabled: false,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -483,10 +484,6 @@
                 rtcRoom.on('room-info-notify',(method,data) => {
                     if (method === 'user_sort') {
                         const list = data.list
-                        const indexOfTeacher = list.indexOf(this.teacherId)
-                        if (indexOfTeacher !== -1) {
-                            list.splice(indexOfTeacher, 1)
-                        }
                         if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return
 
                         // 处理学生顺序
@@ -496,15 +493,19 @@
                         this.studentList.forEach((item, index) => {
                             studentIdOldIndexObj[item.uid] = index
                         })
-                        list.forEach((item, index) => {
-                            studentIdObj[item] = index
-                            if(studentIdOldIndexObj[item] !== undefined) {
-                                cacheStudentList[index] = this.studentList[studentIdOldIndexObj[item]]
-                                delete studentIdOldIndexObj[item]
+
+                        for(let index = 0; index < list.length; index++) {
+                            let currentStudentId = list[index]
+                            studentIdObj[currentStudentId] = index
+                            if(studentIdOldIndexObj[currentStudentId] !== undefined) {
+                                cacheStudentList[index] = this.studentList[studentIdOldIndexObj[currentStudentId]]
+                                delete studentIdOldIndexObj[currentStudentId]
                             }else {
                                 list.splice(index, 1)
+                                index--
                             }
-                        })
+                        }
+
                         let len = list.length
                         if(len < this.studentList.length) {
                             for(let key in studentIdOldIndexObj) {
@@ -621,16 +622,9 @@
                 // 视频模式下
                 if(this.mode === 'video') {
                     const video = this.$refs['video-play']
-                    Object.assign(params.data, {
-                        courseWare_list: [
-                            {
-                                isStart: true,
-                                value: this.progressBar / 100,
-                                isplay: !video.paused,
-                                type: 0,
-                                contentType: 1
-                            }
-                        ]
+                    Object.assign(params.data.sync, {
+                        value: this.progressBar / 100,
+                        isplay: !video.paused,
                     })
                 }
 
@@ -674,9 +668,17 @@
                         let data = res.data;
                         if (data.code === 200) {
                             const studentList = data.data.data.student_list
+                            const historyList = data.data.data.history_list
+                            const historyObj = {}
                             const localStudentIdList = this.$store.state.liveBroadcast.liveBroadcastData.studentIdList
+
+                            historyList.forEach(item => {
+                                historyObj[item.uid] = item
+                            })
+
                             studentList.forEach((item, index) => {
                                 this.studentIdIndexObj[item.uid] = index
+                                item.star = historyObj[item.uid].star // 将historyList中的star放入studentList中
                                 if (localStudentIdList.includes(item.uid)) {
                                     item.joinRoom = true
                                 }else {
@@ -686,6 +688,25 @@
                             })
                             this.studentList = studentList
                             this.teacherName = data.data.data.teacher_name
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+            },
+
+            // 开始上课
+            startClass () {
+                const params = {
+                    room_no: this.roomId
+                }
+                this.$axios.post(this.$store.state.apiUrl + '/v1/classRoom/updateClassRoomStart', params)
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            this.startClassDisabled = true
+                        } else {
+                            this.$message.warning(data.msg, 3)
                         }
                     })
                     .catch(() => {
@@ -712,7 +733,7 @@
                     cssMaxHeight: drawingBoardHeight,
                     selectionStyle: {
                         cornerSize: 0,
-                        rotatingPointOffset: 70,
+                        rotatingPointOffset: 0,
                         borderColor: '#000',
                     }
                 });
@@ -738,14 +759,8 @@
                 // });
                 // path.set({ left: 120, top: 120 });
                 // instance._graphics._canvas.add(path);
-                // path.setCoords();
-                //
-                // instance._graphics._canvas.clearContext(instance._graphics._canvas.contextTop);
-                // var ctx = instance._graphics._canvas.contextTop;
-                //
-                // ctx.shadowColor = '';
-                // ctx.shadowBlur = ctx.shadowOffsetX = ctx.shadowOffsetY = 0;
-                // instance._graphics._canvas.renderAll();
+                // instance._graphics._canvas.fire('path:created', { path: path });
+
                 this.imageEditor = instance;
                 const _this = this;
                 const canvas = document.querySelector('#tui-image-editor');
@@ -1185,10 +1200,9 @@
                     data: {
                         page: this.resourceIndex,
                         type: 0,
-                        value: this.progressBar / 100,
                         sync: {
                             page: this.resourceIndex,
-                            type: 0
+                            value: this.progressBar / 100,
                         },
                     },
                 }
@@ -1245,16 +1259,12 @@
 
             },
 
-            // 发放奖励
-            award (id) {
-               const params = {
-                   event: 'award',
-                   data: {
-                       id
-                   }
-               }
-                this.rtcRoom.sendMessage(params)
-            }
+            // 增加星星数
+            addStar(data) {
+                const id = data.id
+                const star = data.star + 1
+                this.$set(this.studentList[this.studentIdIndexObj[id]], 'star', star)
+            },
         }
     }
 </script>

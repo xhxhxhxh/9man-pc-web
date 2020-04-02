@@ -787,6 +787,11 @@
                         event: 'delete_line_choose_add',
                         data: {
                             lineIds: lineIdList,
+                            source: 'web',
+                            sync:{
+                                page: _this.resourceIndex,
+                                type: 0
+                            }
                         }
                     }
                     _this.rtcRoom.sendMessage(params)
@@ -801,6 +806,7 @@
                     const mainTop = mainRect.top
 
                     let startPoint = [event.clientX + scrollLeft - mainLeft2, event.clientY + scrollTop - mainTop]
+
                     if (_this.shape === 'FREE_DRAWING') {
                         // 计算lineId
                         const activeGroup = instance._graphics._canvas._activeGroup
@@ -812,12 +818,6 @@
                         if (activeGroup) { // 清除多选状态
                             instance._graphics._canvas.deactivateAll();
                             instance._graphics._canvas.renderAll();
-                            const params = {
-                                event: 'delete_line_choose_cancel',
-                                data: {
-                                }
-                            }
-                            _this.rtcRoom.sendMessage(params)
                         }
 
                         _this.drawParams = {
@@ -851,10 +851,28 @@
                             data: {
                                 action: 'mousedown',
                                 hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
+                                startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop],
+                                sync:{
+                                    page: _this.resourceIndex,
+                                    type: 0
+                                }
                             }
                         }
                         _this.rtcRoom.sendMessage(params)
+
+                        if (!instance._graphics._canvas.findTarget(event)) { // 取消选中
+                            const params = {
+                                event: 'delete_line_choose_cancel',
+                                data: {
+                                    source: 'web',
+                                    sync:{
+                                        page: _this.resourceIndex,
+                                        type: 0
+                                    }
+                                }
+                            }
+                            _this.rtcRoom.sendMessage(params)
+                        }
 
                         //鼠标移动事件
                         document.onmousemove = function (event) {
@@ -863,7 +881,11 @@
                                 data: {
                                     action: 'mousemove',
                                     hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
+                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop],
+                                    sync:{
+                                        page: _this.resourceIndex,
+                                        type: 0
+                                    }
                                 }
                             }
                             _this.rtcRoom.sendMessage(params)
@@ -888,7 +910,7 @@
                             _this.lineIdObj[lineIdLocal] = lineId // 存储本地id与其相对应的移动端id
 
                             _this.drawParams.data.pointlist.push([event.clientX + scrollLeft - mainLeft2, event.clientY + scrollTop - mainTop])
-                            _this.drawParams.data.finished = true
+                            _this.drawParams.data.finished = 1
                             _this.sendDrawData()
                             instance.stopDrawingMode(); //即时更换线条颜色
                             _this.drawByShape();
@@ -908,7 +930,11 @@
                                 data: {
                                     action: 'mouseup',
                                     hbsize: [canvas.offsetWidth, canvas.offsetHeight],
-                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop]
+                                    startPoint: [event.clientX + scrollLeft, event.clientY + scrollTop],
+                                    sync:{
+                                        page: _this.resourceIndex,
+                                        type: 0
+                                    }
                                 }
                             }
                             _this.rtcRoom.sendMessage(params)
@@ -1009,7 +1035,10 @@
                 const params = {
                     event: 'delete_line',
                     data: {
-                        source: 'web'
+                        source: 'web',
+                        sync:{
+                            page: this.resourceIndex,
+                        }
                     }
                 }
                 this.rtcRoom.sendMessage(params)
@@ -1118,6 +1147,7 @@
                             value: progress,
                             sync: {
                                 type: 0,
+                                value: progress,
                                 page: this.resourceIndex
                             }
                         }
@@ -1130,6 +1160,7 @@
                             source: 'fromweb',
                             sync: {
                                 type: 0,
+                                value: this.progressBar / 100,
                                 page: this.resourceIndex
                             }
                         }

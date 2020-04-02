@@ -988,13 +988,17 @@
                             }
                             break;
                         case 'delete_line_choose_add': // 已选择的线条
-                            lineIdList = data.lineIds
-                            const objects = this.imageEditor._graphics._objects
-                            this.imageEditor._graphics.setActiveObject(objects[lineIdObj[lineIdList[0]]])
+                            if (data.source !== 'web') {
+                                lineIdList = data.lineIds
+                                const objects = this.imageEditor._graphics._objects
+                                this.imageEditor._graphics.setActiveObject(objects[lineIdObj[lineIdList[0]]])
+                            }
                             break;
                         case 'delete_line_choose_cancel': // 取消选中
-                            this.imageEditor._graphics._canvas.deactivateAll();
-                            this.imageEditor._graphics._canvas.renderAll();
+                            if (data.source !== 'web') {
+                                this.imageEditor._graphics._canvas.deactivateAll();
+                                this.imageEditor._graphics._canvas.renderAll();
+                            }
                             break;
                         case 'single_operations': // 授权
                             const peerId = data.peerId

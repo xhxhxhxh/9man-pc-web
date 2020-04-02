@@ -159,9 +159,9 @@
 
             goLiveBroadcast (address) {
                 let routeData = this.$router.resolve({
-                    name: "liveBroadcast",
+                    path: '/' + address
                 });
-                window.open(routeData.href + address, 'liveBroadcast');
+                window.open(routeData.href, 'live');
             },
 
             // 格式化日期

@@ -163,9 +163,9 @@
             // 前往直播页
             goLiveBroadcast (address) {
                 let routeData = this.$router.resolve({
-                    name: "live",
+                    path: '/' + address
                 });
-                window.open(routeData.href + address, 'live');
+                window.open(routeData.href, 'live');
             },
 
             // 页码改变

@@ -137,6 +137,8 @@
                 alertVisible: false, // 顶部提醒框
                 alertMessage: '',
                 startClassDisabled: false,
+                noSave: false, // 不需要保存数据
+                roomInfo: {}, // 直播间数据
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -498,8 +500,8 @@
 
                         for(let index = 0; index < list.length; index++) {
                             let currentStudentId = list[index]
-                            studentIdObj[currentStudentId] = index
                             if(studentIdOldIndexObj[currentStudentId] !== undefined) {
+                                studentIdObj[currentStudentId] = index
                                 cacheStudentList[index] = this.studentList[studentIdOldIndexObj[currentStudentId]]
                                 delete studentIdOldIndexObj[currentStudentId]
                             }else {
@@ -513,7 +515,7 @@
                             for(let key in studentIdOldIndexObj) {
                                 cacheStudentList[len] = this.studentList[studentIdOldIndexObj[key]]
                                 studentIdObj[key] = len
-                                list.push(key)
+                                // list.push(key)
                                 len++
                             }
                         }
@@ -537,7 +539,7 @@
                 // 用户关闭页面
                 window.onbeforeunload = () => {
                     // this.allUsersCancelOperate();
-                    if (this.mode === 'video') {
+                    if (this.mode === 'video' && !this.noSave) {
                         this.$store.commit('setVideoProgress', {index: this.resourceIndex, progress: this.progressBar}) // 存储视频进度
                     }
                     rtcRoom.leaveRoom();
@@ -565,12 +567,30 @@
                     title: '确定要退出房间吗?',
                     content: '',
                     centered: true,
-                    onOk:() => {
+                    onOk:async () => {
                         localStorage.removeItem('9manLiveBroadcast');
-                        window.close();
+                        this.noSave = true;
+                        if (this.roomInfo.type === 0) {
+                            const res = await this.clearGameProgress()
+                            if (res && res.data.code === 200) {
+                                window.close();
+                            }else {
+                                this.$message.error('清除动画进度失败')
+                            }
+                        }else {
+                            window.close();
+                        }
                     },
                     onCancel() {},
                 });
+            },
+
+            // 清除游戏进度
+            clearGameProgress () {
+                const params = {
+                    roomId: this.roomInfo.room_no
+                }
+                return this.$axios.get(this.$store.state.emptyRoomUrl + '/emptyRoom', {params}).catch(() => {})
             },
 
             // 老师离开房间 取消全部授权和全部上台(移交给学生端处理)
@@ -693,6 +713,7 @@
                             })
                             this.studentList = studentList
                             this.teacherName = data.data.data.teacher_name
+                            this.roomInfo = data.data.data
                         }
                     })
                     .catch(() => {
@@ -1108,10 +1129,10 @@
 
             // 改变视频播放进度
             changeVideoProgress (value) {
-                const slider = this.$refs['slider']
+                // const slider = this.$refs['slider']
                 const video = this.$refs['video-play']
                 const play = this.$refs['play']
-                slider.blur() // antd slider bug
+                // slider.blur() // antd slider bug
                 this.sendMediaData(0, !video.paused, value / 100)
                 if (play.classList.contains('pause')) {
                     video.play()

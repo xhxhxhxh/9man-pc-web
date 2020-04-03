@@ -1,20 +1,18 @@
 <template>
-    <a-locale-provider :locale="locale">
+    <a-config-provider :getPopupContainer="getPopupContainer">
         <div class="app-container" id="app">
             <router-view></router-view>
         </div>
-    </a-locale-provider>
+    </a-config-provider>
 </template>
 
 <script>
     import TopBar from '@/components/TopBar/TopBar';
-    import zhCN from 'ant-design-vue/lib/locale-provider/zh_CN';
     export default {
         name: "app",
         data(){
             return {
                 rootUrl: this.$store.state.rootUrl,
-                locale: zhCN,
             }
         },
         created() {
@@ -39,6 +37,14 @@
                     .catch(err => {
 
                     })
+            },
+
+            getPopupContainer(el, dialogContext) {
+                if (dialogContext) {
+                    return dialogContext.getDialogWrap();
+                } else {
+                    return document.body;
+                }
             },
 
         },

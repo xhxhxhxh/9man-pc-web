@@ -10,7 +10,7 @@ import './lib/animate.css'
 import 'normalize.css';
 import './css/base.css';
 import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
-    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio, Tooltip, Alert } from 'ant-design-vue';
+    TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio, Tooltip, Alert, ConfigProvider } from 'ant-design-vue';
 
 Vue.config.productionTip = false;
 axios.defaults.withCredentials = false;
@@ -25,6 +25,7 @@ Vue.prototype.$success = Modal.success;
 
 //全局组件
 // Vue.component(Button.name, Button);
+Vue.use(ConfigProvider);
 Vue.use(Button);
 Vue.use(Menu);
 Vue.use(Form);
@@ -32,7 +33,6 @@ Vue.use(Input);
 Vue.use(Modal);
 Vue.use(Select);
 Vue.use(DatePicker);
-Vue.use(LocaleProvider);
 Vue.use(TimePicker);
 Vue.use(Popover);
 Vue.use(Icon);

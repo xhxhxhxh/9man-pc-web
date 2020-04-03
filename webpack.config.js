@@ -47,6 +47,12 @@ module.exports = {
                 pathRewrite: {'^/' : '/'},
                 changeOrigin: true
             },
+            "/emptyRoom": {
+                target: 'https://www.9mankid.com:8210',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true,
+                secure: false
+            },
         },
     },
     plugins: [

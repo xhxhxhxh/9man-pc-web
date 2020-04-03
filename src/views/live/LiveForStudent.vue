@@ -458,8 +458,8 @@
 
                         for(let index = 0; index < list.length; index++) {
                             let currentStudentId = list[index]
-                            studentIdObj[currentStudentId] = index
                             if(studentIdOldIndexObj[currentStudentId] !== undefined) {
+                                studentIdObj[currentStudentId] = index
                                 cacheStudentList[index] = this.studentList[studentIdOldIndexObj[currentStudentId]]
                                 delete studentIdOldIndexObj[currentStudentId]
                             }else {
@@ -473,7 +473,7 @@
                             for(let key in studentIdOldIndexObj) {
                                 cacheStudentList[len] = this.studentList[studentIdOldIndexObj[key]]
                                 studentIdObj[key] = len
-                                list.push(key)
+                                // list.push(key)
                                 len++
                             }
                         }

@@ -36,7 +36,7 @@
                         <button>{{className + '《' + coursewareName + '》'}}</button>
                     </div>
                     <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="student"
-                                  :stream="streamObj[teacherId]" :teacherId="teacherId"></TeacherVideo>
+                                  :stream="streamObj[teacherId]" :teacherId="teacherId" :teacherConnect="teacherConnect"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
@@ -129,6 +129,7 @@
                 className: '',
                 roomId: '',
                 teacherName: '',
+                teacherConnect: false,
                 streamObj: {}, // 视频流
                 operating: false
             }
@@ -386,6 +387,8 @@
                                 videoBox.classList.add('onStage')
                             })
                         }
+                    }else {
+                        this.teacherConnect = true
                     }
                 })
 
@@ -401,6 +404,7 @@
                         const studentVideo = document.querySelector('#studentVideo' + id)
                         studentVideo.style = ''
                     }else { // 老师离开取消授权和上台
+                        this.teacherConnect = false
                         rtcRoom.changeAISyncStatus(1); // 取消全体授权
                         rtcRoom.changeAIControl(id)
                         // 取消单人授权
@@ -437,9 +441,16 @@
 
                 // 获取学生职位
                 rtcRoom.on('ai-action-notify', (method,data) => {
-                    if(data.available) {
-                        this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    const result = data.data
+                    const event = data.event
+                    if(event === 'ai_role') {
+                        if(result.available) {
+                            this.$set(this.roleInfoObj, result.peerId, {src: result.midpath + result.path})
+                        }
+                    }else if (event === 'ai_role_clear') {
+                        this.roleInfoObj = {}
                     }
+
                 })
 
                 // 获取学生次序
@@ -1071,12 +1082,21 @@
                                 this.$store.commit('setStageStatusSortByStage', [])
                             }
                             break;
-                        case 'award': // 奖励
-                            if (data.id === this.studentId) {
+                        case 'single_award': // 奖励
+                            if (data.peerId === this.studentId) {
                                 this.award()
                             }else {
-                                this.$refs[data.id][0].starAnimate()
+                                this.$refs[data.peerId][0].starAnimate()
                             }
+                            break;
+                        case 'all_award': // 奖励
+                            this.peerIdList.forEach(id => {
+                                if (id === this.studentId) {
+                                    this.award()
+                                }else {
+                                    this.$refs[id][0].starAnimate()
+                                }
+                            })
                             break;
                     }
                 });

@@ -61,6 +61,7 @@ export default class RTCRoomManager extends EventEmitter {
     let rtcRoom = new RTCRoom({host,port,roomId,peerId});
 
     rtcRoom.on('rtc-socket-connect',(data) => {
+      this.emit('server-connected');
       this._rtcRoom.joinRoom(this._property);
     });
 
@@ -169,22 +170,6 @@ export default class RTCRoomManager extends EventEmitter {
       sync: status
     };
     this.sendRequestMessage('ai_sync',data);
-  }
-
-  restartAICourseware(resource)
-  {
-    let data = {
-      resource: resource ? resource : ''
-    };
-    this.sendRequestMessage('ai_restart',data);
-  }
-
-  requestAIRoleInfo(peerId)
-  {
-    let data = {
-      peerId: peerId
-    };
-    this.sendRequestMessage('ai_role_info',data);
   }
 
   openVideo(peerId,except)
@@ -367,9 +352,7 @@ export default class RTCRoomManager extends EventEmitter {
 
   handleRequestMessageEvent(method,data)
   {
-    if (method === 'ai_role_info') {
-      this.emit('ai-action-notify',method,data);
-    }else if (method === 'room_info') {
+    if (method === 'room_info') {
       let event = data.event;
       this.emit('room-info-notify',event,data);
     }
@@ -418,12 +401,9 @@ export default class RTCRoomManager extends EventEmitter {
       let except = data.except;
       this.handleRoomUserMediaControl(mediaType,status,except);
 
-    }else if (method === 'ai_start') {
-      this.emit('ai-action-notify',method,data);
-    }else if (method === 'ai_result') {
-      this.emit('ai-action-notify',method,data);
-    }else if (method === 'ai_role') {
-      this.emit('ai-action-notify',method,data);
+    }else if (method === 'ai_action') {
+      let event = data.event;
+      this.emit('ai-action-notify',event,data);
     }
   }
 

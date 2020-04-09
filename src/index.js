@@ -22,6 +22,7 @@ Vue.prototype.$axios= axios;
 Vue.prototype.$message = message;
 Vue.prototype.$confirm = Modal.confirm;
 Vue.prototype.$success = Modal.success;
+Vue.prototype.$warning = Modal.warning;
 
 //全局组件
 // Vue.component(Button.name, Button);

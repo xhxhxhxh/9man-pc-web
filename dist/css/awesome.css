@@ -1397,6 +1397,21 @@ body > textarea {
   width: 100%;
   border-radius: 0.1rem;
 }
+.class-warning {
+  border-radius: 10px;
+}
+.class-warning .ant-modal-confirm-body .ant-modal-confirm-title {
+  text-align: center;
+  font-size: 18px;
+  color: #1b1b1b;
+}
+.class-warning .ant-modal-confirm-body i {
+  display: none;
+}
+.class-warning .ant-modal-confirm-btns {
+  text-align: center;
+  float: unset;
+}
 /* (ignored) */
 .teacherVideo-container[data-v-2dad5c89] {
   height: 5.4rem;
@@ -1430,11 +1445,9 @@ body > textarea {
   display: -moz-box;
   display: -ms-flexbox;
   display: flex;
-  -webkit-box-pack: justify;
-  -webkit-justify-content: space-between;
-  -moz-box-pack: justify;
-  -ms-flex-pack: justify;
-  justify-content: space-between;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: distribute;
+  justify-content: space-around;
 }
 .teacherVideo-container .video-area .operate-area.show[data-v-2dad5c89] {
   -webkit-transform: translate(-50%, 0);

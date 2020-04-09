@@ -165,6 +165,12 @@ export default class extends EventEmitter
             configuration.iceServers = data.iceServers;
           }
 
+          if (!data.transportPolicy) {
+            configuration.iceTransportPolicy = 'all';
+          }else {
+            configuration.iceTransportPolicy = 'relay';
+          }
+
           let obj = {
             peerId: this._peerId,
             properties: data.properties
@@ -218,11 +224,11 @@ export default class extends EventEmitter
             peerIds.push(peerId);
           }
 
-          that._createPeerConnection(peerId,false);
+          await that._createPeerConnection(peerId,false);
 
           let pc = peerConnections.get(peerId);
 
-          that._addTrack(pc);
+          await that._addTrack(pc);
 
           let device = data.property['device'] ? data.property['device'] : 0;
           if (device !== 0 && this._deviceStatus === 0) {

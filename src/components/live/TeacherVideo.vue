@@ -1,19 +1,19 @@
 <template>
     <div class="teacherVideo-container">
-        <div class="video-area" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
-            <video autoplay loop type="video/mp4" ref="video" :muted="!teacherId"></video>
+        <div :class="{'video-area': true, videoLost: teacherConnect && !stream}" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
+            <video autoplay loop type="video/mp4" ref="video" :muted="!teacherId" v-show="teacherConnect"></video>
             <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                 <div @click="setAllOperationStatus(!allOperation)"
                      :class="{controlAll: allOperation, 'operate-item': true}">
                     <img :src="controlImg" alt="">
                     <span>{{allOperation? '取消授权': '全部授权'}}</span>
                 </div>
-                <div @click="setAllStageStatus()"
-                     :class="{controlAll: $store.getters.stageAllStatus, 'operate-item': true}">
-                    <img :src="stageImg" alt="">
-                    <span>{{$store.getters.stageAllStatus? '取消上台': '全部上台'}}</span>
-                </div>
-                <div class="operate-item">
+<!--                <div @click="setAllStageStatus()"-->
+<!--                     :class="{controlAll: $store.getters.stageAllStatus, 'operate-item': true}">-->
+<!--                    <img :src="stageImg" alt="">-->
+<!--                    <span>{{$store.getters.stageAllStatus? '取消上台': '全部上台'}}</span>-->
+<!--                </div>-->
+                <div class="operate-item" @click="$emit('awardAll')">
                     <img :src="starImg" alt="">
                     <span>全部奖励</span>
                 </div>
@@ -39,7 +39,7 @@
                 allStage: false
             }
         },
-        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role', 'studentList', 'teacherId'],
+        props: ['rtcRoom', 'teacherName', 'peerIdList', 'stream', 'role', 'studentList', 'teacherId', 'teacherConnect'],
         created () {
 
         },
@@ -130,6 +130,10 @@
             position: relative;
             background:url("./images/teacher_coming.png") no-repeat;
             background-size: cover;
+            &.videoLost {
+                background:url("./images/video_lost.png") no-repeat;
+                background-size: cover;
+            }
             video {
                 width: 100%;
                 height: 100%;
@@ -143,7 +147,7 @@
                 transform: translate(-50%, 150%);
                 transition: all .3s ease;
                 display: flex;
-                justify-content: space-between;
+                justify-content: space-around;
                 &.show {
                     transform: translate(-50%, 0);
                 }

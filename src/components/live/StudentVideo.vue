@@ -13,7 +13,7 @@
                         <span>{{info.star}}</span>
                     </span>
                 </p>
-                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId"></video>
+                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId" :class="{videoLost: !stream}"></video>
                 <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
@@ -52,7 +52,7 @@
                 awardButtonStatus: false // 按钮节流
             }
         },
-        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId', 'roleInfo', 'roomId'],
+        props: ['id', 'rtcRoom', 'studentName', 'stream', 'role', 'info', 'studentId', 'roleInfo', 'roomId', 'allAwardStatus'],
         components: {
 
         },
@@ -207,20 +207,26 @@
 
             // 发放奖励
             award () {
-                if (this.role === 'teacher' && !this.awardButtonStatus && !this.startStarAnimate) {
+                if (this.role === 'teacher' && !this.awardButtonStatus && !this.startStarAnimate && !this.allAwardStatus) {
                     this.awardButtonStatus = true
                     this.$axios.post(this.$store.state.apiUrl + '/v1/classRoomHistory/addClassRoomReward', {room_no: this.roomId, students: this.id})
                         .then(res => {
                             let data = res.data;
                             if (data.code === 200) {
                                 const params = {
-                                    event: 'award',
+                                    event: 'single_award',
                                     data: {
-                                        id: this.id
+                                        peerId: this.id,
+                                        sync: {
+                                            page: this.$store.state.liveBroadcast.liveBroadcastData.coursewarePage,
+                                        },
                                     }
                                 }
                                 this.rtcRoom.sendMessage(params)
+                                this.$emit('setSingleAwardStatus', true)
                                 this.starAnimate()
+                            }else {
+                                this.$message.warning(data.msg)
                             }
                             this.awardButtonStatus = false
                         })
@@ -271,6 +277,7 @@
                     _this.$emit('addStar', {id: _this.id, star: _this.info.star})
                     setTimeout(() => {
                         _this.startStarAnimate = false
+                        _this.$emit('setSingleAwardStatus', false)
                     }, 1600)
                     _this.moveStarScale = true
                 }
@@ -405,6 +412,10 @@
                     height: 100%;
                     border-radius: 10rem/@baseFontSize;
                     background-color: #595959;
+                    &.videoLost {
+                        background:url("./images/video_lost.png") no-repeat;
+                        background-size: cover;
+                    }
                 }
 
                 .operate-area {

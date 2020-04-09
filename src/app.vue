@@ -1,5 +1,5 @@
 <template>
-    <a-config-provider :getPopupContainer="getPopupContainer">
+    <a-config-provider :getPopupContainer="getPopupContainer" :locale="locale">
         <div class="app-container" id="app">
             <router-view></router-view>
         </div>
@@ -8,11 +8,14 @@
 
 <script>
     import TopBar from '@/components/TopBar/TopBar';
+    import zhCN from 'ant-design-vue/es/locale/zh_CN';
+
     export default {
         name: "app",
         data(){
             return {
                 rootUrl: this.$store.state.rootUrl,
+                locale: zhCN,
             }
         },
         created() {

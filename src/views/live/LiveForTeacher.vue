@@ -13,7 +13,7 @@
                     type="success"
             />
         </div>
-        <main class="clearFix">
+        <main class="clearFix" ref="main">
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
                     <iframe :src="iframeSrc"
@@ -69,17 +69,19 @@
                 <div class="teacher-area">
                     <div class="classroom">
                         <button @click="leaveRoom">离开教室</button>
-                        <button @click="startClass" :disabled="startClassDisabled">{{startClassDisabled? '正在': '开始'}}上课</button>
+                        <button @click="() => startClassDisabled? endClass(): startClass()">
+                            {{startClassDisabled? remainClassTime + ' 结束': '开始'}}上课</button>
                     </div>
-                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher"
-                                  :stream="streamObj[teacherId]" :studentList="studentList" @setAlert="setAlert"></TeacherVideo>
+                    <TeacherVideo :rtcRoom="rtcRoom" :teacherName="teacherName" :peerIdList="peerIdList" role="teacher" @awardAll="awardAll"
+                                  :stream="streamObj[teacherId]" :studentList="studentList" @setAlert="setAlert" :teacherConnect="teacherConnect"></TeacherVideo>
                 </div>
             </div>
             <div class="main-bottom">
                 <div class="students-area">
                     <StudentVideo :id="item.uid" :rtcRoom="rtcRoom" :studentName="item.uname" :stream="streamObj[item.uid]"
                                   v-for="item in studentList" :key="item.uid" :info="item" role="teacher" @setAlert="setAlert"
-                                  :roleInfo="roleInfoObj[item.uid]" :roomId="roomId" @addStar="addStar"></StudentVideo>
+                                  :roleInfo="roleInfoObj[item.uid]" :roomId="roomId" @addStar="addStar" :ref="item.uid"
+                                  :allAwardStatus="allAwardStatus" @setSingleAwardStatus="setSingleAwardStatus"></StudentVideo>
                 </div>
                 <div class="placeholder">
                     <img src="./images/placeholder.png" alt="">
@@ -137,8 +139,11 @@
                 alertVisible: false, // 顶部提醒框
                 alertMessage: '',
                 startClassDisabled: false,
+                allAwardStatus:false, // 全部奖励节流
+                singleAwardStatus: false, // 单人奖励节流
                 noSave: false, // 不需要保存数据
                 roomInfo: {}, // 直播间数据
+                remainClassTime: '', // 课堂剩余时间
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -167,6 +172,7 @@
                 studentIdList: [], // 存放学生初次连接的id
                 studentIdIndexObj: {}, // studentId与其在studentList对应的次序
                 teacherName: '',
+                teacherConnect: false,
                 className: '',
                 streamObj: {}, // 视频流
                 // -----------右侧工具栏数据---------------
@@ -206,10 +212,8 @@
                     const studentDomObj = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const indexOfStudent = this.studentIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
                     const translateTop = 783 + 17
-                    const scale = 1044 / 320
                     studentDomObj.classList.add('oneStudentOnStage')
                     studentDomObj.classList.remove('moreStudentOnStage')
-                    // studentDomObj.style.transform = `translate3d(${(-translateLeft * indexOfstudent + 113) / 100}rem, ${-translateTop / 100}rem, 0) scale(${scale})` // 113为距课件左边界113rem 会出现抖动问题故弃之
                     studentDomObj.style.left = `${(-translateLeft * indexOfStudent + 113) / 100}rem`
                     studentDomObj.style.top = `${-translateTop / 100}rem`
                 } else if (stageStatusArrLength > 1) {
@@ -393,6 +397,7 @@
                                 this.peerIdList.push(peerId)
                             }
                         })
+                        this.teacherConnect = true
                         rtcRoom.requestRoomInfo('user_sort', {});
                         rtcRoom.requestRoomInfo('room_config', {manager: teacherPeerId});
                         rtcRoom.requestRoomInfo('ai_role_info', {});
@@ -441,6 +446,8 @@
                     const index = this.peerIdList.indexOf(id)
                     if (id !== teacherPeerId) {
                         this.$set(this.studentList[this.studentIdIndexObj[id]], 'isconnect', false)
+                    }else {
+                        this.teacherConnect = false
                     }
                     if (index !== -1) {
                         // 关闭学生操作
@@ -479,8 +486,14 @@
 
                 // 获取学生职位
                 rtcRoom.on('ai-action-notify', (method,data) => {
-                    if(data.available) {
-                        this.$set(this.roleInfoObj, data.peerId, {src: data.midpath + data.path})
+                    const result = data.data
+                    const event = data.event
+                    if(event === 'ai_role') {
+                        if(result.available) {
+                            this.$set(this.roleInfoObj, result.peerId, {src: result.midpath + result.path})
+                        }
+                    }else if (event === 'ai_role_clear') {
+                        this.roleInfoObj = {}
                     }
                 })
 
@@ -539,6 +552,8 @@
                 // 用户关闭页面
                 window.onbeforeunload = () => {
                     // this.allUsersCancelOperate();
+                    this.rtcRoom.changeAIControl(this.teacherId);
+                    this.rtcRoom.changeAISyncStatus(1);
                     if (this.mode === 'video' && !this.noSave) {
                         this.$store.commit('setVideoProgress', {index: this.resourceIndex, progress: this.progressBar}) // 存储视频进度
                     }
@@ -714,11 +729,37 @@
                             this.studentList = studentList
                             this.teacherName = data.data.data.teacher_name
                             this.roomInfo = data.data.data
+                            if (this.roomInfo.status === 1) {
+                                this.startClassDisabled = true
+                                this.countClassRemainTime()
+                            }
                         }
                     })
                     .catch(() => {
 
                     })
+            },
+
+            // 计算课堂剩余时间
+            countClassRemainTime () {
+                const planClassEndTime = new Date(this.roomInfo.planendtime).getTime()
+                const nowTime = new Date().getTime()
+                if (planClassEndTime > nowTime) {
+                    let time = parseInt((planClassEndTime - nowTime) / 1000)
+                    const timeout = setInterval(() => {
+                        let minutes = parseInt(time / 60)
+                        let seconds = time % 60
+                        time--
+                        minutes = minutes < 10? '0' + minutes: minutes
+                        seconds = seconds < 10? '0' + seconds: seconds
+                        this.remainClassTime = minutes + ':' + seconds
+                        if (time < 0) {
+                            clearInterval(timeout)
+                        }
+                    }, 1000)
+                }else {
+                    this.remainClassTime = '00:00'
+                }
             },
 
             // 开始上课
@@ -731,6 +772,28 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.startClassDisabled = true
+                            this.countClassRemainTime()
+                        } else if(data.code === 403) {
+                            this.classWarning()
+                        }else {
+                            this.$message.warning(data.msg, 3)
+                        }
+                    })
+                    .catch(() => {
+
+                    })
+            },
+
+            // 结束上课
+            endClass () {
+                const params = {
+                    room_no: this.roomId
+                }
+                this.$axios.post(this.$store.state.apiUrl + '/v1/classRoom/updateClassRoomEnd', params)
+                    .then(res => {
+                        let data = res.data;
+                        if (data.code === 200) {
+                            this.startClassDisabled = false
                         } else {
                             this.$message.warning(data.msg, 3)
                         }
@@ -738,6 +801,27 @@
                     .catch(() => {
 
                     })
+            },
+
+            // 课堂未开始弹窗
+            classWarning () {
+                let secondsToGo = 10;
+                const modal = this.$warning({
+                    title: '上课前5分钟才能开始上课',
+                    okText: `我知道了 (${secondsToGo}s)`,
+                    centered: true,
+                    class: 'class-warning',
+                });
+                const interval = setInterval(() => {
+                    secondsToGo -= 1;
+                    modal.update({
+                        okText: `我知道了 (${secondsToGo}s)`,
+                    });
+                }, 1000);
+                setTimeout(() => {
+                    clearInterval(interval);
+                    modal.destroy();
+                }, secondsToGo * 1000);
             },
 
             // 初始化画板
@@ -1326,6 +1410,50 @@
                 const star = data.star + 1
                 this.$set(this.studentList[this.studentIdIndexObj[id]], 'star', star)
             },
+
+            // 全部奖励
+            awardAll() {
+                if (this.peerIdList.length <= 0) return
+                if (!this.allAwardStatus && !this.singleAwardStatus) {
+                    this.allAwardStatus = true
+                    this.$axios.post(this.$store.state.apiUrl + '/v1/classRoomHistory/addClassRoomReward',
+                        {room_no: this.roomId, students: this.peerIdList.toString()})
+                        .then(res => {
+                            let data = res.data;
+                            if (data.code === 200) {
+                                const params = {
+                                    event: 'all_award',
+                                    data: {
+                                        sync: {
+                                            page: this.resourceIndex,
+                                        },
+                                    }
+                                }
+                                this.rtcRoom.sendMessage(params)
+                                this.peerIdList.forEach(id => {
+                                    this.$refs[id][0].starAnimate()
+                                })
+                                setTimeout(() => {
+                                    this.allAwardStatus = false
+                                }, 2800)
+                            }else {
+                                this.$message.warning(data.msg)
+                                this.allAwardStatus = false
+                            }
+
+                        })
+                        .catch(() => {
+                            this.allAwardStatus = false
+                        })
+                }else {
+                    this.$message.warning('请稍后再试', 3)
+                }
+            },
+
+            // 设置allAwardStatus
+            setSingleAwardStatus(status) {
+                this.singleAwardStatus = status
+            },
         }
     }
 </script>
@@ -1643,5 +1771,22 @@
             }
         }
 
+    }
+    .class-warning {
+        border-radius:10px;
+        .ant-modal-confirm-body {
+            .ant-modal-confirm-title {
+                text-align: center;
+                font-size:18px;
+                color:rgba(27,27,27,1);
+            }
+            i {
+                display: none;
+            }
+        }
+        .ant-modal-confirm-btns {
+            text-align: center;
+            float: unset;
+        }
     }
 </style>

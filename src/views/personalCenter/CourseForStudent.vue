@@ -73,7 +73,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <a-pagination showQuickJumper :defaultCurrent="pageNum" :total="totalCount" @change="onPageChange"
+                    <a-pagination showQuickJumper :current="pageNum" :total="totalCount" @change="onPageChange"
                                   :defaultPageSize="pageSize" size="small"/>
                 </div>
             </main>
@@ -92,6 +92,7 @@
             return {
                 rootUrl: this.$store.state.apiUrl,
                 userId: userInfo.uid,
+                userName: userInfo.uname,
                 loading: true,
                 pageNum: 1,
                 pageSize: 10,
@@ -152,7 +153,7 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.roomId = data.data.data.room_no;
-                            this.goLiveBroadcast(`liveForStudent/${classInfo.id}/${this.roomId}/${classInfo['teacher_uid']}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}`)
+                            this.goLiveBroadcast(`liveForStudent/${classInfo.id}/${this.roomId}/${classInfo['teacher_uid']}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}/${this.userName}`)
                         }
                     })
                     .catch(() => {

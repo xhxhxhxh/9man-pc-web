@@ -2825,9 +2825,17 @@ body > textarea {
   background: url(../images/0bc80312-teacher_coming.png) no-repeat;
   background-size: cover;
 }
+.teacherVideo-container .video-area.videoLost[data-v-2dad5c89] {
+  background: url(../images/195b4547-video_lost.png) no-repeat;
+  background-size: cover;
+}
 .teacherVideo-container .video-area video[data-v-2dad5c89] {
   width: 100%;
   height: 100%;
+}
+.teacherVideo-container .video-area video.reverse[data-v-2dad5c89] {
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
 }
 .teacherVideo-container .video-area .operate-area[data-v-2dad5c89] {
   height: 1rem;
@@ -3088,6 +3096,18 @@ to {
   height: 100%;
   border-radius: 0.1rem;
   background-color: #595959;
+}
+.studentVideo-container .video-box .student-video-area video.videoLost[data-v-3155ba50] {
+  background: url(../images/195b4547-video_lost.png) no-repeat;
+  background-size: cover;
+}
+.studentVideo-container .video-box .student-video-area video.videoLost.reverse[data-v-3155ba50] {
+  -webkit-transform: unset;
+  transform: unset;
+}
+.studentVideo-container .video-box .student-video-area video.reverse[data-v-3155ba50] {
+  -webkit-transform: scale(-1, 1);
+  transform: scale(-1, 1);
 }
 .studentVideo-container .video-box .student-video-area .operate-area[data-v-3155ba50] {
   height: 0.6rem;

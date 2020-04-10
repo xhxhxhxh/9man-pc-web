@@ -13,8 +13,9 @@
                         <span>{{info.star}}</span>
                     </span>
                 </p>
-                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId" :class="{videoLost: !stream}"></video>
-                <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
+                <video autoplay loop type="video/*" ref="video" @dblclick="onStage" v-show="info.isconnect" :muted="id === studentId"
+                       :class="{videoLost: !stream || stream.getVideoTracks().length  === 0, reverse: id === studentId}"></video>
+                <div :class="{'operate-area': true, show: showOperateArea && info.isconnect}" v-if="role === 'teacher'">
                     <img :src="controlSrc" alt="" @click="controlStudentOperate">
                     <img :src="muteSrc" alt="" @click="mute">
                     <img :src="starSrc" alt="" ref="star" @mousedown="award">
@@ -415,6 +416,12 @@
                     &.videoLost {
                         background:url("./images/video_lost.png") no-repeat;
                         background-size: cover;
+                        &.reverse {
+                            transform: unset;
+                        }
+                    }
+                    &.reverse {
+                        transform: scale(-1, 1);
                     }
                 }
 

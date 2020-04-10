@@ -153,7 +153,7 @@
 
                 if (stageStatusArrLength === 1) {
                     const studentDomObj = document.querySelector('#studentVideo' + stageStatusArr[0])
-                    const indexOfStudent = this.studentIdList.indexOf(stageStatusArr[0]) // 获取学生视频的次序，已确定左移距离
+                    const indexOfStudent = this.studentIdIndexObj[stageStatusArr[0]] // 获取学生视频的次序，已确定左移距离
                     const translateTop = 783 + 17
                     studentDomObj.classList.add('oneStudentOnStage')
                     studentDomObj.classList.remove('moreStudentOnStage')
@@ -173,8 +173,8 @@
                     const secondLeft = 115 + 520
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
-                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
+                    const indexOfFirstStudent = this.studentIdIndexObj[stageStatusArr[0]]
+                    const indexOfSecondStudent = this.studentIdIndexObj[stageStatusArr[1]]
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.top = studentDomObj1.style.top = `${-top / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
@@ -190,9 +190,9 @@
                     const studentDomObj1 = document.querySelector('#studentVideo' + stageStatusArr[0])
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
-                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
+                    const indexOfFirstStudent = this.studentIdIndexObj[stageStatusArr[0]]
+                    const indexOfSecondStudent = this.studentIdIndexObj[stageStatusArr[1]]
+                    const indexOfThirdStudent = this.studentIdIndexObj[stageStatusArr[2]]
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj1.style.top = `${-firstTop / 100}rem`
                     studentDomObj2.style.top = studentDomObj3.style.top = `${-secondTop / 100}rem`
@@ -210,10 +210,10 @@
                     const studentDomObj2 = document.querySelector('#studentVideo' + stageStatusArr[1])
                     const studentDomObj3 = document.querySelector('#studentVideo' + stageStatusArr[2])
                     const studentDomObj4 = document.querySelector('#studentVideo' + stageStatusArr[3])
-                    const indexOfFirstStudent = this.studentIdList.indexOf(stageStatusArr[0])
-                    const indexOfSecondStudent = this.studentIdList.indexOf(stageStatusArr[1])
-                    const indexOfThirdStudent = this.studentIdList.indexOf(stageStatusArr[2])
-                    const indexOfFourthStudent = this.studentIdList.indexOf(stageStatusArr[3])
+                    const indexOfFirstStudent = this.studentIdIndexObj[stageStatusArr[0]]
+                    const indexOfSecondStudent = this.studentIdIndexObj[stageStatusArr[1]]
+                    const indexOfThirdStudent = this.studentIdIndexObj[stageStatusArr[2]]
+                    const indexOfFourthStudent = this.studentIdIndexObj[stageStatusArr[3]]
                     studentDomObj1.style.left = `${(-translateLeft * indexOfFirstStudent + firstLeft) / 100}rem`
                     studentDomObj2.style.left = `${(-translateLeft * indexOfSecondStudent + secondLeft) / 100}rem`
                     studentDomObj3.style.left = `${(-translateLeft * indexOfThirdStudent + firstLeft) / 100}rem`
@@ -455,6 +455,7 @@
 
                 // 获取学生次序
                 rtcRoom.on('room-info-notify',(method,data) => {
+                    console.log(method, data)
                     if (method === 'user_sort') {
                         const list = data.list
                         if (JSON.stringify(this.studentIdList) === JSON.stringify(list)) return

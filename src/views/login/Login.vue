@@ -300,7 +300,7 @@
 
             // 查询孩子
             queryChild () {
-                return this.$axios.get(this.rootUrl + '/v1/child/queryChild')
+                return this.$axios.get(this.rootUrl + '/v1/userProfile/queryUserProfile')
             },
 
             // 关闭验证码警告框

@@ -1,7 +1,8 @@
 <template>
     <div class="teacherVideo-container">
-        <div :class="{'video-area': true, videoLost: teacherConnect && !stream}" @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
-            <video autoplay loop type="video/mp4" ref="video" :muted="!teacherId" v-show="teacherConnect"></video>
+        <div :class="{'video-area': true, videoLost: teacherConnect && (!stream || stream.getVideoTracks().length  === 0)}"
+             @mouseenter="showOperateArea = true" @mouseleave="showOperateArea = false">
+            <video autoplay loop type="video/mp4" ref="video" :muted="!teacherId" v-show="teacherConnect" :class="{reverse: role === 'teacher'}"></video>
             <div :class="{'operate-area': true, show: showOperateArea}" v-if="role === 'teacher'">
                 <div @click="setAllOperationStatus(!allOperation)"
                      :class="{controlAll: allOperation, 'operate-item': true}">
@@ -137,6 +138,9 @@
             video {
                 width: 100%;
                 height: 100%;
+                &.reverse {
+                    transform: scale(-1, 1);
+                }
             }
             .operate-area {
                 height: 100rem/@baseFontSize;

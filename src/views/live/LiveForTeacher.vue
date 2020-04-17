@@ -68,7 +68,10 @@
             <div class="main-right">
                 <div class="teacher-area">
                     <div class="classroom">
-                        <button @click="leaveRoom">离开教室</button>
+                        <div style="display: flex; justify-content: space-between">
+                            <button @click="leaveRoom" style="width: 45%;">离开教室</button>
+                            <button @click="classRestart" style="width: 45%;">重新上课</button>
+                        </div>
                         <button @click="() => startClassDisabled? endClass(): startClass()">
                             {{startClassDisabled? remainClassTime + ' 结束': '开始'}}上课</button>
                     </div>
@@ -93,6 +96,7 @@
 
 <script>
     import { Icon } from 'ant-design-vue';
+    import common from '@/api/common';
     import moment from 'moment';
     var ImageEditor = require('tui-image-editor/dist/tui-image-editor.min');
     // var ImageEditor = require('@/lib/tui-image-editor.min');
@@ -127,6 +131,7 @@
     export default {
         name: "Live",
         data () {
+            const userInfo = common.getLocalStorage('userInfo')
             return {
                 // -----------基础数据---------------
                 mode: 'game', // 游戏模式:game, 视频模式:video
@@ -144,6 +149,8 @@
                 noSave: false, // 不需要保存数据
                 roomInfo: {}, // 直播间数据
                 remainClassTime: '', // 课堂剩余时间
+                permitJoinRoom: true,
+                userInfo,
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -369,6 +376,11 @@
 
             // 初始化rtcROOM
             initRtcRoom() {
+                if (!this.permitJoinRoom) {
+                    this.notPermitJoinClass()
+                    return
+                }
+
                 const rtcRoom = RTCRoom.getInstance()
                 const host = 'www.9mankid.com'
                 const port = 3210
@@ -389,6 +401,7 @@
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
+                    if (this.studentIdIndexObj[id] === undefined && id !== teacherPeerId) return // 不属于该课堂的用户
                     this.$set(this.streamObj, id, null)
                     if (id === teacherPeerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
@@ -412,7 +425,10 @@
                 //用户连接成功成功时设置用户状态
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
-                    if (id === teacherPeerId) return
+                    if (this.studentIdIndexObj[id] === undefined || id === teacherPeerId) {
+                        this.synchronize(id)
+                        return
+                    }
                     rtcRoom.requestRoomInfo('user_sort', {});
 
                     this.$set(this.studentList[this.studentIdIndexObj[id]], 'joinRoom', true)
@@ -443,6 +459,7 @@
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
+                    if (this.studentIdIndexObj[id] === undefined && id !== teacherPeerId) return // 不属于该课堂的用户
                     const index = this.peerIdList.indexOf(id)
                     if (id !== teacherPeerId) {
                         this.$set(this.studentList[this.studentIdIndexObj[id]], 'isconnect', false)
@@ -600,12 +617,53 @@
                 });
             },
 
+            // 重新上课
+            classRestart () {
+                this.$confirm({
+                    title: '是否清除课件进度?',
+                    content: '',
+                    centered: true,
+                    onOk:async () => {
+                        this.noSave = true;
+                        const res = await this.clearCoursewareProgress()
+                        if (res && res.data.code === 200) {
+                            this.roleInfoObj = {}
+                            this.$store.commit('cleanVideoProgress')
+                            this.$message.success('清除成功')
+                        }else {
+                            this.$message.error('清除动画进度失败')
+                        }
+                    },
+                    onCancel() {},
+                });
+            },
+
+            // 不允许进入课堂提醒
+            notPermitJoinClass () {
+                this.$warning({
+                    title: '您不是该堂课的老师，无法上课。',
+                    content: '',
+                    centered: true,
+                    onOk:() => {
+                        window.close()
+                    },
+                });
+            },
+
             // 清除游戏进度
             clearGameProgress () {
                 const params = {
                     roomId: this.roomInfo.room_no
                 }
                 return this.$axios.get(this.$store.state.emptyRoomUrl + '/emptyRoom', {params}).catch(() => {})
+            },
+
+            // 清除课件进度
+            clearCoursewareProgress () {
+                const params = {
+                    roomId: this.roomInfo.room_no
+                }
+                return this.$axios.get(this.$store.state.emptyRoomUrl + '/restartRoom', {params}).catch(() => {})
             },
 
             // 老师离开房间 取消全部授权和全部上台(移交给学生端处理)
@@ -732,6 +790,9 @@
                             if (this.roomInfo.status === 1) {
                                 this.startClassDisabled = true
                                 this.countClassRemainTime()
+                            }
+                            if (this.roomInfo.teacher_uid !== this.userInfo.uid) {
+                                this.permitJoinRoom = false // 当不属于本课堂老师进入时，阻止
                             }
                         }
                     })

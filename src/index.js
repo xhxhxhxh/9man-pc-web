@@ -9,7 +9,7 @@ import './permission';
 import './lib/animate.css'
 import 'normalize.css';
 import './css/base.css';
-import { Button, Menu, Form, Input, Modal, message, Select, DatePicker, LocaleProvider,
+import { Button, Menu, Form, Input, Modal, message, Select, DatePicker,
     TimePicker, Popover, Icon, Slider, Upload, Spin, Pagination, Radio, Tooltip, Alert, ConfigProvider } from 'ant-design-vue';
 
 Vue.config.productionTip = false;

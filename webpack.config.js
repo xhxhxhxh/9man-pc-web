@@ -53,6 +53,12 @@ module.exports = {
                 changeOrigin: true,
                 secure: false
             },
+            "/restartRoom": {
+                target: 'https://www.9mankid.com:8210',
+                pathRewrite: {'^/' : '/'},
+                changeOrigin: true,
+                secure: false
+            },
         },
     },
     plugins: [

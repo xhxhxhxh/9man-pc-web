@@ -352,6 +352,7 @@
                 // 用户加入时更新peerIdList
                 rtcRoom.on('user-joined',(id) => {
                     console.log('用户进入：' + id)
+                    if (this.studentIdIndexObj[id] === undefined && id !== teacherId) return // 不属于该课堂的用户
                     this.$set(this.streamObj, id, null)
                     if (id === peerId) {
                         rtcRoom.getAllRoomUser().forEach(item => {
@@ -375,6 +376,7 @@
                 //用户连接成功成功时设置用户状态
                 rtcRoom.on('user-peer-connected',(id) => {
                     console.log('用户连接：' + id)
+                    if (this.studentIdIndexObj[id] === undefined && id !== teacherId) return // 不属于该课堂的用户
                     if (id !== this.teacherId) {
                         // rtcRoom.closeVideo(this.studentId, [this.teacherId])
                         rtcRoom.requestRoomInfo('user_sort', {});
@@ -395,6 +397,7 @@
                 // 用户离开时更新peerIdList
                 rtcRoom.on('user-leaved',(id) => {
                     console.log('用户离开：' + id, this.peerIdList.indexOf(id))
+                    if (this.studentIdIndexObj[id] === undefined && id !== teacherId) return // 不属于该课堂的用户
                     const index = this.peerIdList.indexOf(id)
                     if (index !== -1) {
                         this.$set(this.studentList[this.studentIdIndexObj[id]], 'isconnect', false)
@@ -578,7 +581,7 @@
                             studentList.forEach((item, index) => {
                                 this.studentNameObj[item.uid] = item.uname
                                 this.studentIdIndexObj[item.uid] = index
-                                item.star = historyObj[item.uid].star // 将historyList中的star放入studentList中
+                                item.star = historyObj[item.uid].star? historyObj[item.uid].star: 0 // 将historyList中的star放入studentList中
                                 if (localStudentIdList.includes(item.uid)) {
                                     item.joinRoom = true
                                 }else {

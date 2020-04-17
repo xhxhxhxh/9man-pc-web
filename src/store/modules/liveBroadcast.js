@@ -48,6 +48,12 @@ const liveBroadcast = {
             }
         },
 
+        // 清除videoProgress
+        cleanVideoProgress (state) {
+            state.liveBroadcastData.videoProgress = {}
+            this.commit('writeLiveBroadcastDataToLocalStorage')
+        },
+
         // 设置老师id
         setTeacherId (state, id) {
             state.teacherId = id

@@ -37,6 +37,7 @@ switch (browserInfo.browser) {
         break;
     case 'edge':
         version <= 11 ? browser = false : browser = true;
+        break;
     case 'trident':
         version <= 6 ? browser = false : browser = true;
         break;

@@ -2636,6 +2636,7 @@ to {
   border-radius: 0.1rem;
   font-size: 0.19rem;
   color: #ffffff;
+  z-index: 1;
 }
 .studentVideo-container .video-box .student-video-area .name-box .star[data-v-3155ba50] {
   float: right;

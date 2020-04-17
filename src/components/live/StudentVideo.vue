@@ -460,6 +460,7 @@
                     border-radius:10rem/@baseFontSize;
                     font-size:19rem/@baseFontSize;
                     color:rgba(255,255,255,1);
+                    z-index: 1;
                     .star {
                         float: right;
                         display: flex;

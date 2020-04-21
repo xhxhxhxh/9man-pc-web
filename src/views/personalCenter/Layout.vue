@@ -62,7 +62,7 @@
 <style lang="less" scoped>
     @import "../../less/index.less";
     .layout-container {
-        height: 100%;
+        min-height: 100%;
         background-color: #F4F5F7;
         .layout-top {
             height: 50px;
@@ -100,6 +100,7 @@
         main {
             width: 1200px;
             margin: 0 auto;
+            padding-bottom: 24px;
         }
         .sideBar-box {
             float: left;

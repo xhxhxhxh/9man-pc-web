@@ -55,7 +55,7 @@
 
 <script>
     import { Icon } from 'ant-design-vue';
-    const ImageEditor = require('tui-image-editor');
+    const ImageEditor = require('tui-image-editor/dist/tui-image-editor.min');
     // const ImageEditor = require('@/lib/tui-image-editor.min');
     // const ImageEditor = require('../../../../tui-image-editor/dist/tui-image-editor-copy.min'); // 将mousemove和mousedown挂载对象从document改到底层canvas
     import 'tui-image-editor/dist/tui-image-editor.css';

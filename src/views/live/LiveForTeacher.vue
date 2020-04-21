@@ -68,10 +68,7 @@
             <div class="main-right">
                 <div class="teacher-area">
                     <div class="classroom">
-                        <div style="display: flex; justify-content: space-between">
-                            <button @click="leaveRoom" style="width: 45%;">离开教室</button>
-                            <button @click="classRestart" style="width: 45%;">重新上课</button>
-                        </div>
+                        <button @click="leaveRoom">离开教室</button>
                         <button @click="() => startClassDisabled? endClass(): startClass()">
                             {{startClassDisabled? remainClassTime + ' 结束': '开始'}}上课</button>
                     </div>
@@ -617,27 +614,6 @@
                 });
             },
 
-            // 重新上课
-            classRestart () {
-                this.$confirm({
-                    title: '是否清除课件进度?',
-                    content: '',
-                    centered: true,
-                    onOk:async () => {
-                        this.noSave = true;
-                        const res = await this.clearCoursewareProgress()
-                        if (res && res.data.code === 200) {
-                            this.roleInfoObj = {}
-                            this.$store.commit('cleanVideoProgress')
-                            this.$message.success('清除成功')
-                        }else {
-                            this.$message.error('清除动画进度失败')
-                        }
-                    },
-                    onCancel() {},
-                });
-            },
-
             // 不允许进入课堂提醒
             notPermitJoinClass () {
                 this.$warning({
@@ -656,14 +632,6 @@
                     roomId: this.roomInfo.room_no
                 }
                 return this.$axios.get(this.$store.state.emptyRoomUrl + '/emptyRoom', {params}).catch(() => {})
-            },
-
-            // 清除课件进度
-            clearCoursewareProgress () {
-                const params = {
-                    roomId: this.roomInfo.room_no
-                }
-                return this.$axios.get(this.$store.state.emptyRoomUrl + '/restartRoom', {params}).catch(() => {})
             },
 
             // 老师离开房间 取消全部授权和全部上台(移交给学生端处理)
@@ -722,7 +690,7 @@
                     const video = this.$refs['video-play']
                     Object.assign(params.data.sync, {
                         value: this.progressBar / 100,
-                        isplay: !video.paused,
+                        isplay: video? !video.paused: false,
                     })
                 }
 

@@ -1352,7 +1352,7 @@ to {
   width: 100%;
   border-radius: 0.1rem;
 }
-/* (ignored) *//* (ignored) *//* (ignored) *//* (ignored) *//* (ignored) *//*!
+/* (ignored) *//* (ignored) *//* (ignored) *//* (ignored) *//* (ignored) *//* (ignored) *//*!
  * tui-image-editor.js
  * @version 3.5.2
  * @author NHNEnt FE Development Lab <dl_javascript@nhnent.com>
@@ -2292,7 +2292,7 @@ body > textarea {
 .tui-image-editor-container.top.tui-image-editor-top-optimization .tui-image-editor-controls-logo {
   display: none;
 }
-/* (ignored) *//* (ignored) */
+/* (ignored) */
 .teacherVideo-container[data-v-2dad5c89] {
   height: 5.4rem;
   border-radius: 0.1rem 0.1rem 0 0;
@@ -3331,21 +3331,24 @@ to {
 .course-container .course-box main .course-list table thead tr th[data-v-bfbe6fe0]:last-of-type {
   border-radius: 0 13px 13px 0;
 }
-.course-container .course-box main .course-list table tbody tr[data-v-bfbe6fe0] {
-  cursor: pointer;
-}
 .course-container .course-box main .course-list table tbody tr td[data-v-bfbe6fe0] {
   font-size: 16px;
-  height: 40px;
-  line-height: 40px;
+  height: 50px;
+  line-height: 50px;
   text-align: center;
   color: #434343;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.course-container .course-box main .course-list table tbody tr:hover td[data-v-bfbe6fe0] {
-  color: #FF6A04;
+.course-container .course-box main .course-list table tbody tr td.class-time p[data-v-bfbe6fe0] {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+.course-container .course-box main .course-list table tbody tr td.join-class button[data-v-bfbe6fe0] {
+  width: 86px;
+  height: 36px;
+  border-radius: 10px;
 }
 .course-container .course-box main .ant-pagination[data-v-bfbe6fe0] {
   margin-top: 24px;
@@ -3476,21 +3479,27 @@ to {
 .course-container .course-box main .course-list table thead tr th[data-v-4a6db33e]:last-of-type {
   border-radius: 0 13px 13px 0;
 }
-.course-container .course-box main .course-list table tbody tr[data-v-4a6db33e] {
-  cursor: pointer;
-}
 .course-container .course-box main .course-list table tbody tr td[data-v-4a6db33e] {
   font-size: 16px;
-  height: 40px;
-  line-height: 40px;
+  height: 50px;
+  line-height: 50px;
   text-align: center;
   color: #434343;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.course-container .course-box main .course-list table tbody tr:hover td[data-v-4a6db33e] {
-  color: #FF6A04;
+.course-container .course-box main .course-list table tbody tr td.class-time p[data-v-4a6db33e] {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+.course-container .course-box main .course-list table tbody tr td.join-class button[data-v-4a6db33e] {
+  width: 86px;
+  height: 36px;
+  border-radius: 10px;
+}
+.course-container .course-box main .course-list table tbody tr td.join-class button[data-v-4a6db33e]:first-of-type {
+  margin-right: 20px;
 }
 .course-container .course-box main .ant-pagination[data-v-4a6db33e] {
   margin-top: 24px;
@@ -3500,7 +3509,7 @@ to {
 }
 
 .layout-container[data-v-6b58a266] {
-  height: 100%;
+  min-height: 100%;
   background-color: #F4F5F7;
 }
 .layout-container .layout-top[data-v-6b58a266] {
@@ -3539,6 +3548,7 @@ to {
 .layout-container main[data-v-6b58a266] {
   width: 1200px;
   margin: 0 auto;
+  padding-bottom: 24px;
 }
 .layout-container .sideBar-box[data-v-6b58a266] {
   float: left;

@@ -21,25 +21,22 @@
                     <p v-else>同学您好!</p>
                     <p>您还没有课程，请尽快联系教务顾问</p>
                 </div>
-                <div class="course-list" v-show="!loading && courseList.length > 0">
+                <div class="course-list clearFix" v-show="!loading && courseList.length > 0">
                     <table>
                         <thead>
                             <tr>
                                 <th>序号</th>
-                                <th>阶段</th>
                                 <th>课件名称</th>
                                 <th>班级</th>
                                 <th>学生</th>
-                                <th>上课日期</th>
                                 <th>上课时间</th>
                                 <th>学习进度</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="queryClassInfo(item)">
+                            <tr v-for="(item, index) in courseList" :key="item.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>L1</td>
                                 <td>{{ item['courseware_name'] }}</td>
 <!--                                <td>-->
 <!--                                    {{ item.type === 1? '正式课': '试听课' }}-->
@@ -47,9 +44,15 @@
 <!--                                </td>-->
                                 <td>{{ item['class_name'] }}</td>
                                 <td>小小小</td>
-                                <td>{{ formatterDate(item.planstarttime)}}</td>
-                                <td>{{ formatterTime(item.planstarttime)}}</td>
+                                <td class="class-time">
+                                    <p>{{formatterDate(item.planstarttime)}}</p>
+                                    <p>{{formatterWeek(item.planstarttime)}}</p>
+                                </td>
                                 <td>{{item.type === 1? '已学习': '未学习'}}</td>
+                                <td class="join-class">
+                                    <a-button type="primary" @click="queryClassInfo(item, 'goLive')">进入教室</a-button>
+                                    <a-button type="primary" @click="queryClassInfo(item, 'resetClass')">重置课堂</a-button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -132,19 +135,53 @@
             },
 
             // 查询课堂信息
-            queryClassInfo (classInfo) {
+            queryClassInfo (classInfo, type) {
                 const params = {id: classInfo.id};
                 this.$axios.get(this.rootUrl + '/v1/classRoom/queryClassRoomInfo', {params})
                     .then(res => {
                         let data = res.data;
                         if (data.code === 200) {
                             this.roomId = data.data.data.room_no;
-                            this.goLiveBroadcast(`liveForTeacher/${classInfo.id}/${this.roomId}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}/${this.userName}`)
+                            if (type === 'goLive') {
+                                this.goLiveBroadcast(`liveForTeacher/${classInfo.id}/${this.roomId}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}/${this.userName}`)
+                            }else if (type === 'resetClass') {
+                                this.resetClass()
+                            }
                         }
                     })
                     .catch(() => {
 
                     })
+            },
+
+            // 重置课堂
+            resetClass () {
+                this.$confirm({
+                    title: '重置课堂将会还原课堂至初始状态，是否继续?',
+                    content: '',
+                    centered: true,
+                    okText: '继续',
+                    width: 450,
+                    onOk:async () => {
+                        this.noSave = true;
+                        const res = await this.clearCoursewareProgress()
+                        if (res && res.data.code === 200) {
+                            localStorage.removeItem('9manLiveBroadcast');
+                            this.$message.success('清除成功')
+                        }else {
+                            this.$message.error('清除失败')
+                        }
+                    },
+                    onCancel() {},
+                });
+            },
+
+            // 清除课件进度
+            clearCoursewareProgress () {
+                const params = {
+                    roomId: this.roomId
+                }
+                return this.$axios.get(this.$store.state.emptyRoomUrl + '/restartRoom', {params}).catch(() => {})
             },
 
             // 查询孩子
@@ -167,11 +204,11 @@
 
             // 格式化日期
             formatterDate (date) {
-                return moment(date).format('YYYY-MM-DD (dddd)')
+                return moment(date).format('YYYY-MM-DD HH:mm')
             },
 
-            formatterTime (date) {
-                return moment(date).format('HH:mm')
+            formatterWeek (date) {
+                return moment(date).format('dddd')
             }
         }
     }
@@ -284,20 +321,30 @@
                         }
                         tbody {
                             tr {
-                                cursor: pointer;
                                 td {
                                     font-size:16px;
-                                    height: 40px;
-                                    line-height: 40px;
+                                    height: 50px;
+                                    line-height: 50px;
                                     text-align: center;
                                     color: #434343;
                                     white-space: nowrap;
                                     text-overflow: ellipsis;
                                     overflow: hidden;
-                                }
-                                &:hover {
-                                    td {
-                                        color: #FF6A04;
+                                    &.class-time {
+                                        p {
+                                            margin-bottom: 0;
+                                            line-height: 1.2;
+                                        }
+                                    }
+                                    &.join-class {
+                                        button {
+                                            width:86px;
+                                            height:36px;
+                                            border-radius:10px;
+                                            &:first-of-type {
+                                                margin-right: 20px;
+                                            }
+                                        }
                                     }
                                 }
                             }

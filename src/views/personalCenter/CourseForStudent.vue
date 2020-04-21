@@ -41,35 +41,34 @@
                     <p v-else>同学您好!</p>
                     <p>您还没有课程，请尽快联系教务顾问</p>
                 </div>
-                <div class="course-list" v-show="!loading && courseList.length > 0">
+                <div class="course-list clearFix" v-show="!loading && courseList.length > 0">
                     <table>
                         <thead>
                             <tr>
                                 <th>序号</th>
-                                <th>阶段</th>
                                 <th>课件名称</th>
                                 <th>班级</th>
-                                <th>学生</th>
-                                <th>上课日期</th>
                                 <th>上课时间</th>
                                 <th>学习进度</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in courseList" :key="item.id"
-                                @click="queryClassInfo(item)">
+                            <tr v-for="(item, index) in courseList" :key="item.id">
                                 <td>{{ index + 1 }}</td>
-                                <td>L1</td>
                                 <td>{{ item['courseware_name'] }}</td>
 <!--                                <td>-->
 <!--                                    {{ item.type === 1? '正式课': '试听课' }}-->
 <!--                                    {{ item.name? '《' + item.name + '》': '' }}-->
 <!--                                </td>-->
                                 <td>{{ item['class_name'] }}</td>
-                                <td>小小小</td>
-                                <td>{{ formatterDate(item.planstarttime)}}</td>
-                                <td>{{ formatterTime(item.planstarttime)}}</td>
-                                <td>{{item.type === 1? '已学习': '未学习'}}</td>
+                                <td class="class-time">
+                                    <p>{{formatterDate(item.planstarttime)}}</p>
+                                    <p>{{formatterWeek(item.planstarttime)}}</p>
+                                </td>
+                                <td class="join-class">
+                                    <a-button type="primary" @click="queryClassInfo(item)" v-if="item.type === 1">进入教室</a-button>
+                                    <span v-else>未学习</span>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -177,11 +176,11 @@
 
             // 格式化日期
             formatterDate (date) {
-                return moment(date).format('YYYY-MM-DD (dddd)')
+                return moment(date).format('YYYY-MM-DD HH:mm')
             },
 
-            formatterTime (date) {
-                return moment(date).format('HH:mm')
+            formatterWeek (date) {
+                return moment(date).format('dddd')
             }
         }
     }
@@ -400,20 +399,27 @@
                         }
                         tbody {
                             tr {
-                                cursor: pointer;
                                 td {
                                     font-size:16px;
-                                    height: 40px;
-                                    line-height: 40px;
+                                    height: 50px;
+                                    line-height: 50px;
                                     text-align: center;
                                     color: #434343;
                                     white-space: nowrap;
                                     text-overflow: ellipsis;
                                     overflow: hidden;
-                                }
-                                &:hover {
-                                    td {
-                                        color: #FF6A04;
+                                    &.class-time {
+                                        p {
+                                            margin-bottom: 0;
+                                            line-height: 1.2;
+                                        }
+                                    }
+                                    &.join-class {
+                                        button {
+                                            width:86px;
+                                            height:36px;
+                                            border-radius:10px;
+                                        }
                                     }
                                 }
                             }

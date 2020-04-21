@@ -2,9 +2,9 @@ const path = require('path');
 const webpack = require('webpack');
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin'); //抽离css
-const extractLESS = new ExtractTextWebpackPlugin({filename: 'css/reset.css',allChunks: true});
-const extractCSS = new ExtractTextWebpackPlugin({filename: 'css/awesome.css',allChunks: true});
-const extractLESSOfVue = new ExtractTextWebpackPlugin({filename: 'css/index.css',allChunks: true});
+const extractLESS = new ExtractTextWebpackPlugin({filename: 'css/reset.[hash:8].css',allChunks: true});
+const extractCSS = new ExtractTextWebpackPlugin({filename: 'css/awesome.[hash:8].css',allChunks: true});
+const extractLESSOfVue = new ExtractTextWebpackPlugin({filename: 'css/index.[hash:8].css',allChunks: true});
 // const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
 const PrerenderSPAPlugin = require('prerender-spa-plugin');//spa工具
 const Renderer = PrerenderSPAPlugin.PuppeteerRenderer;
@@ -15,7 +15,7 @@ module.exports = {
     entry: ["babel-polyfill", path.join(__dirname,'./src/index.js')],
     output: {
         path: path.join(__dirname,'./dist'),
-        filename: 'js/bundle.js',
+        filename: 'js/bundle.[hash:8].js',
         publicPath: '/'
     },
     plugins: [

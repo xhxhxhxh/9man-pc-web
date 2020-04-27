@@ -89,7 +89,7 @@ from {
 }
 .home-container .banner {
   height: 600px;
-  background: url(../images/57fcf1cf-banner.png) no-repeat center bottom;
+  background: url(../images/5cee0d87-banner.png) no-repeat center bottom;
   background-size: cover;
 }
 .home-container .banner main {
@@ -194,8 +194,42 @@ from {
   text-align: center;
   margin-bottom: 0;
 }
+.home-container .home-body .enlighten {
+  height: 1084px;
+}
+.home-container .home-body .enlighten h1 {
+  margin-top: 88px;
+  color: #312C2C;
+  margin-bottom: 72px;
+}
+.home-container .home-body .enlighten .image img {
+  width: 100%;
+  display: block;
+  margin: 0 auto;
+}
+.home-container .home-body .realization {
+  height: 929px;
+  background: url(../images/5bb5cae8-realization.png) no-repeat center;
+}
+.home-container .home-body .realization h1 {
+  margin-top: 90px;
+  color: #fff;
+}
+.home-container .home-body .features {
+  height: 547px;
+}
+.home-container .home-body .features h1 {
+  margin-top: 88px;
+  color: #312C2C;
+  margin-bottom: 75px;
+}
+.home-container .home-body .features .image img {
+  display: block;
+  margin: 0 auto;
+}
 .home-container .home-body .reason {
   height: 958px;
+  background-color: #FAFAFC;
 }
 .home-container .home-body .reason h1 {
   margin-top: 96px;
@@ -266,25 +300,6 @@ from {
 }
 .home-container .home-body .reason .img-box img {
   vertical-align: top;
-}
-.home-container .home-body .ability {
-  height: 926px;
-  background: url(../images/0bfc1877-black-bgc.png) no-repeat center;
-}
-.home-container .home-body .ability h1 {
-  margin-top: 87px;
-  color: #fff;
-}
-.home-container .home-body .ability h2 {
-  margin-top: 6px;
-  font-size: 24px;
-  text-align: center;
-  color: #fff;
-  margin-bottom: 84px;
-}
-.home-container .home-body .ability .image img {
-  display: block;
-  margin: 0 auto;
 }
 .home-container .home-body .experience {
   height: 712px;
@@ -721,6 +736,235 @@ from {
   border-radius: 20px;
   font-size: 16px;
   color: #fff;
+}
+.contactModal {
+  width: 580px;
+}
+.contactModal .ant-modal-body {
+  padding: 0;
+}
+.contactModal main {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: space-evenly;
+  -webkit-justify-content: space-evenly;
+  -moz-box-pack: space-evenly;
+  -ms-flex-pack: space-evenly;
+  justify-content: space-evenly;
+  height: 430px;
+  border-radius: 10px;
+  padding-top: 84px;
+}
+.contactModal main .box {
+  width: 230px;
+}
+.contactModal main .box.wx .header {
+  background: -webkit-gradient(linear, left top, right top, from(#ff46f4), to(#a03bff));
+  background: linear-gradient(90deg, #ff46f4, #a03bff);
+}
+.contactModal main .box.phone .header {
+  background: -webkit-gradient(linear, left top, right top, from(#ffb546), to(#ff513b));
+  background: linear-gradient(90deg, #ffb546, #ff513b);
+}
+.contactModal main .box.phone .body {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -moz-box-orient: vertical;
+  -moz-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+}
+.contactModal main .box.phone .body p {
+  font-size: 16px;
+  color: #312C2C;
+  margin-bottom: 6px;
+}
+.contactModal main .box.phone .body p.twenty-four-hour {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.contactModal main .box.phone .body p.twenty-four-hour img {
+  width: 18px;
+  display: inline-block;
+}
+.contactModal main .box .header {
+  height: 60px;
+  border-radius: 10px 10px 0 0;
+  line-height: 60px;
+  text-align: center;
+  font-size: 20px;
+  color: #fff;
+}
+.contactModal main .box .body {
+  height: 192px;
+  background-color: #EBEBEB;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.contactModal main .box .body img {
+  width: 152px;
+  display: block;
+}
+.downloadModal {
+  width: 580px;
+}
+.downloadModal .ant-modal-body {
+  padding: 0;
+}
+.downloadModal main {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -moz-box-orient: vertical;
+  -moz-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  height: 600px;
+  border-radius: 10px;
+  padding: 55px 72px 36px;
+}
+.downloadModal main .box {
+  height: 150px;
+}
+.downloadModal main .box.computer .left {
+  background: -webkit-gradient(linear, left bottom, left top, from(#ff46f4), to(#a03bff));
+  background: linear-gradient(0deg, #ff46f4, #a03bff);
+}
+.downloadModal main .box.computer .right img {
+  width: 56px;
+  float: left;
+}
+.downloadModal main .box.computer .right .content {
+  text-align: center;
+  float: left;
+  width: 220px;
+}
+.downloadModal main .box.computer .right .content p {
+  height: 56px;
+  font-size: 20px;
+  color: #514E4E;
+  margin-bottom: 0;
+  line-height: 56px;
+}
+.downloadModal main .box.computer .right .content button {
+  margin-top: 4px;
+  width: 162px;
+  height: 42px;
+  border-radius: 21px;
+}
+.downloadModal main .box.phone .left {
+  background: -webkit-gradient(linear, left bottom, left top, from(#ffb546), to(#ff513b));
+  background: linear-gradient(0deg, #ffb546, #ff513b);
+}
+.downloadModal main .box.phone .right {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+.downloadModal main .box.phone .right div img {
+  width: 77px;
+  display: block;
+}
+.downloadModal main .box.phone .right div p {
+  font-size: 14px;
+  text-align: center;
+  color: #312C2C;
+  margin-top: 6px;
+}
+.downloadModal main .box.ipad .left {
+  background: -webkit-gradient(linear, left bottom, left top, from(#46aeff), to(#493bff));
+  background: linear-gradient(0deg, #46aeff, #493bff);
+  padding: 39px 10px;
+}
+.downloadModal main .box.ipad .left p:last-of-type {
+  margin-left: 10px;
+}
+.downloadModal main .box.ipad .right {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+.downloadModal main .box.ipad .right div img {
+  width: 77px;
+  display: block;
+}
+.downloadModal main .box.ipad .right div p {
+  font-size: 14px;
+  text-align: center;
+  color: #312C2C;
+  margin-top: 6px;
+}
+.downloadModal main .box .left {
+  width: 60px;
+  height: 100%;
+  float: left;
+  border-radius: 10px 0 0 10px;
+  padding: 27px 20px;
+}
+.downloadModal main .box .left p {
+  width: 20px;
+  font-size: 20px;
+  color: #fff;
+  text-align: center;
+  margin: 0;
+  line-height: 1.2;
+}
+.downloadModal main .box .right {
+  width: 375px;
+  height: 100%;
+  background-color: #EBEBEB;
+  float: left;
+  border-radius: 0 10px 10px 0;
+  padding: 24px 44px;
 }
 
 .live-container {
@@ -2719,7 +2963,7 @@ to {
   float: left;
 }
 .topBar-container .logo img[data-v-4c2f8448] {
-  vertical-align: middle;
+  display: block;
 }
 .topBar-container .logo img[data-v-4c2f8448]:hover {
   cursor: pointer;
@@ -3526,6 +3770,7 @@ to {
   display: block;
   margin-top: 3px;
   cursor: pointer;
+  height: 50px;
 }
 .layout-container header[data-v-6b58a266] {
   width: 1200px;

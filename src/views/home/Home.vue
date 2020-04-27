@@ -47,6 +47,27 @@
             </main>
         </div>
         <div class="home-body">
+            <div class="enlighten">
+                <main>
+                    <h1>三大学科 综合启蒙</h1>
+                    <div class="image">
+                        <img src="/assets/enlighten.png" alt="">
+                    </div>
+                </main>
+            </div>
+            <div class="realization">
+                <main>
+                    <h1>PYP课程 培养国际意识</h1>
+                </main>
+            </div>
+            <div class="features">
+                <main>
+                    <h1>四大课程特色 让孩子爱上学习</h1>
+                    <div class="image">
+                        <img src="/assets/features.png" alt="">
+                    </div>
+                </main>
+            </div>
             <div class="reason">
                 <main>
                     <h1>为什么要在少儿思维学习</h1>
@@ -132,15 +153,6 @@
                     </div>
                 </main>
             </div>
-            <div class="ability">
-                <main>
-                    <h1>全面提升孩子的各项能力</h1>
-                    <h2>认真研发符合中国孩子的课程教育体系</h2>
-                    <div class="image">
-                        <img :src="webp? '/assets/ability.webp': '/assets/ability.png'" alt="">
-                    </div>
-                </main>
-            </div>
             <div class="experience">
                 <main>
                     <h1>简单三步即可开启课程体验</h1>
@@ -155,13 +167,13 @@
                             <div class="num">2</div>
                             <h3>专属预约</h3>
                             <p>专属课程顾问对接<br>为您的孩子安排课程时间</p>
-                            <a-button type="primary">联系老师</a-button>
+                            <a-button type="primary" @click="contact = true">联系老师</a-button>
                         </div>
                         <div class="step3">
                             <div class="num">3</div>
                             <h3>开始课程</h3>
                             <p>下载并开启设备<br>开启探索学习之旅</p>
-                            <a-button type="primary">软件下载</a-button>
+                            <a-button type="primary" @click="download = true">软件下载</a-button>
                         </div>
                     </div>
                 </main>
@@ -300,8 +312,8 @@
         <transition name="slide">
             <div class="apply">
                 <a-button class="button1" @click="apply = true"><img src="./images/headset.png" alt=""><span>现在试听</span></a-button>
-                <a-button class="button2"><img src="./images/message.png" alt=""><span>联系老师</span></a-button>
-                <a-button class="button3"><img src="./images/download.png" alt=""><span>软件下载</span></a-button>
+                <a-button class="button2" @click="contact = true"><img src="./images/message.png" alt=""><span>联系老师</span></a-button>
+                <a-button class="button3" @click="download = true"><img src="./images/download.png" alt=""><span>软件下载</span></a-button>
             </div>
         </transition>
         <div class="scroll-top" v-show="toTop" @click="smoothScroll">
@@ -369,6 +381,71 @@
                 </a-form-item>
             </a-form>
         </a-modal>
+        <a-modal
+                v-model="contact"
+                :centered="centered"
+                class="contactModal"
+                width="580"
+                :footer="null"
+                :maskClosable="closable">
+            <main>
+                <div class="wx box">
+                    <div class="header">微信二维码</div>
+                    <div class="body">
+                        <img src="./images/wx-code.png" alt="">
+                    </div>
+                </div>
+                <div class="phone box">
+                    <div class="header">联系电话</div>
+                    <div class="body">
+                        <p class="twenty-four-hour"><img src="./images/phone.png" alt="">24h电话：</p>
+                        <p>15558067572</p>
+                    </div>
+                </div>
+            </main>
+        </a-modal>
+        <a-modal
+                v-model="download"
+                :centered="centered"
+                class="downloadModal"
+                width="580"
+                :footer="null"
+                :maskClosable="closable">
+            <main>
+                <div class="computer box">
+                    <div class="left"><p>电脑上课</p></div>
+                    <div class="right">
+                        <img src="./images/chrome.png" alt="">
+                        <div class="content">
+                            <p class="content">Google Chrome浏览器</p>
+                            <a-button type="primary" @click="skipChromeSite">谷歌浏览器下载</a-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="phone box">
+                    <div class="left"><p>手机上课</p></div>
+                    <div class="right">
+                        <div class="code1">
+                            <img src="./images/android-download.png" alt="">
+                            <p>(安卓手机)</p>
+                        </div>
+                        <div class="code2">
+                            <img src="./images/ios-download.png" alt="">
+                            <p>(苹果手机)</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="ipad box">
+                    <div class="left"><p style="width: 40px">ipad</p><p>上课</p></div>
+                    <div class="right">
+                        <div class="code">
+                            <img src="./images/ios-download.png" alt="">
+                            <p>(ipad)</p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </a-modal>
     </div>
 </template>
 
@@ -384,6 +461,8 @@
                 showGetCodeInput: false, // 显示获取验证码输入框
                 show: false,
                 apply: false,
+                contact: false,
+                download: false,
                 loading: false,
                 centered: true, //报名弹框居中
                 hideRequiredMark: true,
@@ -543,7 +622,7 @@
                 const _this = this
                 window.onscroll = function () {
                     const top = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-                    if (top >= 600) {
+                    if (top >= 500) {
                         if (!_this.showApply) {
                             _this.showApply = true
                         }
@@ -572,7 +651,7 @@
 
                     }
 
-                    if (top >= 4100) {
+                    if (top >= 5750) {
                         if (_this.showApply) {
                             _this.showApply = false
                         }
@@ -605,7 +684,12 @@
                         clearInterval(timer);
                     }
                 },5)
-            }
+            },
+
+            // 前往谷歌浏览器页面
+            skipChromeSite () {
+                window.open('https://www.google.cn/chrome/')
+            },
         }
     }
 </script>
@@ -788,8 +872,46 @@
                     margin-bottom: 0;
                 }
             }
+            .enlighten {
+                height: 1084px;
+                h1 {
+                    margin-top: 88px;
+                    color: #312C2C;
+                    margin-bottom: 72px;
+                }
+                .image {
+                    img {
+                        width: 100%;
+                        display: block;
+                        margin: 0 auto;
+                    }
+                }
+            }
+            .realization {
+                height: 929px;
+                background: url("./images/realization.png") no-repeat center;
+                h1 {
+                    margin-top: 90px;
+                    color: #fff;
+                }
+            }
+            .features {
+                height: 547px;
+                h1 {
+                    margin-top: 88px;
+                    color: #312C2C;
+                    margin-bottom: 75px;
+                }
+                .image {
+                    img {
+                        display: block;
+                        margin: 0 auto;
+                    }
+                }
+            }
             .reason {
                 height: 958px;
+                background-color: #FAFAFC;
                 h1 {
                     margin-top: 96px;
                     color: #312C2C;
@@ -848,28 +970,6 @@
                         vertical-align: top;
                     }
                 }
-            }
-            .ability {
-                height: 926px;
-                background: url("./images/black-bgc.png") no-repeat center;
-                h1 {
-                    margin-top: 87px;
-                    color: #fff;
-                }
-                h2 {
-                    margin-top: 6px;
-                    font-size: 24px;
-                    text-align: center;
-                    color: #fff;
-                    margin-bottom: 84px;
-                }
-                .image {
-                    img {
-                        display: block;
-                        margin: 0 auto;
-                    }
-                }
-
             }
             .experience {
                 height: 712px;
@@ -1297,5 +1397,178 @@
             }
         }
     }
-
+    .contactModal {
+        width:580px;
+        .ant-modal-body {
+            padding: 0;
+        }
+        main {
+            display: flex;
+            justify-content: space-evenly;
+            height:430px;
+            border-radius:10px;
+            padding-top: 84px;
+            .box {
+                width:230px;
+                &.wx .header{
+                    background:linear-gradient(90deg,rgba(255,70,244,1),rgba(160,59,255,1));
+                }
+                &.phone {
+                    .header {
+                        background:linear-gradient(90deg,rgba(255,181,70,1),rgba(255,81,59,1));
+                    }
+                    .body {
+                        flex-direction: column;
+                        p {
+                            font-size: 16px;
+                            color: #312C2C;
+                            margin-bottom: 6px;
+                            &.twenty-four-hour {
+                                display: flex;
+                                align-items: center;
+                                img {
+                                    width: 18px;
+                                    display: inline-block;
+                                }
+                            }
+                        }
+                    }
+                }
+                .header {
+                    height:60px;
+                    border-radius:10px 10px 0 0;
+                    line-height: 60px;
+                    text-align: center;
+                    font-size: 20px;
+                    color: #fff;
+                }
+                .body {
+                    height: 192px;
+                    background-color: #EBEBEB;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    img {
+                        width: 152px;
+                        display: block;
+                    }
+                }
+            }
+        }
+    }
+    .downloadModal {
+        width: 580px;
+        .ant-modal-body {
+            padding: 0;
+        }
+        main {
+            display: flex;
+            justify-content: space-between;
+            flex-direction: column;
+            height:600px;
+            border-radius:10px;
+            padding: 55px 72px 36px;
+            .box {
+                height:150px;
+                &.computer {
+                    .left {
+                        background:linear-gradient(0deg,rgba(255,70,244,1),rgba(160,59,255,1));
+                    }
+                    .right {
+                        img {
+                            width: 56px;
+                            float: left;
+                        }
+                        .content {
+                            text-align: center;
+                            float: left;
+                            width: 220px;
+                            p {
+                                height: 56px;
+                                font-size:20px;
+                                color: #514E4E;
+                                margin-bottom: 0;
+                                line-height: 56px;
+                            }
+                            button {
+                                margin-top: 4px;
+                                width:162px;
+                                height:42px;
+                                border-radius:21px;
+                            }
+                        }
+                    }
+                }
+                &.phone {
+                    .left {
+                        background:linear-gradient(0deg,rgba(255,181,70,1),rgba(255,81,59,1));
+                    }
+                    .right {
+                        display: flex;
+                        justify-content: space-between;
+                        div {
+                            img {
+                                width: 77px;
+                                display: block;
+                            }
+                            p {
+                                font-size:14px;
+                                text-align: center;
+                                color: #312C2C;
+                                margin-top: 6px;
+                            }
+                        }
+                    }
+                }
+                &.ipad {
+                    .left {
+                        background:linear-gradient(0deg,rgba(70,174,255,1),rgba(73,59,255,1));
+                        padding: 39px 10px;
+                        p:last-of-type {
+                            margin-left: 10px;
+                        }
+                    }
+                    .right {
+                        display: flex;
+                        justify-content: space-between;
+                        div {
+                            img {
+                                width: 77px;
+                                display: block;
+                            }
+                            p {
+                                font-size:14px;
+                                text-align: center;
+                                color: #312C2C;
+                                margin-top: 6px;
+                            }
+                        }
+                    }
+                }
+                .left {
+                    width:60px;
+                    height:100%;
+                    float: left;
+                    border-radius:10px 0 0 10px;
+                    padding: 27px 20px;
+                    p {
+                        width: 20px;
+                        font-size: 20px;
+                        color: #fff;
+                        text-align: center;
+                        margin: 0;
+                        line-height: 1.2;
+                    }
+                }
+                .right {
+                    width: 375px;
+                    height: 100%;
+                    background-color: #EBEBEB;
+                    float: left;
+                    border-radius:0 10px 10px 0;
+                    padding: 24px 44px;
+                }
+            }
+        }
+    }
 </style>

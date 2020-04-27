@@ -74,8 +74,8 @@
                 margin: 0 auto;
                 img {
                     display: block;
-                    margin-top: 3px;
                     cursor: pointer;
+                    height: 50px;
                 }
             }
         }

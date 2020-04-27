@@ -336,6 +336,7 @@
                             video.currentTime = value * video.duration
                             if (isplay) {
                                 video.play()
+                                this.rtcRoom.closeAudio(this.studentId)
                             }
                         }
                     }
@@ -435,6 +436,7 @@
                         // 暂停视频
                         const video = this.$refs['video-play']
                         video.pause()
+                        rtcRoom.openAudio(this.studentId)
                     }
                 });
 
@@ -765,6 +767,7 @@
             videoEnded (e) {
                 const video = e.target
                 video.currentTime = 0
+                this.rtcRoom.openAudio(this.studentId)
             },
 
             // 切换动画
@@ -775,7 +778,8 @@
                 const resourceUrl = this.$store.state.resourceUrl
                 this.gameCache()
                 const video = this.$refs['video-play']
-                video.pause();
+                video.pause()
+                this.rtcRoom.openAudio(this.studentId)
                 if (type === 1) { // 视频
                     this.mode = 'video'
                     video.src = resourceUrl + '/' + url
@@ -917,8 +921,10 @@
                             const isplay = data.isplay
                             if (isplay) {
                                 video.play()
+                                this.rtcRoom.closeAudio(this.studentId)
                             }else {
                                 video.pause()
+                                this.rtcRoom.openAudio(this.studentId)
                             }
                             break;
                         case 'player_seek_to_value': // 控制视频进度

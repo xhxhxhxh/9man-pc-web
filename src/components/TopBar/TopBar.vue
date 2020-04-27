@@ -109,7 +109,7 @@
             line-height: 70px;
             float: left;
             img {
-                vertical-align: middle;
+                display: block;
                 &:hover {
                     cursor: pointer;
                 }

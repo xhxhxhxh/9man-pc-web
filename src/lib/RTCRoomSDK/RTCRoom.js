@@ -194,6 +194,10 @@ export default class extends EventEmitter
           for (let i in ids) {
             let peerId = ids[i];
             let pc = peerConnections.get(peerId);
+            if (!pc) {
+              logger.error('pc undefined, method:peers, peerId: %s',peerId);
+              continue;
+            }
             await that._addTrack(pc);
 
             let property = data.properties[peerId];
@@ -227,6 +231,10 @@ export default class extends EventEmitter
           await that._createPeerConnection(peerId,false);
 
           let pc = peerConnections.get(peerId);
+          if (!pc) {
+            logger.error('pc undefined, method:new_peer, peerId: %s',peerId);
+            return;
+          }
 
           await that._addTrack(pc);
 
@@ -244,6 +252,11 @@ export default class extends EventEmitter
           let peerId = data.from;
 
           let pc = peerConnections.get(peerId);
+
+          if (!pc) {
+            logger.error('pc undefined, method:desc, peerId: %s',peerId);
+            return;
+          }
 
           if (desc.type === 'offer') {
 
@@ -272,6 +285,10 @@ export default class extends EventEmitter
           });
 
           let pc = peerConnections.get(data.from);
+          if (!pc) {
+            logger.error('pc undefined, method:candidate, peerId: %s',data.from);
+            return;
+          }
 
           await pc.addIceCandidate(rtcIceCandidate);
 
@@ -564,9 +581,9 @@ export default class extends EventEmitter
 
   async _addTrack(pc) {
 
-    if (this._deviceStatus === 3) {
-      return;
-    }
+//    if (this._deviceStatus === 3) {
+//      return;
+//    }
 
     if (!localMediaStream) {
       await this.initLocalMediaStream();
@@ -587,6 +604,12 @@ export default class extends EventEmitter
   async initLocalMediaStream() {
 
     if (this._deviceStatus === 3) {
+      localMediaStream = new window.MediaStream();
+      let obj = {
+        peerId: this._peerId,
+        stream: localMediaStream
+      };
+      this.emit('rtc-media-receive',obj);
       return;
     }
 
@@ -707,7 +730,7 @@ export default class extends EventEmitter
     clearInterval(that._volume_timer);
 
     peerConnections.forEach((item, key, mapObj) => {
-      that.clearStats(key);
+//      that.clearStats(key);
       item.close();
     });
 
@@ -741,6 +764,7 @@ export default class extends EventEmitter
       peerIds.splice(index, 1);
       peerConnections.delete(peerId);
       channels.delete(peerId);
+      logger.debug('pc close, peerId: %s',peerId);
     }
 
     let obj = {

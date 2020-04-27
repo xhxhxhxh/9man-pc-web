@@ -66,8 +66,8 @@
                                     <p>{{formatterWeek(item.planstarttime)}}</p>
                                 </td>
                                 <td class="join-class">
-                                    <a-button type="primary" @click="queryClassInfo(item)" v-if="item.type === 1">进入教室</a-button>
-                                    <span v-else>未学习</span>
+                                    <a-button type="primary" @click="queryClassInfo(item)">进入教室</a-button>
+<!--                                    <span v-else>未学习</span>-->
                                 </td>
                             </tr>
                         </tbody>

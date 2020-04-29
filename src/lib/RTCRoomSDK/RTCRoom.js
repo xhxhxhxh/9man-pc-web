@@ -17,11 +17,12 @@ const logger = new Logger('RTCRoom');
 const configuration = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }]};
 
 const mediaConstraints = {
-  "video": {
-    width: 320,
-    height: 240,
-    frameRate: { ideal: 10, max: 15 }
-  },
+//  "video": {
+//    width: 320,
+//    height: 240,
+//    frameRate: { ideal: 10, max: 15 }
+//  },
+  "video": true,
   "audio": true
 };
 
@@ -678,9 +679,11 @@ export default class extends EventEmitter
     let peer = peerConnections.get(peerId);
     if (peer) {
       let Rtpsender = this.getRTCRtpSenderVideo(peer);
-      if (localMediaStream.getVideoTracks().length && Rtpsender) {
+      if (localMediaStream && localMediaStream.getVideoTracks().length && Rtpsender) {
         let sender = localMediaStream.getVideoTracks()[0];
-        await Rtpsender.replaceTrack(sender);
+        if (sender) {
+          await Rtpsender.replaceTrack(sender);
+        }
       }else {
         logger.error('RTCMediaStreamTrack not exist!');
       }
@@ -715,12 +718,16 @@ export default class extends EventEmitter
 
   openAudio()
   {
-    localMediaStream.getAudioTracks()[0].enabled = true;
+    if (localMediaStream && localMediaStream.getAudioTracks()[0]) {
+      localMediaStream.getAudioTracks()[0].enabled = true;
+    }
   }
 
   closeAudio()
   {
-    localMediaStream.getAudioTracks()[0].enabled = false;
+    if (localMediaStream && localMediaStream.getAudioTracks()[0]) {
+      localMediaStream.getAudioTracks()[0].enabled = false;
+    }
   }
 
   close() {

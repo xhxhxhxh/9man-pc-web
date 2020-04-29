@@ -16,7 +16,7 @@
         <main ref="main" class="clearFix">
             <div class="main-left" ref="mainLeft">
                 <div class="courseware-area" v-show="mode === 'game'">
-                    <iframe :src="iframeSrc"
+                    <iframe :src="iframeSrc" name="iframe"
                             ref="iframe" allow="autoplay"></iframe>
                     <iframe :src="iframeSrcCache" style="display: none"
                             allow="autoplay"></iframe>
@@ -336,7 +336,7 @@
                             video.currentTime = value * video.duration
                             if (isplay) {
                                 video.play()
-                                this.rtcRoom.closeAudio(this.studentId)
+                                this.controlAudio(false)
                             }
                         }
                     }
@@ -436,7 +436,7 @@
                         // 暂停视频
                         const video = this.$refs['video-play']
                         video.pause()
-                        rtcRoom.openAudio(this.studentId)
+                        this.controlAudio(true)
                     }
                 });
 
@@ -557,8 +557,8 @@
 
                         }
                     })
-                    .catch(() => {
-
+                    .catch((err) => {
+                        console.log(err)
                     })
             },
 
@@ -767,7 +767,7 @@
             videoEnded (e) {
                 const video = e.target
                 video.currentTime = 0
-                this.rtcRoom.openAudio(this.studentId)
+                this.controlAudio(true)
             },
 
             // 切换动画
@@ -779,7 +779,7 @@
                 this.gameCache()
                 const video = this.$refs['video-play']
                 video.pause()
-                this.rtcRoom.openAudio(this.studentId)
+                this.controlAudio(true)
                 if (type === 1) { // 视频
                     this.mode = 'video'
                     video.src = resourceUrl + '/' + url
@@ -838,6 +838,19 @@
                     } else {
                         return middle;
                     }
+                }
+            },
+
+            // 开关学生音频
+            controlAudio (status) {
+                try {
+                    if (status) {
+                        this.rtcRoom.openAudio(this.studentId)
+                    }else {
+                        this.rtcRoom.closeAudio(this.studentId)
+                    }
+                }catch (err) {
+                    console.log(err)
                 }
             },
 
@@ -921,10 +934,10 @@
                             const isplay = data.isplay
                             if (isplay) {
                                 video.play()
-                                this.rtcRoom.closeAudio(this.studentId)
+                                this.controlAudio(false)
                             }else {
                                 video.pause()
-                                this.rtcRoom.openAudio(this.studentId)
+                                this.controlAudio(true)
                             }
                             break;
                         case 'player_seek_to_value': // 控制视频进度
@@ -1049,8 +1062,9 @@
                             if (operations) {
                                 this.setAlert({visiable: true, message: `你可以操作游戏了`})
                                 this.setPointerEvents(true)
-
                             }else {
+                                const iframe = this.$refs.iframe
+                                iframe.contentWindow.location.reload(true) // 重载iframe
                                 this.operating = false
                                 this.setPointerEvents(false)
                                 this.setAlert({visiable: false, message: ''})

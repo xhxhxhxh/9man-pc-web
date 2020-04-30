@@ -152,7 +152,7 @@
                         let data = res.data;
                         if (data.code === 200) {
                             this.roomId = data.data.data.room_no;
-                            this.goLiveBroadcast(`liveForStudent/${classInfo.id}/${this.roomId}/${classInfo['teacher_uid']}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}/${this.userName}`)
+                            this.goLiveBroadcast(`liveForStudent/${classInfo.id}/2/${this.roomId}/${classInfo['teacher_uid']}/${this.userId}/${classInfo['courseware_no']}/${classInfo['class_name']}/${this.userName}`)
                         }
                     })
                     .catch(() => {

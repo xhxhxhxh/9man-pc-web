@@ -100,6 +100,7 @@
                 showAnimateStar: false, // 控制星星显示
                 animateStarSrc: animate_star,
                 startStarAnimate: false, // 星星动画节流
+                role: '2', // 1 老师 2 学生 4 监课
                 // -----------课件动画数据---------------
                 coursewareResource: [],
                 gameListIndex: [], // 存放游戏次序的数组
@@ -279,9 +280,10 @@
                 const host = 'www.9mankid.com'
                 const port = 3210
                 const roomId = this.$route.params.roomId // 9n474171ko mry79me13q
+                const role = this.role = this.$route.params.role
                 // const peerId = (Math.ceil(Math.random() * 100) + 1).toString()
                 const peerId = this.$route.params.studentId
-                const userParams = {name: this.$route.params.name, headUrl: '', role: 2}
+                const userParams = {name: this.$route.params.name, headUrl: '', role}
                 this.studentId = peerId
                 this.roomId = roomId
                 const teacherId = this.teacherId = this.$route.params.teacherId
@@ -693,6 +695,7 @@
 
             // 设置点击穿透
             setPointerEvents (status) {
+                if (this.role === '4') return
                 const drawArea = this.$refs.drawArea
                 const wrapper = this.$refs.wrapper
                 if (status) {
@@ -1064,7 +1067,7 @@
                                 this.setPointerEvents(true)
                             }else {
                                 const iframe = this.$refs.iframe
-                                iframe.contentWindow.location.reload(true) // 重载iframe
+                                iframe.src = this.iframeSrc // 重载iframe
                                 this.operating = false
                                 this.setPointerEvents(false)
                                 this.setAlert({visiable: false, message: ''})

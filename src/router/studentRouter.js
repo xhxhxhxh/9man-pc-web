@@ -20,7 +20,7 @@ routerMap.student = [
             { path: 'updateStudentInfo/:kidId', component: UpdateStudentInfo, meta: {hidden: true} },
         ]
     },
-    { path: '/liveForStudent/:classId/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: () => import('@/views/live/LiveForStudent'), name: 'live' },
+    { path: '/liveForStudent/:classId/:role/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: () => import('@/views/live/LiveForStudent'), name: 'live' },
     { path: '*', redirect: '/404'}
 ];
 routerMap.teacher = [
@@ -36,7 +36,7 @@ routerMap.teacher = [
         ]
     },
     { path: '/liveForTeacher/:classId/:roomId/:teacherId/:coursewareId/:classname/:name', component: () => import('@/views/live/LiveForTeacher'), name: 'live' },
-    { path: '/liveForStudent/:classId/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: () => import('@/views/live/LiveForStudent') },
+    { path: '/liveForStudent/:classId/:role/:roomId/:teacherId/:studentId/:coursewareId/:classname/:name', component: () => import('@/views/live/LiveForStudent') },
     { path: '*', redirect: '/404'}
 ];
 export default routerMap

@@ -107,6 +107,9 @@
         created () {
             this.init()
         },
+        mounted () {
+            this.goEquipmentInspection()
+        },
         computed: {
 
         },
@@ -181,7 +184,26 @@
 
             formatterWeek (date) {
                 return moment(date).format('dddd')
-            }
+            },
+
+            // 前往硬件检测页面
+            goEquipmentInspection () {
+                const equipmentInspection = common.getLocalStorage('equipmentInspection')
+                if (!equipmentInspection) {
+                    this.$confirm({
+                        title: '你还没有完成硬件检测，是否立即前往?',
+                        okText: '前往',
+                        cancelText: '取消',
+                        centered: true,
+                        onOk:() => {
+                            this.$router.push('/personalCenter/equipment_inspection');
+                        },
+                        onCancel() {
+                            console.log('Cancel');
+                        },
+                    });
+                }
+            },
         }
     }
 </script>

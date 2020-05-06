@@ -8,19 +8,19 @@
                     <div class="noDevice" v-if="key === '2'">
                         <div class="text"><p>{{data.problems[key]}}</p></div>
                         <div class="advise">
-                            <p>1.请插入摄像头 <br>2.请清理或更换USB插孔 <br>3.请更换为手机或平板电脑</p>
+                            <p>1.请插入话筒或带通话功能的耳机 <br>2.请检查是否插入粉色插孔或更换其他USB插孔 <br>3.请更换为手机或平板电脑</p>
                         </div>
                     </div>
                     <div class="authorize" v-if="key === '3'">
                         <div class="advise">
-                            <img src="../images/authorize01.png" alt="">
-                            <p>左上角点击“允许”使用摄像头权限！</p>
+                            <img src="../images/authorize03.png" alt="">
+                            <p>左上角点击“允许”使用麦克风权限！</p>
                         </div>
                         <div class="advise">
-                            <img src="../images/authorize02.png" alt="">
+                            <img src="../images/authorize04.png" alt="">
                             <p>请点击网址前方的“
                                 <icon-font type="icon-lock"/>
-                                ”标志<br>在设置弹窗中设置摄像头为“允许”后刷新网页！</p>
+                                ”标志<br>在设置弹窗中设置麦克风为“允许”后刷新网页！</p>
                         </div>
                     </div>
                 </div>
@@ -31,11 +31,17 @@
             </div>
         </div>
         <div class="test-device" v-else>
-            <p>请将摄像头对准自己，确保上半身能否清楚出现在画面中！</p>
-            <div class="video-box">
-                <video autoplay loop type="video/*" ref="video"></video>
+            <p>请保持房间安静，不要离电脑太远哦！</p>
+            <div class="mike-box">
+                <div class="mike-area">
+                    <p>请对着麦克风说话吧</p>
+                    <div>
+                        <span :class="{active: volume > num * 5}" v-for="num in 20" :key="num"></span>
+                    </div>
+                    <button style="display: none" @click="triggerMike" ref="triggerMike"></button>
+                </div>
                 <div class="confirm">
-                    <p>能看到自己吗？</p>
+                    <p>你可以看到上面的颜色条在跳动吗？</p>
                     <a-button type="primary" @click="confirm(true)">可以</a-button>
                     <a-button type="primary" @click="confirm(false)">不可以</a-button>
                 </div>
@@ -53,11 +59,13 @@
         scriptUrl: config.equipmentInspectionIconSrc,
     });
     export default {
-        name: "CameraTest",
+        name: "MikeTest",
         data () {
             return {
                 currentIndex: 0,
-                transitionName: 'test-slide' // 用于控制组件切换方向
+                transitionName: 'test-slide', // 用于控制组件切换方向
+                volume: 0, // 音量
+                context: null, // 声音的内容
             }
         },
         props: ['data'],
@@ -67,7 +75,7 @@
         },
         mounted () {
             if (Object.keys(this.data.problems).length === 0) {
-                this.video()
+                this.audio()
             }
         },
         methods:{
@@ -80,35 +88,53 @@
                 this.currentIndex = index
             },
 
-            // 获取摄像头数据
-            video() {
-                navigator.getUserMedia = navigator.getUserMedia ||
+            // 捕捉麦克风声音
+            audio() {
+                navigator.getUserMedia  = navigator.getUserMedia ||
                     navigator.webkitGetUserMedia ||
                     navigator.mozGetUserMedia ||
                     navigator.msGetUserMedia;
+                window.AudioContext = window.AudioContext || window.webkitAudioContext
+                this.context = new AudioContext();
 
                 // 检测浏览器是否支持
                 if (!navigator.getUserMedia) {
-                    return this.$message.error('摄像头异常,建议使用高版本的谷歌浏览器');
+                    return this.$message.error('多媒体监听异常,建议使用高版本的谷歌浏览器');
                 }
                 navigator.getUserMedia({
-                    video: {width: 200, height: 200},
-                    audio: false
+                    video: false,
+                    audio: true
                 }, this.onSuccess, this.onError);
             },
 
+            // 获取声音成功的回调
             onSuccess(stream) {
-                const video = this.$refs.video
-                try {
-                    video.srcObject = stream;
-                } catch (error) {
-                    video.src = window.URL.createObjectURL(stream);
+                const audioInput = this.context.createMediaStreamSource(stream);
+                // 创建一个音频分析对象，采样的缓冲区大小为4096，输入和输出都是单声道
+                const scriptProcessor = this.context.createScriptProcessor(4096,1,1);
+                // 将该分析对象与麦克风音频进行连接
+                audioInput.connect(scriptProcessor);
+                // 此举无甚效果，仅仅是因为解决 Chrome 自身的 bug
+                scriptProcessor.connect(this.context.destination);
+                // 开始处理音频
+                this.$refs.triggerMike.click()
+                scriptProcessor.onaudioprocess = (e) => {
+                    // 获得缓冲区的输入音频，转换为包含了PCM通道数据的32位浮点数组
+                    let buffer = e.inputBuffer.getChannelData(0);
+                    // 获取缓冲区中最大的音量值
+                    this.volume = parseInt(Math.max.apply(Math, buffer) * 100);
                 }
             },
 
-            // 获取视频失败
+            // 获取声音失败
             onError(err) {
-                this.$message.error('摄像头未授权， 请设置浏览器')
+                console.log(err);
+                this.$message.error('麦克风未授权， 请设置浏览器')
+            },
+
+            // 主动触发麦克风
+            triggerMike() {
+                this.context.resume()
             },
 
             // 确认测试结果
@@ -216,28 +242,50 @@
                 margin: 0;
                 text-align: center;
             }
-            .video-box {
-                display: flex;
-                justify-content: center;
-                margin-top: 75px;
-                video {
-                    width: 200px;
-                    height: 200px;
+            .mike-box {
+                margin-top: 37px;
+                padding: 0 90px;
+                .mike-area {
+                    border:2px solid @themeColor;
+                    border-radius:20px;
+                    padding: 16px 0;
+                    p {
+                        margin: 0 0 20px;
+                        font-size:16px;
+                        color: @themeColor;
+                        text-align: center;
+                    }
+                    div {
+                        display: flex;
+                        justify-content: space-evenly;
+                    }
+                    span {
+                        display: inline-block;
+                        height: 77px;
+                        width: 10px;
+                        background-color: #fff;
+                        border:1px solid @themeColor;
+                        border-radius:5px;
+                        &.active {
+                            background-color: @themeColor;
+                        }
+                    }
                 }
                 .confirm {
-                    margin-left: 50px;
-                    width: 160px;
+                    margin-top: 35px;
+                    text-align: center;
                     p {
                         color: #434343;
+                        margin-bottom: 35px;
                     }
                     button {
-                        width:100%;
+                        width:160px;
                         height:46px;
                         border-radius:10px;
                         font-size:18px;
                         color: #fff;
                         &:first-of-type {
-                            margin: 30px 0;
+                            margin-right: 55px;
                         }
                     }
                 }

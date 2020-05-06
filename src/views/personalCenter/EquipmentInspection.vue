@@ -22,7 +22,7 @@
                 <div class="status">
                     <icon-font type="icon-lujing" v-show="item.status === 0" style="color: #dcdcdc"/>
                     <icon-font type="icon-huabanfuben" v-show="item.status === 1" style="color: #22cb64"/>
-                    <icon-font type="icon-wrong" v-show="item.status === 2" style="color: #ff684c"/>
+                    <icon-font type="icon-wrong" v-show="item.status === 2 || item.status === 4" style="color: #ff684c"/>
                     <icon-font type="icon-loading" v-if="item.status === 3" style="color: #22cb64" class="testing"/>
                 </div>
                 <div class="title">
@@ -34,11 +34,15 @@
                 <div class="result">
                     <span style="color: #595959" v-show="item.status === 0">未检测</span>
                     <span style="color: #22cb64" v-show="item.status === 1">正常</span>
-                    <span style="color: #ff684c; cursor: pointer" v-show="item.status === 2" @click="setCurrentTestItem(item)">异常
+                    <span style="color: #ff684c; cursor: pointer" v-show="item.status === 2 || item.status === 4" @click="setCurrentTestItem(item)">
+                        {{item.status === 2 ? '异常': '手动测试'}}
                         <icon-font type="icon-lujing"/>
                     </span>
                     <span style="color: #22cb64" v-show="item.status === 3">检测中</span>
                 </div>
+            </div>
+            <div class="check-result">
+                <a-button size="large" @click="checkResult">查看结果</a-button>
             </div>
         </main>
         <a-modal
@@ -51,7 +55,36 @@
             <div class="title">
                 <span v-for="(text, index) in currentTestItem.modelTitle" :key="index">{{text}}</span>
             </div>
-            <component :is="currentTestItem.component" :data="currentTestItem"></component>
+            <component :is="currentTestItem.component" :data="currentTestItem" @afterManualTest="afterManualTest"></component>
+        </a-modal>
+        <a-modal
+                v-model="resultModelVisible"
+                :centered="centered"
+                class="result-model test-model"
+                width="620"
+                :footer="null"
+                :maskClosable="closable">
+            <div class="title">
+                <span v-for="(text, index) in '检测报告'" :key="index">{{text}}</span>
+            </div>
+            <p :class="{error: !status}">{{status ? '恭喜！你的设备检测已通过，可以正常上课了' : '很遗憾，你的设备检测没有通过'}}</p>
+            <div class="content">
+                <div class="result-item" v-for="item in testList" :key="item.id">
+                    <div class="result-title">
+                        <span>{{item.resultTitle}}</span>
+                    </div>
+                    <div class="detail">
+                        <span>{{item.system || item.browser || ''}}</span>
+                    </div>
+                    <div class="status">
+                        <icon-font :type="item.status === 1 ? 'icon-huabanfuben' : 'icon-wrong2'" :class="{error: item.status !== 1}"/>
+                        <span :class="{error: item.status !== 1}">{{item.status === 1 ? '正常' : '异常'}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-box">
+                <a-button @click="resultModelVisible = false" type="primary">关闭</a-button>
+            </div>
         </a-modal>
     </div>
 </template>
@@ -61,11 +94,16 @@
     import SystemTest from './components/SystemTest';
     import BrowserTest from './components/BrowserTest';
     import CameraTest from './components/CameraTest';
+    import MikeTest from './components/MikeTest';
+    import SpeakerTest from './components/SpeakerTest';
+    import config from '@/api/config';
+    import common from '@/api/common';
 
     const IconFont = Icon.createFromIconfontCN({
-        scriptUrl: 'https://at.alicdn.com/t/font_1789749_7qhrn3l949.js',
+        scriptUrl: config.equipmentInspectionIconSrc,
     });
-    // {modelTitle: '摄像头测试', component: 'CameraTest',problems: {1: '摄像头异常,请下载高版本的谷歌浏览器！', 2: '系统未检测到摄像头设备，请尝试以下方法：'}}
+    // {modelTitle: '摄像头测试', component: 'CameraTest',problems: {1: '摄像头异常,请下载高版本的谷歌浏览器！',
+    // 2: '系统未检测到摄像头设备，请尝试以下方法：', 3: '未取得浏览器授权，请尝试以下方法：'}}
     export default {
         name: "EquipmentInspection",
         data () {
@@ -76,17 +114,23 @@
                 problemNum: 0, // 一起正常为true
                 progress: 0,
                 modelVisible: false,
+                resultModelVisible: false,
                 testAbort: false, // 中止检测
                 closable: false,
                 centered: true,
+                testComplete: false,
                 currentTestItem: {}, // 与testList相对应的model
-                testList: [ // status 0 未验证  1 验证成功  2 验证失败  3 检测中
-                    {id: 1, status: 0, title: '操作系统', content: '检查操作系统版本是否是win7及以上。', methods: 'testSystem',
+                testList: [ // status 0 未验证  1 验证成功  2 验证失败  3 检测中  4 需手动测试
+                    {id: 1, status: 0, title: '操作系统', resultTitle: '操作系统', content: '检查操作系统版本是否是win7及以上。', methods: 'testSystem',
                         modelTitle: '系统检测', component: 'SystemTest'},
-                    {id: 2, status: 0, title: '浏览器版本', content: '检查是否是谷歌chrome浏览器。', methods: 'testBrowser',
+                    {id: 2, status: 0, title: '浏览器版本', resultTitle: '浏览器', content: '检查是否是谷歌chrome浏览器。', methods: 'testBrowser',
                         modelTitle: '浏览器检测', component: 'BrowserTest'},
-                    {id: 3, status: 0, title: '摄像头测试', content: '检查摄像头是否正常工作。', methods: 'testCamera',
+                    {id: 3, status: 0, title: '摄像头测试', resultTitle: '摄像头', content: '检查摄像头是否正常工作。', methods: 'testCamera',
                         modelTitle: '摄像头检测', component: 'CameraTest', problems: {}},
+                    {id: 4, status: 0, title: '麦克风测试', resultTitle: '麦克风', content: '检查麦克风是否正常工作。', methods: 'testMike',
+                        modelTitle: '麦克风检测', component: 'MikeTest', problems: {}},
+                    {id: 5, status: 0, title: '扬声器测试', resultTitle: '扬声器', content: '检查扬声器是否正常工作。', methods: 'testSpeaker',
+                        modelTitle: '扬声器检测', component: 'SpeakerTest', problems: {}},
                 ],
                 cacheTestList: [] // testList初始状态的深拷贝
             }
@@ -98,14 +142,16 @@
             IconFont,
             SystemTest,
             BrowserTest,
-            CameraTest
+            CameraTest,
+            MikeTest,
+            SpeakerTest
         },
         computed: {
             status () { // 表示总的检测状态
                 let problemNum = 0
                 let status = true
                 for (let i = 0; i < this.testList.length; i++) {
-                    if (this.testList[i].status === 2) {
+                    if (this.testList[i].status === 2 || this.testList[i].status === 4) {
                         status = false
                         problemNum++
                     }
@@ -130,7 +176,7 @@
                     for (let i = 0; i < this.testList.length; i++) {
                         this.$set(this.testList[i], 'status', 3)
                         const result = await new Promise((resolve, reject) => {
-                            setTimeout(() => {
+                            setTimeout(async () => {
                                 if (this.testAbort) {
                                     reject(false)
                                     this.$set(this.testList[i], 'status', 0)
@@ -138,7 +184,7 @@
                                     return
                                 }
                                 const currentTestItem = this.testList[i]
-                                this[currentTestItem.methods](i)
+                                await this[currentTestItem.methods](i)
                                 this.progress = parseInt((i + 1) / this.testList.length * 100)
                                 resolve(true)
                             }, 1000)
@@ -147,12 +193,21 @@
                     }
                     this.testing = false
                     this.buttonText = '重新检测'
-                    if (!this.status) {
-                        this.explanation = this.testAbort ? `检测中断，发现${this.problemNum}个问题，请点击“异常”修复！` :
-                            `检测完成，发现${this.problemNum}个问题，请点击“异常”修复！`
-                    }else {
-                        this.explanation = this.testAbort ? '检测中断，暂未发现问题' : '检测完成，暂未发现问题'
+                    this.setExplanation()
+                    if (!this.testAbort) {
+                        this.testComplete = true
+                        common.setLocalStorage('equipmentInspection', true)
                     }
+                }
+            },
+
+            // 设置测试结果的文字内容
+            setExplanation () {
+                if (!this.status) {
+                    this.explanation = this.testAbort ? `检测中断，发现${this.problemNum}个问题，请点击“异常”修复！` :
+                        `检测完成，发现${this.problemNum}个问题，请点击“异常”修复！`
+                }else {
+                    this.explanation = this.testAbort ? '检测中断，暂未发现问题' : '检测完成，暂未发现问题'
                 }
             },
 
@@ -165,13 +220,13 @@
             resetTest () {
                 this.testList = JSON.parse(JSON.stringify(this.cacheTestList))
                 this.progress = 0
+                this.testComplete = false
             },
 
             // 检测系统
             testSystem (index) {
                 const sUserAgent = navigator.userAgent
                 const currentTestItem = this.testList[index]
-                console.log(sUserAgent, navigator.platform)
                 const isWin = (navigator.platform === "Win32") || (navigator.platform === "Windows")
                 const systemList = [
                     {name: 'Windows NT 5.0', system: 'Win2000', require: false},
@@ -215,7 +270,6 @@
                 const browser = m[1].replace(/version/, "'safari")
                 const ver = m[2]
                 const version = parseInt(ver.split('.')[0])
-                console.log(browser)
                 currentTestItem.browser = browser + ' ' + version
                 currentTestItem.status = 2
                 currentTestItem.warning = `您的浏览器为${browser}浏览器，无法正常上课，请点击按钮下载谷歌chrome浏览器。`
@@ -232,49 +286,178 @@
 
             // 检测摄像头
             testCamera (index) {
-                const currentTestItem = this.testList[index]
-                currentTestItem.problems = {}
-                currentTestItem.status = 2
+                return new Promise(async (resolve, reject) => {
+                    const currentTestItem = {...this.testList[index]}
+                    currentTestItem.problems = {}
+                    currentTestItem.status = 2
+                    currentTestItem.index = index
+                    let haveProblem = false
 
-                navigator.getUserMedia = navigator.getUserMedia ||
-                    navigator.webkitGetUserMedia ||
-                    navigator.mozGetUserMedia ||
-                    navigator.msGetUserMedia;
+                    navigator.getUserMedia = navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia;
 
-                // 检测浏览器是否支持
-                if (!navigator.getUserMedia) {
-                    currentTestItem.problems['1'] = '摄像头异常,请下载高版本的谷歌浏览器！'
-                }else {
-                    navigator.getUserMedia({
-                        video: {width: 300, height: 225},
-                        audio: false
-                    }, () => {}, () => {
-                    currentTestItem.problems['3'] = '未取得浏览器授权，请尝试以下方法：'
-                    });
+                    // 检测浏览器是否支持
+                    if (!navigator.getUserMedia) {
+                        haveProblem = true
+                        currentTestItem.problems['1'] = '摄像头异常,请下载高版本的谷歌浏览器！'
+                        reject('浏览器不支持')
+                    }else {
+                        await new Promise((resolve2, reject2) => {
+                            navigator.getUserMedia({
+                                video: {width: 300, height: 225},
+                                audio: false
+                            }, () => {console.log('success'); resolve2();resolve()}, (err) => {
+                                console.log(err.name)
+                                haveProblem = true
+                                if (err.name === 'NotFoundError') {
+                                    currentTestItem.problems['2'] = '系统未检测到摄像头设备，请尝试以下方法：'
+                                    reject2('未发现设备')
+                                    reject('未发现设备')
+                                }else {
+                                    currentTestItem.problems['3'] = '未取得浏览器授权，请尝试以下方法：'
+                                    reject2('未授权')
+                                    reject('未授权')
+                                }
+                            });
+                        }).catch(err => {
+                            console.log(err)
+                        })
+                    }
+
+                    // 检测设备是否存在(改从getUserMedia识别)
+                    // if (!await this.checkDevice('videoinput')) {
+                    //     haveProblem = true
+                    //     currentTestItem.problems['2'] = '系统未检测到摄像头设备，请尝试以下方法：'
+                    //     reject('未发现设备')
+                    // }
+
+                    if (!haveProblem) {
+                        currentTestItem.status = 4
+                    }
+                    this.testList.splice(index, 1, currentTestItem)
+                }).catch(err => {
+                    console.log(err)
+                })
+            },
+
+            // 检测麦克风
+            testMike (index) {
+                return new Promise(async (resolve, reject) => {
+                    const currentTestItem = {...this.testList[index]}
+                    currentTestItem.problems = {}
+                    currentTestItem.status = 2
+                    currentTestItem.index = index
+                    let haveProblem = false
+
+                    navigator.getUserMedia = navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia;
+
+                    // 检测浏览器是否支持
+                    if (!navigator.getUserMedia) {
+                        haveProblem = true
+                        currentTestItem.problems['1'] = '麦克风异常,请下载高版本的谷歌浏览器！'
+                        reject('浏览器不支持')
+                    }else {
+                        await new Promise((resolve2, reject2) => {
+                            navigator.getUserMedia({
+                                video: false,
+                                audio: true
+                            }, () => {console.log('success'); resolve2();resolve()}, (err) => {
+                                console.log(err.name)
+                                haveProblem = true
+                                if (err.name === 'NotFoundError') {
+                                    currentTestItem.problems['2'] = '系统未检测到麦克风设备，请尝试以下方法：'
+                                    reject2('未发现设备')
+                                    reject('未发现设备')
+                                }else {
+                                    currentTestItem.problems['3'] = '未取得浏览器授权，请尝试以下方法：'
+                                    reject2('未授权')
+                                    reject('未授权')
+                                }
+                            });
+                        }).catch(err => {
+                            console.log(err)
+                        })
+                    }
+
+                    if (!haveProblem) {
+                        currentTestItem.status = 4
+                    }
+                    this.testList.splice(index, 1, currentTestItem)
+                }).catch(err => {
+                    console.log(err)
+                })
+            },
+
+            // 检测扬声器
+            testSpeaker (index) {
+                return new Promise(async (resolve, reject) => {
+                    const currentTestItem = {...this.testList[index]}
+                    currentTestItem.problems = {}
+                    currentTestItem.status = 2
+                    currentTestItem.index = index
+                    let haveProblem = false
+
+                    // 检测浏览器是否支持
+                    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                        haveProblem = true
+                        currentTestItem.problems['1'] = '浏览器版本过低无法检测扬声器,请下载高版本的谷歌浏览器！'
+                        reject('浏览器不支持')
+                    }else {
+                        if (!await this.checkDevice('audiooutput')) {
+                            haveProblem = true
+                            currentTestItem.problems['2'] = '系统未检测到扬声器设备，请尝试以下方法：'
+                            reject('未发现设备')
+                        }else {
+                            resolve()
+                        }
+                    }
+
+                    if (!haveProblem) {
+                        currentTestItem.status = 4
+                    }
+                    this.testList.splice(index, 1, currentTestItem)
+                }).catch(err => {
+                    console.log(err)
+                })
+            },
+
+            afterManualTest ({status, index}) {
+                this.modelVisible = false
+                if (status) {
+                    this.$set(this.testList[index], 'status', 1)
+                    this.setExplanation()
                 }
-
-                // 检测设备是否存在
-                if (!this.checkDevice('videoinput')) {
-                    currentTestItem.problems['2'] = '系统未检测到摄像头设备，请尝试以下方法：'
-                }
-                this.testList.splice(index, 1, currentTestItem)
             },
 
             // 测试设备是否插入
             checkDevice (type) {
                 let num = 0
                 let result = false
-                navigator.mediaDevices.enumerateDevices().then(devices => {
+                return navigator.mediaDevices.enumerateDevices().then(devices => {
                     devices.forEach(device => {
                         if (device.kind === type) num++
                     });
                     if (num > 0) {
                         result = true
                     }
+                    return result
                 }).catch(function (err) {
                     console.log(err)
                 })
-                return result
+            },
+
+            // 生成报告
+            checkResult () {
+                if (!this.testComplete) {
+                    this.$message.warning('请先完成测试')
+                    return
+                }
+                this.resultModelVisible = true
             }
         }
     }
@@ -436,6 +619,20 @@
                     width: 15%;
                 }
             }
+            .check-result {
+                text-align: center;
+                margin-top: 40px;
+                button {
+                    width: 120px;
+                    height: 40px;
+                    border-radius: 20px;
+                    background-color: @themeColor;
+                    color: #fff;
+                    font-size: 18px;
+                    border: 0;
+                    --antd-wave-shadow-color: @themeColor;
+                }
+            }
         }
     }
     .test-model {
@@ -455,6 +652,65 @@
                     border-radius: 50%;
                 }
             }
+        }
+    }
+    .result-model {
+        .ant-modal-body {
+            padding: 0 0 35px;
+            p {
+                text-align: center;
+                font-size:26px;
+                color: @themeColor;
+                &.error {
+                    color: #FF0000;
+                }
+            }
+            .content {
+                padding: 15px 0;
+                width: 500px;
+                border:2px solid @themeColor;
+                border-radius:20px;
+                margin: 0 auto;
+                .result-item {
+                    display: flex;
+                    justify-content: space-around;
+                    align-items: center;
+                    height: 41px;
+                    font-size:18px;
+                    color: #312C2C;
+                    text-align: center;
+                    .result-title {
+                        width: 80px;
+                    }
+                    .detail {
+                        width: 120px;
+                    }
+                    .status {
+                        font-size: 27px;
+                        color: #31d16c;
+                        display: flex;
+                        align-items: center;
+                        .error {
+                            color: #FF0000;
+                        }
+                        span {
+                            font-size: 18px;
+                            margin-left: 5px;
+                        }
+                    }
+                }
+            }
+            .btn-box {
+                text-align: center;
+                margin-top: 60px;
+                button {
+                    width:160px;
+                    height:46px;
+                    border-radius:10px;
+                    font-size: 18px;
+                }
+            }
+
         }
     }
 </style>

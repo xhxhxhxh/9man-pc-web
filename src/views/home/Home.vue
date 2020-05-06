@@ -47,6 +47,14 @@
             </main>
         </div>
         <div class="home-body">
+            <div class="iceberg">
+                <main>
+                    <h1>少儿教育的“冰山”</h1>
+                    <div class="image">
+                        <img src="/assets/iceberg.png" alt="">
+                    </div>
+                </main>
+            </div>
             <div class="enlighten">
                 <main>
                     <h1>三大学科 综合启蒙</h1>
@@ -651,7 +659,7 @@
 
                     }
 
-                    if (top >= 5750) {
+                    if (top >= 6750) {
                         if (_this.showApply) {
                             _this.showApply = false
                         }
@@ -870,6 +878,21 @@
                     font-weight: bold;
                     text-align: center;
                     margin-bottom: 0;
+                }
+            }
+            .iceberg {
+                height: 1000px;
+                h1 {
+                    margin-top: 88px;
+                    color: #312C2C;
+                    margin-bottom: 72px;
+                }
+                .image {
+                    img {
+                        width: 100%;
+                        display: block;
+                        margin: 0 auto;
+                    }
                 }
             }
             .enlighten {

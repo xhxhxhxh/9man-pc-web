@@ -22,7 +22,7 @@
     "fabric": "^1.6.7",
     "moment": "^2.24.0",
     "normalize.css": "^8.0.1",
-    "npm": "^6.9.0",
+    "npm": "^6.13.4",
     "nprogress": "^0.2.0",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0",

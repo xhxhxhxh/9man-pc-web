@@ -3017,6 +3017,250 @@ to {
   color: #f85415;
 }
 
+.puzzle-verification {
+  width: 292px !important;
+  border-radius: 16px;
+  overflow: hidden;
+  padding-bottom: 0;
+}
+.puzzle-verification .ant-modal-content .ant-modal-close {
+  display: none;
+}
+.puzzle-verification .ant-modal-content .ant-modal-body {
+  padding: 0;
+}
+.puzzle-verification .ant-modal-content .ant-modal-body .close {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  position: absolute;
+  right: 16px;
+  top: 23px;
+  z-index: 999;
+  background-color: #fff;
+  line-height: 20px;
+  text-align: center;
+}
+.puzzle-verification .ant-modal-content .ant-modal-body .close:hover {
+  color: #f5222d;
+}
+.puzzle-verification .ant-modal-content .ant-modal-body .puzzle-container {
+  display: inline-block !important;
+}
+.puzzle-verification .ant-modal-content .ant-modal-footer {
+  display: none;
+}
+.setting-container .setting-box {
+  background: #ffffff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.setting-container .setting-box > .title {
+  height: 60px;
+  border-bottom: 1px solid #F4F5F7;
+  padding: 0 23px 0 17px;
+  font-size: 18px;
+  font-weight: normal;
+  color: #434343;
+  margin-bottom: 0;
+}
+.setting-container .setting-box > .title span {
+  line-height: 60px;
+  vertical-align: top;
+}
+.setting-container .setting-box > .title .line {
+  display: inline-block;
+  width: 4px;
+  height: 30px;
+  background: #f85415;
+  border-radius: 2px;
+  margin: 15px 10px 0 0;
+  vertical-align: top;
+}
+.setting-container .setting-box > .title .logout {
+  font-size: 16px;
+  color: #f85415;
+  float: right;
+  cursor: pointer;
+}
+.setting-container .setting-box main {
+  background-color: #fff;
+  min-height: 640px;
+  position: relative;
+  padding: 26px 32px;
+}
+.setting-container .setting-box main .info-box {
+  height: 90px;
+}
+.setting-container .setting-box main .info-box img {
+  width: 90px;
+  float: left;
+  vertical-align: top;
+  margin-right: 30px;
+}
+.setting-container .setting-box main .info-box .info {
+  float: left;
+  height: 100%;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+  -webkit-flex-direction: column;
+  -moz-box-orient: vertical;
+  -moz-box-direction: normal;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: space-evenly;
+  -webkit-justify-content: space-evenly;
+  -moz-box-pack: space-evenly;
+  -ms-flex-pack: space-evenly;
+  justify-content: space-evenly;
+}
+.setting-container .setting-box main .info-box .info p {
+  margin: 0;
+  font-size: 16px;
+  color: #434343;
+}
+.setting-container .setting-box main .info-box .info p.password button {
+  width: 96px;
+  height: 30px;
+  border: 1px solid #f85415;
+  color: #f85415;
+  border-radius: 10px;
+}
+.setting-container .setting-box main .info-box .info p.password button:hover {
+  color: #fff;
+  background-color: #f85415;
+}
+.modifyPasswordModal {
+  width: 345px !important;
+  height: 390px !important;
+  padding: 0;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.modifyPasswordModal input::-webkit-outer-spin-button,
+.modifyPasswordModal input::-webkit-inner-spin-button {
+  -webkit-appearance: none !important;
+}
+.modifyPasswordModal input[type="number"] {
+  -moz-appearance: textfield;
+}
+.modifyPasswordModal .ant-form-item-with-help {
+  margin-bottom: 0;
+}
+.modifyPasswordModal .ant-modal-content {
+  background: #fff;
+  -webkit-box-shadow: unset;
+  box-shadow: unset;
+  height: 100%;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-header {
+  border: 0;
+  background-color: unset;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-header div {
+  font-size: 28px;
+  text-align: center;
+  font-weight: 500;
+  color: #333333;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body {
+  padding: 35px 40px;
+  position: relative;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .anticon-close-circle {
+  position: absolute;
+  right: -15px;
+  top: 0;
+  font-size: 30px;
+  color: #fff;
+  cursor: pointer;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body > h1 {
+  font-size: 20px;
+  text-align: center;
+  font-weight: normal;
+  margin-bottom: 30px;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body > h1 .color {
+  color: #f85415;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item {
+  height: 70px;
+  margin-bottom: 0;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item:last-of-type {
+  height: 38px;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input {
+  border: 1px solid #CDCDCD;
+  border-radius: 10px;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 14px;
+  height: 38px;
+  padding-left: 15px;
+  line-height: 38px;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input:focus {
+  -webkit-box-shadow: unset;
+  box-shadow: unset;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input::-webkit-input-placeholder {
+  /* WebKit browsers */
+  color: #D2D2D2;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 100px #fff inset !important;
+  box-shadow: 0 0 0 100px #fff inset !important;
+  color: #D2D2D2 !important;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .ant-form-explain {
+  font-size: 12px;
+  font-weight: 400;
+  color: #ff6d88;
+  margin-top: 0;
+  margin-left: 15px;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .getVerificationCode {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  position: absolute;
+  right: 18px;
+  top: 0;
+  color: #f85415;
+  cursor: pointer;
+  line-height: 1.5;
+}
+.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .getVerificationCode.alreadyGetCode {
+  color: #999;
+}
+.modifyPasswordModal .ant-modal-footer {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  border: 0;
+  text-align: center;
+  padding-top: 5px;
+  font-size: 0;
+}
+.modifyPasswordModal .ant-modal-footer button {
+  width: 110px;
+  height: 40px;
+  border-radius: 6px;
+  font-size: 18px;
+}
+.modifyPasswordModal .ant-modal-footer button:last-of-type {
+  margin-left: 40px;
+}
+
 .test-slide-enter[data-v-b9e95b64] {
   -webkit-transform: translateX(150%);
   transform: translateX(150%);
@@ -3956,7 +4200,7 @@ to {
   -moz-box-align: center;
   -ms-flex-align: center;
   align-items: center;
-  height: 40px;
+  height: 41px;
   font-size: 18px;
   color: #312C2C;
   text-align: center;
@@ -4584,59 +4828,24 @@ to {
   font-size: 16px;
 }
 
-.puzzle-verification {
-  width: 292px !important;
-  border-radius: 16px;
-  overflow: hidden;
-  padding-bottom: 0;
-}
-.puzzle-verification .ant-modal-content .ant-modal-close {
-  display: none;
-}
-.puzzle-verification .ant-modal-content .ant-modal-body {
-  padding: 0;
-}
-.puzzle-verification .ant-modal-content .ant-modal-body .close {
-  display: inline-block;
-  width: 20px;
-  height: 20px;
-  cursor: pointer;
-  position: absolute;
-  right: 16px;
-  top: 23px;
-  z-index: 999;
-  background-color: #fff;
-  line-height: 20px;
-  text-align: center;
-}
-.puzzle-verification .ant-modal-content .ant-modal-body .close:hover {
-  color: #f5222d;
-}
-.puzzle-verification .ant-modal-content .ant-modal-body .puzzle-container {
-  display: inline-block !important;
-}
-.puzzle-verification .ant-modal-content .ant-modal-footer {
-  display: none;
-}
-.setting-container .setting-box {
-  background: #ffffff;
+.courseCount-container {
+  background-color: #F4F5F7;
   border-radius: 6px;
   overflow: hidden;
 }
-.setting-container .setting-box > .title {
+.courseCount-container header {
+  background-color: #fff;
   height: 60px;
   border-bottom: 1px solid #F4F5F7;
-  padding: 0 23px 0 17px;
+  padding-left: 17px;
   font-size: 18px;
-  font-weight: normal;
   color: #434343;
-  margin-bottom: 0;
 }
-.setting-container .setting-box > .title span {
+.courseCount-container header span {
   line-height: 60px;
   vertical-align: top;
 }
-.setting-container .setting-box > .title .line {
+.courseCount-container header .line {
   display: inline-block;
   width: 4px;
   height: 30px;
@@ -4645,35 +4854,109 @@ to {
   margin: 15px 10px 0 0;
   vertical-align: top;
 }
-.setting-container .setting-box > .title .logout {
-  font-size: 16px;
-  color: #f85415;
+.courseCount-container header .switch-area {
   float: right;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  padding: 0 18px;
+}
+.courseCount-container header .switch-area span {
   cursor: pointer;
 }
-.setting-container .setting-box main {
+.courseCount-container header .switch-area span.active {
+  color: #f85415;
+}
+.courseCount-container header .switch-area span:first-of-type {
+  margin-right: 58px;
+}
+.courseCount-container main .myCourseCount-area .courseCount-info {
   background-color: #fff;
-  min-height: 640px;
-  position: relative;
-  padding: 26px 32px;
-}
-.setting-container .setting-box main .info-box {
-  height: 90px;
-}
-.setting-container .setting-box main .info-box img {
-  width: 90px;
-  float: left;
-  vertical-align: top;
-  margin-right: 30px;
-}
-.setting-container .setting-box main .info-box .info {
-  float: left;
-  height: 100%;
+  height: 180px;
   display: -webkit-box;
   display: -webkit-flex;
   display: -moz-box;
   display: -ms-flexbox;
   display: flex;
+  -webkit-justify-content: space-around;
+  -ms-flex-pack: distribute;
+  justify-content: space-around;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  text-align: center;
+  color: #434343;
+  border-radius: 0 0 6px 6px;
+}
+.courseCount-container main .myCourseCount-area .courseCount-info p {
+  font-size: 16px;
+  margin-bottom: 22px;
+}
+.courseCount-container main .myCourseCount-area .courseCount-info .count {
+  font-size: 36px;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
+}
+.courseCount-container main .myCourseCount-area .courseCount-info .count .slash {
+  font-size: 16px;
+  margin: 0 7px;
+}
+.courseCount-container main .myCourseCount-area .courseCount-info .text {
+  font-size: 12px;
+}
+.courseCount-container main .myCourseCount-area .sell {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  margin-top: 20px;
+}
+.courseCount-container main .myCourseCount-area .sell .sell-area {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  -moz-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box {
+  position: relative;
+  cursor: pointer;
+  width: 300px;
+  height: 200px;
+  background: #fff;
+  border-radius: 6px;
+  color: #434343;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: center;
+  -webkit-justify-content: center;
+  -moz-box-pack: center;
+  -ms-flex-pack: center;
+  justify-content: center;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
   -webkit-flex-direction: column;
@@ -4681,151 +4964,176 @@ to {
   -moz-box-direction: normal;
   -ms-flex-direction: column;
   flex-direction: column;
-  -webkit-box-pack: space-evenly;
-  -webkit-justify-content: space-evenly;
-  -moz-box-pack: space-evenly;
-  -ms-flex-pack: space-evenly;
-  justify-content: space-evenly;
-}
-.setting-container .setting-box main .info-box .info p {
-  margin: 0;
-  font-size: 16px;
-  color: #434343;
-}
-.setting-container .setting-box main .info-box .info p.password button {
-  width: 96px;
-  height: 30px;
-  border: 1px solid #f85415;
-  color: #f85415;
-  border-radius: 10px;
-}
-.setting-container .setting-box main .info-box .info p.password button:hover {
-  color: #fff;
-  background-color: #f85415;
-}
-.modifyPasswordModal {
-  width: 345px !important;
-  height: 390px !important;
-  padding: 0;
-  border-radius: 10px;
   overflow: hidden;
 }
-.modifyPasswordModal input::-webkit-outer-spin-button,
-.modifyPasswordModal input::-webkit-inner-spin-button {
-  -webkit-appearance: none !important;
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box .count {
+  font-size: 26px;
+  text-align: center;
+  margin-bottom: 8px;
 }
-.modifyPasswordModal input[type="number"] {
-  -moz-appearance: textfield;
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box .price {
+  font-size: 16px;
+  margin-bottom: 0;
+  text-align: center;
 }
-.modifyPasswordModal .ant-form-item-with-help {
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box .selected-status {
+  display: none;
+}
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box.selected {
+  border: 1px solid #f85415;
+}
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box.selected .selected-status {
+  -webkit-transform: rotate(45deg) translate(70%, 0);
+  transform: rotate(45deg) translate(70%, 0);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -moz-box;
+  display: -ms-flexbox;
+  display: flex;
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-color: #f85415;
+  bottom: 0;
+  right: 0;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -moz-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+.courseCount-container main .myCourseCount-area .sell .sell-area .sell-box.selected .selected-status img {
+  width: 15px;
+  vertical-align: top;
+  -webkit-transform: rotate(-45deg);
+  transform: rotate(-45deg);
+  margin-left: 3px;
+}
+.courseCount-container main .myCourseCount-area .button-area {
+  text-align: center;
+  margin-top: 18px;
+}
+.courseCount-container main .myCourseCount-area .button-area button {
+  width: 210px;
+  height: 50px;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #fff;
+  text-shadow: unset;
+}
+.courseCount-container main .myCourseCount-area .button-area p {
+  font-size: 12px;
+  color: #434343;
+  margin-top: 7px;
   margin-bottom: 0;
 }
-.modifyPasswordModal .ant-modal-content {
-  background: #fff;
-  -webkit-box-shadow: unset;
-  box-shadow: unset;
-  height: 100%;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-header {
-  border: 0;
-  background-color: unset;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-header div {
-  font-size: 28px;
-  text-align: center;
-  font-weight: 500;
-  color: #333333;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body {
-  padding: 35px 40px;
+.courseCount-container main .purchaseHistory-area {
+  background-color: #fff;
   position: relative;
+  padding: 0 30px 24px;
+  overflow: hidden;
+  min-height: 183px;
 }
-.modifyPasswordModal .ant-modal-content .ant-modal-body .anticon-close-circle {
+.courseCount-container main .purchaseHistory-area .spin {
   position: absolute;
-  right: -15px;
-  top: 0;
-  font-size: 30px;
-  color: #fff;
-  cursor: pointer;
+  left: 50%;
+  top: 42%;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
-.modifyPasswordModal .ant-modal-content .ant-modal-body > h1 {
-  font-size: 20px;
+.courseCount-container main .purchaseHistory-area .ant-pagination {
+  margin-top: 24px;
+  display: inline-block;
+  float: right;
+  font-size: 16px;
+}
+.courseCount-container main .purchaseHistory-area .noData {
+  text-align: center;
+  line-height: 50px;
+  margin-bottom: 0;
+}
+.courseCount-container main .purchaseHistory-area table {
+  margin-top: 15px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.courseCount-container main .purchaseHistory-area table thead tr {
+  background-color: #F4F5F7;
+}
+.courseCount-container main .purchaseHistory-area table thead tr th {
+  font-size: 16px;
+  color: #434343;
+  height: 44px;
   text-align: center;
   font-weight: normal;
-  margin-bottom: 30px;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body > h1 .color {
-  color: #f85415;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item {
-  height: 70px;
-  margin-bottom: 0;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item:last-of-type {
-  height: 38px;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input {
-  border: 1px solid #CDCDCD;
-  border-radius: 10px;
-  color: rgba(0, 0, 0, 0.85);
-  font-size: 14px;
-  height: 38px;
   padding-left: 15px;
-  line-height: 38px;
+  padding-right: 15px;
 }
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input:focus {
-  -webkit-box-shadow: unset;
-  box-shadow: unset;
+.courseCount-container main .purchaseHistory-area table thead tr th:first-of-type {
+  border-radius: 13px 0 0 13px;
 }
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input::-webkit-input-placeholder {
-  /* WebKit browsers */
-  color: #D2D2D2;
+.courseCount-container main .purchaseHistory-area table thead tr th:last-of-type {
+  border-radius: 0 13px 13px 0;
 }
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control input:-webkit-autofill {
-  -webkit-box-shadow: 0 0 0 100px #fff inset !important;
-  box-shadow: 0 0 0 100px #fff inset !important;
-  color: #D2D2D2 !important;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .ant-form-explain {
-  font-size: 12px;
-  font-weight: 400;
-  color: #ff6d88;
-  margin-top: 0;
-  margin-left: 15px;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .getVerificationCode {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  position: absolute;
-  right: 18px;
-  top: 0;
-  color: #f85415;
-  cursor: pointer;
-  line-height: 1.5;
-}
-.modifyPasswordModal .ant-modal-content .ant-modal-body .ant-form-item-control .getVerificationCode.alreadyGetCode {
-  color: #999;
-}
-.modifyPasswordModal .ant-modal-footer {
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  border: 0;
+.courseCount-container main .purchaseHistory-area table tbody tr td {
+  font-size: 16px;
+  height: 50px;
+  line-height: 50px;
   text-align: center;
-  padding-top: 5px;
-  font-size: 0;
+  color: #434343;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
-.modifyPasswordModal .ant-modal-footer button {
-  width: 110px;
-  height: 40px;
-  border-radius: 6px;
-  font-size: 18px;
+.pay-model {
+  width: 400px;
 }
-.modifyPasswordModal .ant-modal-footer button:last-of-type {
-  margin-left: 40px;
+.pay-model .ant-modal-content {
+  border: 4px solid #f85415;
+  border-radius: 20px;
+}
+.pay-model .ant-modal-body {
+  padding-top: 28px;
+  height: 242px;
+}
+.pay-model .ant-modal-body .warn p {
+  text-align: center;
+  margin-bottom: 0;
+  font-size: 14px;
+  color: #808080;
+}
+.pay-model .ant-modal-body .warn p.bold {
+  margin-top: 5px;
+  font-size: 16px;
+  color: #434343;
+  font-weight: bold;
+}
+.pay-model .ant-modal-body .warn .icon {
+  text-align: center;
+}
+.pay-model .ant-modal-body .warn .icon img {
+  vertical-align: middle;
+  width: 71px;
+}
+.pay-model .ant-modal-body .warn .btn-box {
+  margin-top: 24px;
+  text-align: center;
+}
+.pay-model .ant-modal-body .warn .btn-box button {
+  width: 138px;
+  height: 50px;
+  border-radius: 10px;
+  font-size: 16px;
+  text-shadow: unset;
+}
+.pay-model .ant-modal-body .warn .btn-box button.default-color {
+  color: #f85415;
+  border: 1px solid #f85415;
+}
+.pay-model .ant-modal-body .warn .btn-box button:first-of-type {
+  margin-right: 50px;
 }
 
 .layout-container[data-v-6b58a266] {

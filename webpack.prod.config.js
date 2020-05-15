@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const htmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextWebpackPlugin = require('extract-text-webpack-plugin'); //抽离css
 const extractLESS = new ExtractTextWebpackPlugin({filename: 'css/reset.[hash:8].css',allChunks: true});
@@ -43,7 +44,12 @@ module.exports = {
                 // renderAfterDocumentEvent: 'render-event',
                 // renderAfterTime: 5000
             })
-        })
+        }),
+
+        // 清除dist中的文件
+        new CleanWebpackPlugin({
+            cleanOnceBeforeBuildPatterns: ['css/**', 'js/**', '!js','!js/BrowseDetection.js'],
+        }),
     ],
     module: {
         rules: [

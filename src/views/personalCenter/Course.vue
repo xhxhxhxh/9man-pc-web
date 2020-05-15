@@ -126,14 +126,15 @@
                 this.$axios.get(this.rootUrl + '/v1/classRoom/queryClassSchedule', {params})
                     .then(res => {
                         let data = res.data;
+                        this.loading = false;
                         if (data.code === 200) {
-                            this.loading = false;
                             this.totalCount = data.data.count;
                             this.courseList = data.data.data;
                         }
                     })
-                    .catch(() => {
-
+                    .catch((err) => {
+                        console.log(err)
+                        this.loading = false;
                     })
             },
 

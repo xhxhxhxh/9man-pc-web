@@ -5,6 +5,7 @@ import UpdateStudentInfo from '@/views/personalCenter/UpdateStudentInfo';
 import Salary from '@/views/personalCenter/Salary';
 import EquipmentInspection from '@/views/personalCenter/EquipmentInspection';
 import Setting from '@/views/personalCenter/Setting';
+import CourseCount from '@/views/personalCenter/CourseCount';
 
 const routerMap = {};
 routerMap.student = [
@@ -14,7 +15,7 @@ routerMap.student = [
         redirect: '/personalCenter/course',
         children: [
             { path: 'course', component: CourseForStudent, meta: {title: '课程', icon: 'iconkecheng'} },
-            { path: 'salary', component: Salary, meta: {title: '订单', icon: 'iconorder'} },
+            { path: 'courseCount', component: CourseCount, meta: {title: '课时', icon: 'iconorder'} },
             { path: 'setting', component: Setting, meta: {title: '账户设置', icon: 'icontixingshezhix'} },
             { path: 'equipment_inspection', component: EquipmentInspection, meta: {title: '硬件检测', icon: 'iconruqinjianceintrusiondetection'} },
             { path: 'updateStudentInfo/:kidId', component: UpdateStudentInfo, meta: {hidden: true} },

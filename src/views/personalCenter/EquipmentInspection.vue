@@ -267,13 +267,22 @@
                 const ua = navigator.userAgent.toLowerCase()
                 const re = /(msie|firefox|chrome|opera|version|trident|edge).*?([\d.]+)/
                 const m = ua.match(re)
-                const browser = m[1].replace(/version/, "'safari")
-                const ver = m[2]
-                const version = parseInt(ver.split('.')[0])
+                let browser = m[1].replace(/version/, "'safari")
+                let ver = m[2]
+                let version = parseInt(ver.split('.')[0])
+                let isEdge = false
+
+                // 判断edge浏览器
+                if (ua.includes('edge')) {
+                    isEdge = true
+                    browser = 'edge'
+                    version = parseInt(ua.match(/(edge).*?([\d.]+)/)[2].split('.')[0])
+                }
+
                 currentTestItem.browser = browser + ' ' + version
                 currentTestItem.status = 2
                 currentTestItem.warning = `您的浏览器为${browser}浏览器，无法正常上课，请点击按钮下载谷歌chrome浏览器。`
-                if (browser === 'chrome') {
+                if (browser === 'chrome' && !isEdge) {
                     if (version <= 22) {
                         currentTestItem.warning = `您的浏览器版本为chrome${version}，无法正常上课，请点击按钮下载最新谷歌chrome浏览器。`
                     }else {

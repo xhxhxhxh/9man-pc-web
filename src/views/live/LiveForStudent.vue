@@ -61,6 +61,7 @@
     import 'tui-image-editor/dist/tui-image-editor.css';
     import exampleImg from './images/example.png';
     import animate_star from './images/animate_star.gif';
+    import common from '@/api/common';
 
     // 导入socket
     import RTCRoom from '@/lib/RTCRoomSDK/RTCRoomManager';
@@ -289,6 +290,8 @@
                 const teacherId = this.teacherId = this.$route.params.teacherId
                 this.className = this.$route.params.classname
 
+                this.addClassRoomLog(0) // 记录日志
+
                 // 同步状态
                 rtcRoom.on('message-notify-receive', (peerId, data) => {
                     console.log(data)
@@ -515,8 +518,9 @@
                 });
 
                 // 用户关闭页面
-                window.onbeforeunload = () => {
-                    rtcRoom.leaveRoom();
+                window.onbeforeunload = async () => {
+                    rtcRoom.leaveRoom()
+                    this.addClassRoomLog(1)
                 }
             },
 
@@ -534,6 +538,20 @@
                     },
                     onCancel() {},
                 });
+            },
+
+            // 课堂进出记录
+            addClassRoomLog (status) {
+                const browserInfo = common.getBrowserInfo()
+                // 此处使用原生ajax发同步请求，axios会不稳定
+                const xhr = new XMLHttpRequest()
+                let data = new FormData();
+                data.append('room_no', this.roomId)
+                data.append('status', status)
+                data.append('platform', browserInfo.browser + ' ' + browserInfo.ver)
+                xhr.open('POST', this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', !status); // 使用POST方法
+                xhr.setRequestHeader('Authorization', common.getLocalStorage('token'))
+                xhr.send(data);
             },
 
             // 获取课件信息

@@ -390,6 +390,8 @@
                 this.$store.commit('setTeacherId', teacherPeerId)
                 this.$store.commit('setRoomId', roomId)
                 this.className = userParams.classname
+
+                this.addClassRoomLog(0) // 记录日志
                 // 设置iframeSrc
                 // this.iframeSrc = `https://www2.9man.com/syncshuxe/start.html?path=3-1&roomId=${roomId}&peerId=${teacherPeerId}&manager=1`
 
@@ -568,6 +570,7 @@
                     // this.allUsersCancelOperate();
                     this.rtcRoom.changeAIControl(this.teacherId);
                     this.rtcRoom.changeAISyncStatus(1);
+                    this.addClassRoomLog(1)
                     if (this.mode === 'video' && !this.noSave) {
                         this.$store.commit('setVideoProgress', {index: this.resourceIndex, progress: this.progressBar}) // 存储视频进度
                     }
@@ -588,6 +591,20 @@
                 //     this.mode = mode
                 // }
                 this.resourceIndex = liveBroadcastData.coursewarePage? liveBroadcastData.coursewarePage: 0
+            },
+
+            // 课堂进出记录
+            addClassRoomLog (status) {
+                const browserInfo = common.getBrowserInfo()
+                // 此处使用原生ajax发同步请求，axios会不稳定
+                const xhr = new XMLHttpRequest()
+                let data = new FormData();
+                data.append('room_no', this.roomId)
+                data.append('status', status)
+                data.append('platform', browserInfo.browser + ' ' + browserInfo.ver)
+                xhr.open('POST', this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', !status); // 使用POST方法
+                xhr.setRequestHeader('Authorization', common.getLocalStorage('token'))
+                xhr.send(data);
             },
 
             // 离开房间

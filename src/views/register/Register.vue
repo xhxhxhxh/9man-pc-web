@@ -204,7 +204,7 @@
                 if (!this.permission) {
                     return this.setVerificationWrongCount()
                 };
-                const browserInfo = this.getBrowserInfo()
+                const browserInfo = common.getBrowserInfo()
                 const params = {
                     phone: values.telephone,
                     password: md5(values.password).toLowerCase(),
@@ -229,17 +229,6 @@
 
                     })
 
-            },
-
-            // 获取浏览器信息
-            getBrowserInfo() {
-                const Sys = {};
-                const ua = navigator.userAgent.toLowerCase();
-                const re = /(msie|firefox|chrome|opera|version|trident|edge).*?([\d.]+)/;
-                const m = ua.match(re);
-                Sys.browser = m[1].replace(/version/, "'safari");
-                Sys.ver = m[2];
-                return Sys;
             },
 
             // 注册成功后执行的操作

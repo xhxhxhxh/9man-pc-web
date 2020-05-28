@@ -596,15 +596,22 @@
             // 课堂进出记录
             addClassRoomLog (status) {
                 const browserInfo = common.getBrowserInfo()
-                // 此处使用原生ajax发同步请求，axios会不稳定
-                const xhr = new XMLHttpRequest()
+                // 兼容高版本chrome
                 let data = new FormData();
                 data.append('room_no', this.roomId)
+                data.append('uid', this.teacherId)
                 data.append('status', status)
                 data.append('platform', browserInfo.browser + ' ' + browserInfo.ver)
-                xhr.open('POST', this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', !status); // 使用POST方法
-                xhr.setRequestHeader('Authorization', common.getLocalStorage('token'))
-                xhr.send(data);
+                fetch(this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', {
+                    method: 'POST',
+                    keepalive: true,
+                    mode: 'cors',
+                    body: data
+                }).then(() => {
+
+                }).catch((err) => {
+                    console.log(err)
+                })
             },
 
             // 离开房间

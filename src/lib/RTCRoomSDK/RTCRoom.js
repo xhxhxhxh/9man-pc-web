@@ -719,14 +719,18 @@ export default class extends EventEmitter
   openAudio()
   {
     if (localMediaStream && localMediaStream.getAudioTracks()[0]) {
-      localMediaStream.getAudioTracks()[0].enabled = true;
+      if (localMediaStream.getAudioTracks()[0].enabled == false) {
+        localMediaStream.getAudioTracks()[0].enabled = true;
+      }
     }
   }
 
   closeAudio()
   {
     if (localMediaStream && localMediaStream.getAudioTracks()[0]) {
-      localMediaStream.getAudioTracks()[0].enabled = false;
+      if (localMediaStream.getAudioTracks()[0].enabled == true) {
+        localMediaStream.getAudioTracks()[0].enabled = false;
+      }
     }
   }
 

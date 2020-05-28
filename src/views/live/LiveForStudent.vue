@@ -518,7 +518,7 @@
                 });
 
                 // 用户关闭页面
-                window.onbeforeunload = async () => {
+                window.onbeforeunload = () => {
                     rtcRoom.leaveRoom()
                     this.addClassRoomLog(1)
                 }
@@ -543,15 +543,22 @@
             // 课堂进出记录
             addClassRoomLog (status) {
                 const browserInfo = common.getBrowserInfo()
-                // 此处使用原生ajax发同步请求，axios会不稳定
-                const xhr = new XMLHttpRequest()
+                // 兼容高版本chrome
                 let data = new FormData();
                 data.append('room_no', this.roomId)
+                data.append('uid', this.studentId)
                 data.append('status', status)
                 data.append('platform', browserInfo.browser + ' ' + browserInfo.ver)
-                xhr.open('POST', this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', !status); // 使用POST方法
-                xhr.setRequestHeader('Authorization', common.getLocalStorage('token'))
-                xhr.send(data);
+                fetch(this.$store.state.apiUrl + '/v1/classRoomLog/addClassRoomLog', {
+                    method: 'POST',
+                    keepalive: true,
+                    mode: 'cors',
+                    body: data
+                }).then(() => {
+
+                }).catch((err) => {
+                    console.log(err)
+                })
             },
 
             // 获取课件信息
@@ -792,7 +799,7 @@
             },
 
             // 切换动画
-            changeAnimate () {
+            changeAnimate (firstLoad) {
                 const courseware = this.coursewareResource[this.resourceIndex]
                 const type = courseware.type
                 const url = courseware.url
@@ -800,7 +807,9 @@
                 this.gameCache()
                 const video = this.$refs['video-play']
                 video.pause()
-                this.controlAudio(true)
+                if(!firstLoad) {
+                    this.controlAudio(true)
+                }
                 if (type === 1) { // 视频
                     this.mode = 'video'
                     video.src = resourceUrl + '/' + url
@@ -963,7 +972,14 @@
                             break;
                         case 'player_seek_to_value': // 控制视频进度
                             const progress = data.value
-                            video.currentTime = progress * video.duration
+                            try { // 防止视频未加载出来的情况
+                                video.currentTime = progress * video.duration
+                            }catch (e) {
+                                video.oncanplay = () => {
+                                    video.oncanplay = null
+                                    video.currentTime = progress * video.duration
+                                }
+                            }
                             break;
                         case 'add_line': // 处理画板数据
                             path = data.pointlist

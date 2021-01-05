@@ -15,7 +15,7 @@
   "license": "ISC",
   "dependencies": {
     "ant-design-vue": "^1.5.1",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "babel-plugin-transform-remove-strict-mode": "0.0.2",
     "blueimp-md5": "^2.10.0",
     "debug": "^4.1.1",

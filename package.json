@@ -20,7 +20,7 @@
     "blueimp-md5": "^2.10.0",
     "debug": "^4.1.1",
     "fabric": "^1.6.7",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "normalize.css": "^8.0.1",
     "npm": "^6.9.0",
     "nprogress": "^0.2.0",
